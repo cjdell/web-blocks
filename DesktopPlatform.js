@@ -1,3 +1,5 @@
+var DesktopViewPoint = require('./DesktopViewPoint');
+
 function DesktopPlatform() {
   function getRenderer(container) {
     var renderer = new THREE.WebGLRenderer();
@@ -14,3 +16,5 @@ function DesktopPlatform() {
     getRenderer: getRenderer
   };
 }
+
+module.exports = DesktopPlatform;

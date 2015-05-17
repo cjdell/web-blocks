@@ -118,3 +118,6 @@ function WorkerInterface(geoWorker) {
     addChangeListener: addChangeListener
   };
 }
+
+module.exports = WorkerInterface;
+

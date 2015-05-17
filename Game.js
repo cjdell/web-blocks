@@ -1,3 +1,11 @@
+var Culling = require('./Culling');
+var BlockTypeList = require('./BlockTypeList');
+var Interaction = require('./Interaction');
+var WorldViewer = require('./WorldViewer');
+var WorkerInterface = require('./WorkerInterface');
+var DesktopPlatform = require('./DesktopPlatform');
+var CardboardPlatform = require('./CardboardPlatform');
+
 function Game() {
   function init(div) {
     var geoWorker = new Worker('GeometryWorker.js');
@@ -172,3 +180,5 @@ function Game() {
     init: init
   }
 }
+
+window.Game = Game;

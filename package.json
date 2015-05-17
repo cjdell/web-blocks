@@ -9,6 +9,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "expect.js": "^0.3.1"
+    "expect.js": "^0.3.1",
+    "react": "^0.13.3",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "browserify": "^10.2.0",
+    "esprima-fb": "^15001.1.0-dev-harmony-fb",
+    "gulp": "^3.8.11",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-util": "^3.0.4",
+    "reactify": "^1.1.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.2.1"
   }
 }

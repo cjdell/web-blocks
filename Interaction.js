@@ -241,3 +241,5 @@ function CuboidTool(context) {
     cancel: cancel
   };
 }
+
+module.exports = Interaction;

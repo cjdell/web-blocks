@@ -146,3 +146,5 @@ function DesktopViewPoint(camera, light, div, renderer, worldInfo) {
     tick: tick
   };
 }
+
+module.exports = DesktopViewPoint;

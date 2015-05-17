@@ -77,3 +77,5 @@ function BlockTypeList() {
     getBlockTexture: getBlockTexture
   };
 }
+
+module.exports = BlockTypeList;

@@ -1,3 +1,5 @@
+var CardboardViewPoint = require('./CardboardViewPoint');
+
 function CardboardPlatform() {
   var renderer = null;
 
@@ -23,3 +25,5 @@ function CardboardPlatform() {
     getRenderer: getRenderer
   };
 }
+
+module.exports = CardboardPlatform;

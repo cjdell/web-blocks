@@ -56,3 +56,5 @@ function Culling(camera, worldInfo) {
     getNewlyVisiblePartitions: getNewlyVisiblePartitions
   };
 }
+
+module.exports = Culling;

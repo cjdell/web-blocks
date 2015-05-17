@@ -141,3 +141,5 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
     exposeNewPartitions: exposeNewPartitions
   };
 }
+
+module.exports = WorldViewer;

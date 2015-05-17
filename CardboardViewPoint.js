@@ -90,3 +90,5 @@ function CardboardViewPoint(camera, light, container, renderer, worldInfo) {
     tick: tick
   };
 }
+
+module.exports = CardboardViewPoint;
