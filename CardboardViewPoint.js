@@ -1,4 +1,4 @@
-function CardboardViewPoint(camera, light, container, renderer, worldInfo) {
+function CardboardViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var controls = null;
 
   camera.position.y = 12;
@@ -36,20 +36,20 @@ function CardboardViewPoint(camera, light, container, renderer, worldInfo) {
     controls.connect();
     controls.update();
 
-    container.addEventListener('click', fullscreen, false);
+    viewPort.addEventListener('click', fullscreen, false);
   }
 
   setOrientationControls();
 
   function fullscreen() {
-    if (container.requestFullscreen) {
-      container.requestFullscreen();
-    } else if (container.msRequestFullscreen) {
-      container.msRequestFullscreen();
-    } else if (container.mozRequestFullScreen) {
-      container.mozRequestFullScreen();
-    } else if (container.webkitRequestFullscreen) {
-      container.webkitRequestFullscreen();
+    if (viewPort.requestFullscreen) {
+      viewPort.requestFullscreen();
+    } else if (viewPort.msRequestFullscreen) {
+      viewPort.msRequestFullscreen();
+    } else if (viewPort.mozRequestFullScreen) {
+      viewPort.mozRequestFullScreen();
+    } else if (viewPort.webkitRequestFullscreen) {
+      viewPort.webkitRequestFullscreen();
     }
   }
 

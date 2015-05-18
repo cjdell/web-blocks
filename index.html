@@ -3,48 +3,7 @@
 <head>
     <title>Web Blocks</title>
 
-    <style>
-        body {
-            margin: 0;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        .view {
-            flex: 1;
-        }
-
-        .controls {
-            display: none;
-
-            background: #00f;
-            width: 100px;
-            padding: 10px;
-        }
-
-        .controls .type {
-            background: #aaa;
-            width: 80px;
-            height: 80px;
-            border: solid 1px #fff;
-            margin: 0 0 10px 0;
-            line-height: 80px;
-            text-align: center;
-            font-size: 40px;
-        }
-    </style>
+    <link href="build/app.css" rel="stylesheet" type="text/css" />
 
     <script src="underscore.js"></script>
     <script src="three.v71.js"></script>
@@ -174,20 +133,8 @@ void main() {
         'use strict';
 
         window.addEventListener('load', function() {
-            bootstrap(document.querySelector('.view'));
-
-            setupButtons();
+            bootstrap(document.body);
         });
-
-        function setupButtons() {
-            Array.prototype.forEach.call(document.querySelectorAll('.controls .type'), function(button) {
-                var type = parseInt(button.innerText.trim());
-
-                button.addEventListener('click', function() {
-                    interaction.setType(type);
-                });
-            });
-        }
 
         function detectmob() {
             return navigator.userAgent.match(/Android/i)
@@ -199,26 +146,15 @@ void main() {
                 || navigator.userAgent.match(/Windows Phone/i);
         }
 
-        function bootstrap(div) {
+        function bootstrap(container) {
             var game = new Game();
 
-            game.init(div);
+            game.init(container);
         }
     </script>
 </head>
 <body>
 
-<div class="container">
-    <div class="view">
-
-    </div>
-    <div class="controls">
-        <div class="type">0</div>
-        <div class="type">1</div>
-        <div class="type">2</div>
-        <div class="type">3</div>
-    </div>
-</div>
 
 </body>
 </html>

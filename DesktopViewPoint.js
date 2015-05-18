@@ -1,4 +1,4 @@
-function DesktopViewPoint(camera, light, div, renderer, worldInfo) {
+function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var speed = 10;
   var lookMode = false;
 

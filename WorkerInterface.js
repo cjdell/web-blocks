@@ -1,4 +1,6 @@
-function WorkerInterface(geoWorker) {
+function WorkerInterface() {
+  var geoWorker = new Worker('GeometryWorker.js');
+
   var initCallback = null;
   var getBlockCallback = {};
   var getPartitionCallback = {};

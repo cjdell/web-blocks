@@ -1,19 +1,44 @@
 var DesktopViewPoint = require('./DesktopViewPoint');
+var UserInterface = require('./ui/index.jsx');
 
 function DesktopPlatform() {
-  function getRenderer(container) {
-    var renderer = new THREE.WebGLRenderer();
+  var renderer = null;
+  var ui = null;
+  var viewPort = null;
+
+  function init(container) {
+    ui = new UserInterface();
+
+    ui.init(container);
+
+    viewPort = ui.getViewPort();
+
+    renderer = new THREE.WebGLRenderer();
 
     renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
+    renderer.setSize(viewPort.clientWidth, viewPort.clientHeight);
 
+    viewPort.appendChild(renderer.domElement);
+  }
+
+  function getUserInterface() {
+    return ui;
+  }
+
+  function getRenderer() {
     return renderer;
+  }
+
+  function getViewPort() {
+    return viewPort;
   }
 
   return {
     ViewPoint: DesktopViewPoint,
-    getRenderer: getRenderer
+    init: init,
+    getUserInterface: getUserInterface,
+    getRenderer: getRenderer,
+    getViewPort: getViewPort
   };
 }
 

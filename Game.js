@@ -3,39 +3,43 @@ var BlockTypeList = require('./BlockTypeList');
 var Interaction = require('./Interaction');
 var WorldViewer = require('./WorldViewer');
 var WorkerInterface = require('./WorkerInterface');
-var DesktopPlatform = require('./DesktopPlatform');
-var CardboardPlatform = require('./CardboardPlatform');
 
 function Game() {
-  function init(div) {
-    var geoWorker = new Worker('GeometryWorker.js');
+  var workerInterface = null;
+  var renderer = null;
+  var viewPort = null;
+  var camera = null;
+  var scene = null;
+  var blockTypeList = null;
+  var worldViewer = null;
+  var viewPoint = null;
+  var culling = null;
+  var interaction = null;
 
-    var workerInterface = new WorkerInterface(geoWorker);
+  var uniforms = null;
+  var frame = 0;
+  var log = false;
 
-    var platform;
+  function init(platform) {
+    workerInterface = new WorkerInterface();
 
-    if (detectmob()) {
-      platform = new CardboardPlatform();
-    } else {
-      platform = new DesktopPlatform();
-    }
-
-    var renderer = platform.getRenderer(div);
+    renderer = platform.getRenderer();
+    viewPort = platform.getViewPort();
 
     renderer.setClearColor(0xffffff, 1);
     renderer.shadowMapEnabled = true;
 
-    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    var scene = new THREE.Scene();
+    scene = new THREE.Scene();
 
     scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
 
-    var blockTypeList = new BlockTypeList();
+    blockTypeList = new BlockTypeList();
 
     return workerInterface.init()
     .then(function(worldInfo) {
-      var uniforms = {};
+      uniforms = {};
 
       uniforms.grass = { type: 'tv', value: null };
       uniforms.info = { type: 't', value: null };
@@ -120,7 +124,7 @@ function Game() {
         }
       }
 
-      var worldViewer = new WorldViewer(scene, worldInfo, blockMaterial, workerInterface);
+      worldViewer = new WorldViewer(scene, worldInfo, blockMaterial, workerInterface);
 
       var ambientLight = new THREE.AmbientLight(0x777777);
       scene.add(ambientLight);
@@ -143,42 +147,44 @@ function Game() {
       //dirLight.shadowMapHeight = 4096;
       //scene.add(dirLight);
 
-      var frame = 0;
-      var log = false;
+      viewPoint = new platform.ViewPoint(camera, pointLight, viewPort, renderer, worldInfo);
 
-      var viewPoint = new platform.ViewPoint(camera, pointLight, div, renderer, worldInfo);
+      culling = new Culling(camera, worldInfo);
 
-      var culling = new Culling(camera, worldInfo);
+      interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo);
 
-      var interaction = new Interaction(div, scene, camera, workerInterface, worldInfo);
-
-      function render() {
-        requestAnimationFrame(render);
-
-        uniforms.time.value += 0.1;
-
-        viewPoint.tick();
-
-        frame += 1;
-
-        if (frame % 10 === 0) {
-          var changes = culling.getNewlyVisiblePartitions();
-
-          worldViewer.exposeNewPartitions(changes);
-        }
-
-        renderer.render(scene, camera);
-
-        if (log) console.timeEnd('frame');
-      }
-
-      render();
+      render(); // Kick off the render loop
     });
   }
 
-  return {
-    init: init
+  function render() {
+    requestAnimationFrame(render);
+
+    uniforms.time.value += 0.1;
+
+    viewPoint.tick();
+
+    frame += 1;
+
+    if (frame % 10 === 0) {
+      var changes = culling.getNewlyVisiblePartitions();
+
+      worldViewer.exposeNewPartitions(changes);
+    }
+
+    renderer.render(scene, camera);
+
+    if (log) console.timeEnd('frame');
   }
+
+  function getBlockTypes() {
+    return blockTypeList.getBlockTypes();
+  }
+
+  return {
+    init: init,
+    getBlockTypes: getBlockTypes
+  };
 }
 
-window.Game = Game;
+module.exports = window.Game = Game;

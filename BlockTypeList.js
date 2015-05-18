@@ -1,25 +1,30 @@
 function BlockTypeList() {
   var blockTypes = [{
+    name: 'Air',
     textures: {
       top: null,
       side: null
     }
   }, {
+    name: 'Stone',
     textures: {
       top: 'textures/stone.png',
       side: 'textures/stone.png'
     }
   }, {
+    name: 'Grass',
     textures: {
       top: 'textures/grass.png',
       side: 'textures/grass_dirt.png'
     }
   }, {
+    name: 'Water',
     textures: {
       top: 'textures/water.png',
       side: 'textures/water.png'
     }
   }, {
+    name: 'Sky',
     textures: {
       top: 'textures/sky.png',
       side: 'textures/sky.png'
@@ -73,8 +78,13 @@ function BlockTypeList() {
     });
   }
 
+  function getBlockTypes() {
+    return blockTypes;
+  }
+
   return {
-    getBlockTexture: getBlockTexture
+    getBlockTexture: getBlockTexture,
+    getBlockTypes: getBlockTypes
   };
 }
 

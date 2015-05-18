@@ -9,14 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "expect.js": "^0.3.1",
     "react": "^0.13.3",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
     "browserify": "^10.2.0",
     "esprima-fb": "^15001.1.0-dev-harmony-fb",
+    "expect.js": "^0.3.1",
     "gulp": "^3.8.11",
+    "gulp-less": "^3.0.3",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-util": "^3.0.4",
     "reactify": "^1.1.1",

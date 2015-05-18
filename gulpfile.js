@@ -2,6 +2,7 @@ var _ = require('underscore');
 var gulp = require('gulp');
 var sourcemaps = require('gulp-sourcemaps');
 var util = require('gulp-util');
+var less = require('gulp-less');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var source = require('vinyl-source-stream');
@@ -10,7 +11,8 @@ var reactify = require('reactify');
 
 var config = {
   external: ['underscore'],
-  watch: false
+  watch: false,
+  sourceMaps: true
 };
 
 gulp.task('build-external', function() {
@@ -18,16 +20,24 @@ gulp.task('build-external', function() {
 });
 
 gulp.task('build-app', function() {
-  return appBrowserify('./Game.js', 'app.js');
+  return appBrowserify('./App.js', 'app.js');
 });
 
-gulp.task('build', ['build-app', 'build-external']);
+gulp.task('build-css', function () {
+  return gulp.src('./css/app.less')
+  .pipe(less())
+  .pipe(gulp.dest('./build'));
+});
+
+gulp.task('build', ['build-external', 'build-app', 'build-css']);
 
 gulp.task('set-watch', function() {
   config.watch = true;
 });
 
-gulp.task('watch', ['set-watch', 'build']);
+gulp.task('watch', ['set-watch', 'build'], function() {
+  gulp.watch(['css/*.less'], ['build-css']);
+});
 
 gulp.task('default', ['watch']);
 
