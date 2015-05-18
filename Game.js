@@ -187,4 +187,4 @@ function Game() {
   };
 }
 
-module.exports = window.Game = Game;
+module.exports = Game;

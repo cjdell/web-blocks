@@ -1,14 +1,16 @@
-function Interaction(div, scene, camera, workerInterface, worldInfo) {
+function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
   var mouse = new THREE.Vector2(), down = false;
   var raycaster = new THREE.Raycaster();
 
   var type = 1;
   var tool = null;
 
-  if (!detectmob()) {
-    div.addEventListener('mousedown', mouseDown, false);
-    div.addEventListener('mousemove', mouseMove, false);
-    div.addEventListener('mouseup', mouseUp, false);
+  var isDesktop = true; // TODO: Detect mobile
+
+  if (isDesktop) {
+    viewPort.addEventListener('mousedown', mouseDown, false);
+    viewPort.addEventListener('mousemove', mouseMove, false);
+    viewPort.addEventListener('mouseup', mouseUp, false);
   }
 
   function mouseDown(event) {
@@ -16,8 +18,8 @@ function Interaction(div, scene, camera, workerInterface, worldInfo) {
   }
 
   function mouseMove(event) {
-    mouse.x = ( event.clientX / div.clientWidth ) * 2 - 1;
-    mouse.y = -( event.clientY / div.clientHeight ) * 2 + 1;
+    mouse.x = ( event.clientX / viewPort.clientWidth ) * 2 - 1;
+    mouse.y = -( event.clientY / viewPort.clientHeight ) * 2 + 1;
 
     var pos = getBlockPositionOfMouse();
 
