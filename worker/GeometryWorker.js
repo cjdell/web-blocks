@@ -9,14 +9,11 @@ var VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
 var POSITION_VALUES_PER_VERTEX = 3;
 var DATA_VALUES_PER_VERTEX = 1;
 
-self.importScripts('underscore.js');
-self.importScripts('three.v71.js');
-self.importScripts('ImprovedNoise.js');
-self.importScripts('Partition.js');
-self.importScripts('World.js');
-self.importScripts('Cube.js');
-self.importScripts('PartitionGeometry.js');
-self.importScripts('WorldGeometry.js');
+self.importScripts('../underscore.js');
+self.importScripts('../three.v71.js');
+
+var World = require('./World');
+var WorldGeometry = require('./WorldGeometry');
 
 var world, worldGeometry;
 

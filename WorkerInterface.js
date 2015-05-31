@@ -1,5 +1,5 @@
 function WorkerInterface() {
-  var geoWorker = new Worker('GeometryWorker.js');
+  var geoWorker = new Worker('build/worker.js');
 
   var initCallback = null;
   var getBlockCallback = {};

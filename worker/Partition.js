@@ -1,8 +1,4 @@
-if (typeof module === 'object') {
-  var THREE = require('./three.v71');
-
-  module.exports = Partition;
-}
+var ImprovedNoise = require('./ImprovedNoise');
 
 function Partition(dimensions, partitionPosition, worldDimensions, partitionIndex) {
   //console.log(partitionPosition.x, partitionPosition.z);
@@ -254,3 +250,5 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
     getVisibleBlocks: getVisibleBlocks
   };
 }
+
+module.exports = Partition;

@@ -70,3 +70,5 @@ function Cube(bufferGeometry, cubeIndex) {
     setData: setData
   };
 }
+
+module.exports = Cube;

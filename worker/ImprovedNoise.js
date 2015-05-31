@@ -59,3 +59,5 @@ function ImprovedNoise() {
     noise: noise
   };
 }
+
+module.exports = ImprovedNoise;

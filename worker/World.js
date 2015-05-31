@@ -1,9 +1,4 @@
-if (typeof module === 'object') {
-  var THREE = require('./three.v71');
-  var Partition = require('./Partition');
-
-  module.exports = World;
-}
+var Partition = require('./Partition');
 
 function World(worldDimensionsInPartitions, partitionDimensionsInBlocks) {
   var capacity = worldDimensionsInPartitions.x * worldDimensionsInPartitions.y * worldDimensionsInPartitions.z;
@@ -227,3 +222,5 @@ function World(worldDimensionsInPartitions, partitionDimensionsInBlocks) {
     getDirtyPartitions: getDirtyPartitions
   };
 }
+
+module.exports = World;

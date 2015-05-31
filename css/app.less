@@ -13,12 +13,14 @@ body {
 }
 
 .app {
+  display: -webkit-flex;
   display: flex;
   height: 100vh;
 }
 
 .viewPort {
   flex: 1;
+  -webkit-flex: 1;
   height: 100vh;
 }
 
@@ -57,12 +59,16 @@ body {
   color: #fff;
   border-radius: 4px;
   overflow: hidden;
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: column;
   flex-direction: column;
   min-height: min-content;
 
   .tabs {
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-direction: row;
     flex-direction: row;
     height: 40px;
     min-height: 40px;
@@ -86,6 +92,7 @@ body {
 
   .codeView {
     background: rgba(0, 0, 0, 0.5);
+    -webkit-flex: 1;
     flex: 1;
     padding: 20px;
     line-height: 30px;
@@ -94,6 +101,7 @@ body {
     word-wrap: break-word;
 
     &.console {
+      display: -webkit-flex;
       display: flex;
 
       ul {
@@ -101,6 +109,7 @@ body {
         list-style: none;
         padding: 0;
         overflow: scroll;
+        -webkit-flex: 1;
         flex: 1;
 
         li {
@@ -110,20 +119,33 @@ body {
     }
 
     &.script {
+      display: -webkit-flex;
       display: flex;
+      -webkit-flex-direction: column;
       flex-direction: column;
 
       textarea {
+        -webkit-flex: 1;
         flex: 1;
       }
 
-      button {
-        height: 40px;
-        background: rgba(255,255,255,0.5);
-        color: #fff;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
+      .buttons {
+        display: -webkit-flex;
+        display: flex;
+        padding: 4px;
+
+        button {
+          -webkit-flex: 1;
+          flex: 1;
+          height: 40px;
+          background: rgba(255, 255, 255, 0.5);
+          color: #fff;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+          border-radius: 4px;
+          margin: 4px;
+        }
       }
     }
 

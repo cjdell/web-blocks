@@ -16,14 +16,15 @@ var ToolBox = React.createClass({
   },
   toggleCodeEditor: function() {
     this.setState({ codeEditorVisible: !this.state.codeEditorVisible });
-
-    window.blockMovement = this.state.codeEditorVisible;
   },
   componentDidMount: function() {
     document.addEventListener('keyup', function() {
       // Toggle code editor on escape key
       if (event.keyCode === 27) this.toggleCodeEditor();
     }.bind(this), false);
+  },
+  componentDidUpdate: function() {
+    window.blockMovement = this.state.codeEditorVisible;
   },
   render: function() {
     var lis = [];

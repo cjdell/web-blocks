@@ -23,13 +23,17 @@ gulp.task('build-app', function() {
   return appBrowserify('./App.js', 'app.js');
 });
 
+gulp.task('build-worker', function() {
+  return appBrowserify('./worker/GeometryWorker.js', 'worker.js');
+});
+
 gulp.task('build-css', function () {
   return gulp.src('./css/app.less')
   .pipe(less())
   .pipe(gulp.dest('./build'));
 });
 
-gulp.task('build', ['build-external', 'build-app', 'build-css']);
+gulp.task('build', ['build-external', 'build-app', 'build-worker', 'build-css']);
 
 gulp.task('set-watch', function() {
   config.watch = true;

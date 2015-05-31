@@ -1,5 +1,11 @@
+var Cube = require('./Cube');
+
 function PartitionGeometry(partition) {
   //console.log('NEW PartitionGeometry');
+
+  var FACE_PER_CUBE = 6;
+  var VERTICES_PER_FACE = 6;
+  var VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
 
   var cubeCapacity = 0;
   var reserveCubes = 0;//100;
@@ -106,3 +112,5 @@ function PartitionGeometry(partition) {
     suspend: suspend
   };
 }
+
+module.exports = PartitionGeometry;

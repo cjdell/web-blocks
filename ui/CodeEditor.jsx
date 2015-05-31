@@ -59,6 +59,12 @@ var CodeEditor = React.createClass({
       console.error('parse error', err);
     }
   },
+  loadClicked: function() {
+
+  },
+  saveClicked: function() {
+
+  },
   tabClick: function(mode) {
     this.setState({ mode: mode });
   },
@@ -105,7 +111,11 @@ var CodeEditor = React.createClass({
       </div>
       <div className={'codeView script ' + (this.state.mode === 'script' ? 'show' : 'hide')}>
         <textarea ref="script"></textarea>
-        <button onClick={this.runClicked}>Run</button>
+        <div className="buttons">
+          <button onClick={this.loadClicked}>Load</button>
+          <button onClick={this.runClicked}>Run</button>
+          <button onClick={this.saveClicked}>Save</button>
+        </div>
       </div>
     </div>
     );

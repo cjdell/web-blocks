@@ -1,3 +1,5 @@
+var PartitionGeometry = require('./PartitionGeometry');
+
 function WorldGeometry(world) {
   var partitionGeometries = new Array(world.getPartitionCapacity());
 
@@ -26,3 +28,5 @@ function WorldGeometry(world) {
     getPartitionGeometry: getPartitionGeometry
   };
 }
+
+module.exports = WorldGeometry;
