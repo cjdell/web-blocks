@@ -1,5 +1,5 @@
 var DesktopViewPoint = require('./DesktopViewPoint');
-var UserInterface = require('./ui/index.jsx');
+var UserInterface = require('../ui/index.jsx');
 
 function DesktopPlatform() {
   var renderer = null;

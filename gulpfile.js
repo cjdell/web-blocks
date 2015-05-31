@@ -20,7 +20,7 @@ gulp.task('build-external', function() {
 });
 
 gulp.task('build-app', function() {
-  return appBrowserify('./App.js', 'app.js');
+  return appBrowserify('./app/App.js', 'app.js');
 });
 
 gulp.task('build-worker', function() {

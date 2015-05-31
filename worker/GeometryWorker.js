@@ -2,15 +2,12 @@
 
 console.log('GeometryWorker: online');
 
-var FACE_PER_CUBE = 6;
-var VERTICES_PER_FACE = 6;
-var VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
-
-var POSITION_VALUES_PER_VERTEX = 3;
-var DATA_VALUES_PER_VERTEX = 1;
-
+self.importScripts('external.js');
 self.importScripts('../underscore.js');
 self.importScripts('../three.v71.js');
+
+
+var _ = require('underscore');
 
 var World = require('./World');
 var WorldGeometry = require('./WorldGeometry');
@@ -74,7 +71,7 @@ self.onmessage = function(e) {
   }
 };
 
-function checkForChangedPartitions() {
+var checkForChangedPartitions = _.debounce(function() {
   var dirty = world.getDirtyPartitions();
 
   console.log('checkForChangedPartitions', dirty.length, dirty);
@@ -83,4 +80,4 @@ function checkForChangedPartitions() {
     action: 'update',
     changes: dirty
   });
-}
+}, 250);

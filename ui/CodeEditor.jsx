@@ -4,44 +4,48 @@ var React = require('react');
 
 var scriptStorage = new ScriptStorage();
 
-Object.defineProperty(window, 'hi', {
+var scriptContext = {};
+
+Object.defineProperty(scriptContext, 'hi', {
   get: function() {
     return 'Hi there!';
   }
 });
 
-Object.defineProperty(window, 'help', {
+Object.defineProperty(scriptContext, 'help', {
   get: function() {
     return ['Help goes here', 'more help'].join('\n');
   }
 });
 
+var introMessage = 'Hello there, here you can write JavaScript! For more info type: help';
+
 var CodeEditor = React.createClass({
   getInitialState: function() {
-    return { mode: 'console', lines: ['Hello there, here you can write JavaScript! For more info type: help'] };
+    return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }] };
   },
   processCmd: function(e) {
     if (e.which === 13) {
       var cmd = this.refs.code.getDOMNode().value;
       this.refs.code.getDOMNode().value = '';
-      this.addLine(cmd);
+      this.addLine(cmd, 'command');
       this.runCmd(cmd);
     }
   },
-  addLine: function(line) {
+  addLine: function(line, type) {
     var lines = this.state.lines;
-    lines.push(line);
+    lines.push({ line: line, type: type });
     this.setState({ lines: lines });
   },
-  runCmd: function(code) {
+  runCmd: function(cmd) {
     var that = this;
 
     try {
-      var func = new Function('return ' + code);
-      var res = func();
-      if (res) this.addLine(res.toString());
+      var func = new Function('with (arguments[0]) { return ' + cmd + '; }');
+      var res = func(scriptContext);
+      if (res) this.addLine(res.toString(), 'answer');
     } catch (err) {
-      this.addLine(err.toString());
+      this.addLine(err.toString(), 'error');
       console.error('parse error', err);
     }
   },
@@ -52,8 +56,8 @@ var CodeEditor = React.createClass({
 
     try {
       var scriptCode = scriptTextarea.value;
-      var func = new Function(scriptCode);
-      func();
+      var func = new Function('with (arguments[0]) { ' + scriptCode + '; }');
+      func(scriptContext);
     } catch (err) {
       alert(err);
       console.error('parse error', err);
@@ -90,7 +94,7 @@ var CodeEditor = React.createClass({
   },
   render: function() {
     var items = this.state.lines.map(function(line, index) {
-      return <li key={index}>{line}</li>;
+      return <li key={index} className={line.type}>{line.line}</li>;
     });
 
     return (
