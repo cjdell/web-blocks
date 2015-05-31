@@ -21,12 +21,11 @@ function App() {
 
     var ui = platform.getUserInterface();
 
-    console.log(ui);
-
-    //console.log('getBlockTypes', game.getBlockTypes());
+    ui.setGame(game);
   }
 
   function detectmob() {
+    //return true;
     return navigator.userAgent.match(/Android/i)
     || navigator.userAgent.match(/webOS/i)
     || navigator.userAgent.match(/iPhone/i)

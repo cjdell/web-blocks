@@ -1,3 +1,5 @@
+var CuboidTool = require('./tools/CuboidTool');
+
 function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
   var mouse = new THREE.Vector2(), down = false;
   var raycaster = new THREE.Raycaster();
@@ -34,8 +36,9 @@ function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
     if (!tool) {
       var context = {
         scene: scene,
+        type: type,
         workerInterface: workerInterface,
-        getPositionOfMouseAlongZPlane: getPositionOfMouseAlongZPlane,
+        getPositionOfMouseAlongXZPlane: getPositionOfMouseAlongXZPlane,
         finished: finished
       };
 
@@ -82,15 +85,43 @@ function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
     return null;
   }
 
-  function getPositionOfMouseAlongZPlane(zPlane) {
+  function getPositionOfMouseAlongXZPlane(xPlane, zPlane) {
     var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
     vector.unproject(camera);
+
+    //dot(vector);
+
     var dir = vector.sub(camera.position).normalize();
-    var distance = (zPlane - camera.position.z) / dir.z;
-    var pos = camera.position.clone().add(dir.multiplyScalar(distance));
-    pos.x = pos.x | 0;
-    pos.y = pos.y | 0;
-    return pos;
+
+    var distancez = (zPlane - camera.position.z) / dir.z;
+    var posz = camera.position.clone().add(dir.multiplyScalar(distancez));
+
+    posz.x = posz.x | 0;
+    posz.y = posz.y | 0;
+
+    var distancex = (xPlane - camera.position.x) / dir.x;
+    var posx = camera.position.clone().add(dir.multiplyScalar(distancex));
+
+    posx.x = posx.x | 0;
+    posx.y = posx.y | 0;
+
+    if (distancex > distancez) {
+      //dot(posx);
+      return posx;
+    } else {
+      //dot(posz);
+      return posz;
+    }
+  }
+
+  function dot(pos) {
+    console.log(pos);
+
+    var geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    var cube = new THREE.Mesh(geometry, material);
+    cube.position.set(pos.x, pos.y, pos.z);
+    scene.add(cube);
   }
 
   // TODO: Commonise
@@ -118,129 +149,6 @@ function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
 
   return {
     setType: setType
-  };
-}
-
-function CuboidTool(context) {
-  var state = 'select-start';
-  var startPos = null, endPos = null, heightPos = null;
-  var cube = null;
-
-  function onBlockClick(pos) {
-
-  }
-
-  function onMouseClick(mouse, pos) {
-    if (state === 'select-start') {
-      pos.y += 1;
-
-      startPos = pos;
-
-      cube = addCube(pos);
-
-      state = 'select-end';
-    } else if (state === 'select-end') {
-      pos.y += 1;
-
-      endPos = pos;
-      endPos.y = pos.y;
-
-      var size = endPos.clone().sub(startPos);
-
-      size.x += 1;
-      size.y += 1;
-      size.z += 1;
-
-      scaleCube(cube, startPos, size);
-
-      state = 'select-height';
-      heightPos = context.getPositionOfMouseAlongZPlane(endPos.z);
-    } else if (state === 'select-height') {
-
-      endPos.y = heightPos.y;
-
-      context.workerInterface.setBlocks(startPos, endPos, 1, true);
-
-      removeCube(cube);
-
-      context.finished();
-    }
-  }
-
-  function onMouseMove(mouse, pos) {
-    var size;
-
-    if (state === 'select-end') {
-      pos.y += 1;
-
-      endPos = pos;
-      endPos.y = pos.y;
-
-      size = endPos.clone().sub(startPos);
-
-      size.x += 1;
-      size.y += 1;
-      size.z += 1;
-
-      scaleCube(cube, startPos, size);
-    } else if (state === 'select-height') {
-      heightPos = context.getPositionOfMouseAlongZPlane(endPos.z);
-
-      endPos.y = heightPos.y;
-
-      size = endPos.clone().sub(startPos);
-
-      size.x += 1;
-      size.y += 1;
-      size.z += 1;
-
-      scaleCube(cube, startPos, size);
-    }
-  }
-
-  function cancel() {
-    removeCube(cube);
-  }
-
-  function addCube(pos) {
-    var geometry = new THREE.CubeGeometry(1, 1, 1);
-    var material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
-    var cube = new THREE.Mesh(geometry, material);
-
-    cube.position.x = pos.x + 0.5;
-    cube.position.y = pos.y + 0.5;
-    cube.position.z = pos.z + 0.5;
-
-    cube.rotation.x = Math.PI / 2;
-
-    cube.rotation.x = Math.PI / 2;
-
-    cube.name = 'selection-cube';
-
-    context.scene.add(cube);
-
-    return cube;
-  }
-
-  function scaleCube(cube, pos, size) {
-    cube.position.x = pos.x + size.x / 2;
-    cube.position.y = pos.y + size.y / 2;
-    cube.position.z = pos.z + size.z / 2;
-
-    cube.scale.x = size.x;
-    cube.scale.z = size.y;
-    cube.scale.y = size.z;
-  }
-
-  function removeCube(cube) {
-    context.scene.remove(cube);
-  }
-
-  return {
-    onBlockClick: onBlockClick,
-    onMouseClick: onMouseClick,
-    onMouseMove: onMouseMove,
-    cancel: cancel
   };
 }
 

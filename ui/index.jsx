@@ -1,5 +1,7 @@
 var React = require('react');
 
+var ToolBox = require('./ToolBox.jsx');
+
 function UserInterface() {
   var app = null;
 
@@ -11,9 +13,14 @@ function UserInterface() {
     return app.refs.viewPort.getDOMNode();
   }
 
+  function setGame(game) {
+    app.setGame(game);
+  }
+
   return {
     init: init,
-    getViewPort: getViewPort
+    getViewPort: getViewPort,
+    setGame: setGame
   };
 }
 
@@ -23,11 +30,14 @@ var App = React.createClass({
   getInitialState: function() {
     return {};
   },
+  setGame: function(game) {
+    this.setProps({ game: game });
+  },
   render: function() {
     return (
     <div className="app">
       <ViewPort ref="viewPort"></ViewPort>
-      <ToolBox></ToolBox>
+      <ToolBox game={this.props.game}></ToolBox>
     </div>
     );
   }
@@ -44,36 +54,3 @@ var ViewPort = React.createClass({
   }
 });
 
-var ToolBox = React.createClass({
-  getInitialState: function() {
-    var blockTypes = [{
-      name: 'Stone'
-    }, {
-      name: 'Grass'
-    }];
-
-    return {
-      blockTypes: blockTypes,
-      blockTypeIndex: 0
-    };
-  },
-  blockTypeClick: function(blockTypeIndex) {
-    this.setState({ blockTypeIndex: blockTypeIndex });
-  },
-  render: function() {
-    var lis = this.state.blockTypes.map(function(blockType, index) {
-      return (
-      <li onClick={this.blockTypeClick.bind(this, index)}
-          className={index === this.state.blockTypeIndex ? 'selected' : ''}>
-        {blockType.name}
-      </li>
-      );
-    }, this);
-
-    return (
-    <div className="toolBox">
-      <ul>{lis}</ul>
-    </div>
-    );
-  }
-});

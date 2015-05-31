@@ -12,6 +12,8 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var mouse = new THREE.Vector2();
 
   function keyDown(event) {
+    if (window.blockMovement) return;
+
     if (event.keyCode === 65) movement.x = -1;      // A (Left)
     if (event.keyCode === 68) movement.x = 1;       // D (Right)
 

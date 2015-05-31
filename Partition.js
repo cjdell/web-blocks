@@ -194,7 +194,7 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
   function computeOcclusion(pos) {
     var pindex = pos.z * dimensions.x + pos.x;
 
-    if (heightMap[pindex] > pos.y) return 0;
+    if (heightMap[pindex] > pos.y) return 8;
 
     var combinedHeight = 0;
 

@@ -2,27 +2,41 @@ var CardboardViewPoint = require('./CardboardViewPoint');
 
 function CardboardPlatform() {
   var renderer = null;
+  var viewPort = null;
 
-  function getRenderer(container) {
-    renderer = new THREE.WebGLRenderer();
+  function init(container) {
+    var webGlRenderer = new THREE.WebGLRenderer();
 
     var width = window.innerWidth, height = window.innerHeight;
 
-    renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-    renderer.setSize(width, height);
+    webGlRenderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+    webGlRenderer.setSize(width, height);
 
-    container.appendChild(renderer.domElement);
+    container.appendChild(webGlRenderer.domElement);
 
-    var effect = new THREE.StereoEffect(renderer);
+    var effect = new THREE.StereoEffect(webGlRenderer);
 
     effect.setSize(width, height);
+
+    renderer = effect;
+    viewPort = container;
 
     return effect;
   }
 
+  function getRenderer() {
+    return renderer;
+  }
+
+  function getViewPort() {
+    return viewPort;
+  }
+
   return {
     ViewPoint: CardboardViewPoint,
-    getRenderer: getRenderer
+    init: init,
+    getRenderer: getRenderer,
+    getViewPort: getViewPort
   };
 }
 

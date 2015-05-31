@@ -28,6 +28,10 @@ varying vec2 vUv;
 varying vec3 vOffset;
 varying float vData;
 
+varying float vType;
+varying float vSide;
+varying float vShade;
+
 void main() {
   vNormal = normal;
   vUv = uv;
@@ -41,11 +45,20 @@ void main() {
 
     vPos = (modelMatrix * vec4(newPosition, 1.0)).xyz;
 
-    float type = floor(mod(vData, 256.0));
+    vType = floor(mod(vData, 256.0));
+    vSide = floor(mod(vData / 256.0, 256.0));
+    vShade = floor(vData / 65536.0);
 
-    if (type == 3.0) {
+    if (vType == 3.0) {
         vPos.y += sin(time / 3.0) / 2.0 - 0.5;
     }
+
+    /*if (vType == 1.0) {
+        //vPos.x += sin((vPos.y + vPos.x) / 4.0 + time / 3.0) * 20.0;
+        vPos.x += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
+        vPos.y += cos((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
+        vPos.z += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
+    }*/
 
     gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0);
   } else {
@@ -74,21 +87,20 @@ varying vec2 vUv;
 varying vec3 vOffset;
 varying float vData;
 
+varying float vType;
+varying float vSide;
+varying float vShade;
+
 uniform vec3 fogColor;
 
 void main() {
   vec2 uv = vUv;
 
-  float side = floor(mod(vData / 256.0, 256.0));
   float isSide = 0.0;
 
-  if (side == 0.0 || side == 1.0 || side == 4.0 || side == 5.0) {
+  if (vSide == 0.0 || vSide == 1.0 || vSide == 4.0 || vSide == 5.0) {
     isSide = 1.0;
   }
-
-  float type = floor(mod(vData, 256.0));
-
-  float shade = floor(vData / 65536.0);
 
   // Number of textures per cube
   float sideCount = 8.0;
@@ -97,7 +109,11 @@ void main() {
   float typeCount = 8.0;
 
   uv.x = uv.x * (1.0 / sideCount) + isSide * (1.0 / sideCount);
-  uv.y = uv.y * (1.0 / typeCount) + type * (1.0 / typeCount);
+  uv.y = uv.y * (1.0 / typeCount) + vType * (1.0 / typeCount);
+
+  //// Force stone texture only
+  //uv.x = uv.x / 8.0;
+  //uv.y = uv.y / 8.0 + (1.0 / 8.0);
 
   vec4 col = texture2D(info, uv);
 
@@ -118,9 +134,18 @@ void main() {
   //
   //vec3 fogCol = vec3(1.0, 1.0, 1.0) * ground + vec3(0.7333, 0.8, 1.0) * sky;
 
-  gl_FragColor = gl_FragColor * (1.0 - (shade / 255.0));
+// Only top face has shade
+  if (vSide == 2.0) {
+    gl_FragColor = gl_FragColor * (1.0 - (vShade / 255.0));
+  }
 
   gl_FragColor = gl_FragColor * (1.0 - fog) + vec4(fogColor, 0.0) * fog;
+
+  /*if (vType == 1.0) {
+    gl_FragColor.r += sin(time + vPos.x);
+    gl_FragColor.g += sin(time + vPos.y);
+    gl_FragColor.b += sin(time + vPos.z);
+  }*/
 
   //gl_FragColor = vec4(vPos, 1.0);
 
@@ -131,6 +156,8 @@ void main() {
 
     <script>
         'use strict';
+
+        window.blockMovement = false;
 
         window.addEventListener('load', function() {
             bootstrap(document.body);

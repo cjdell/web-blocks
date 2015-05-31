@@ -1,8 +1,12 @@
 function CardboardViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var controls = null;
 
-  camera.position.y = 12;
-  camera.position.z = 30;
+  //camera.position.y = 12;
+  //camera.position.z = 30;
+
+  camera.position.x = 100;
+  camera.position.y = 16;
+  camera.position.z = 100;
 
   //controls = new THREE.OrbitControls(camera, container);
   //

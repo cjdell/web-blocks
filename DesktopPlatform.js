@@ -15,10 +15,12 @@ function DesktopPlatform() {
 
     renderer = new THREE.WebGLRenderer();
 
-    renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-    renderer.setSize(viewPort.clientWidth, viewPort.clientHeight);
+    setTimeout(function() {
+      renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+      renderer.setSize(viewPort.clientWidth, viewPort.clientHeight);
 
-    viewPort.appendChild(renderer.domElement);
+      viewPort.appendChild(renderer.domElement);
+    }, 1000);
   }
 
   function getUserInterface() {

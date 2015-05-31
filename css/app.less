@@ -1,9 +1,15 @@
 body {
   margin: 0;
+  overflow: hidden;
+  font-family: arial, sans-serif;
 }
 
 * {
   box-sizing: border-box;
+}
+
+.hide {
+  display: none !important;
 }
 
 .app {
@@ -19,7 +25,128 @@ body {
 .toolBox {
   width: 100px;
 
-  li.selected {
-    background: #777;
+  > ul {
+    padding: 10px;
+    margin: 0;
+
+    li {
+      list-style: none;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 10px;
+      text-align: center;
+      line-height: 80px;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    li.selected {
+      background: #777;
+    }
   }
 }
+
+.codeEditor {
+  position: fixed;
+  left: 40px;
+  top: 40px;
+  right: 140px;
+  bottom: 40px;
+  color: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: min-content;
+
+  .tabs {
+    display: flex;
+    flex-direction: row;
+    height: 40px;
+    min-height: 40px;
+
+    .tab {
+      width: 100px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      background: rgba(255,255,255,0.5);
+      color: #000;
+      border-radius: 4px 4px 0 0;
+      margin-right: 8px;
+
+      a {
+        cursor: pointer;
+        display: block;
+      }
+    }
+  }
+
+  .codeView {
+    background: rgba(0, 0, 0, 0.5);
+    flex: 1;
+    padding: 20px;
+    line-height: 30px;
+    font-family: Consolas, Menlo, Monaco, monospace;
+    font-size: 20px;
+    word-wrap: break-word;
+
+    &.console {
+      display: flex;
+
+      ul {
+        margin: 0;
+        list-style: none;
+        padding: 0;
+        overflow: scroll;
+        flex: 1;
+
+        li {
+          white-space: pre;
+        }
+      }
+    }
+
+    &.script {
+      display: flex;
+      flex-direction: column;
+
+      textarea {
+        flex: 1;
+      }
+
+      button {
+        height: 40px;
+        background: rgba(255,255,255,0.5);
+        color: #fff;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+      }
+    }
+
+    textarea {
+      border: none;
+      overflow: auto;
+      outline: none;
+
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      box-shadow: none;
+      background: transparent;
+      color: #fff;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      font-size: 20px;
+      line-height: 30px;
+      padding: 0;
+      width: 100%;
+    }
+  }
+
+  button {
+    height: 40px;
+  }
+}
+
