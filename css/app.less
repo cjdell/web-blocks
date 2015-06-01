@@ -38,6 +38,7 @@ body {
       margin-bottom: 10px;
       text-align: center;
       line-height: 80px;
+      background: #ddd;
     }
 
     li:last-child {
@@ -91,7 +92,7 @@ body {
   }
 
   .codeView {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(127, 127, 127, 0.5);
     -webkit-flex: 1;
     flex: 1;
     padding: 20px;
@@ -128,15 +129,25 @@ body {
       -webkit-flex-direction: column;
       flex-direction: column;
 
+      h3 {
+        font-size: 20px;
+        line-height: 30px;
+        margin: 0;
+        padding: 0;
+      }
+
       textarea {
         -webkit-flex: 1;
         flex: 1;
+        resize: none;
       }
 
       .buttons {
         display: -webkit-flex;
         display: flex;
         padding: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
 
         button {
           -webkit-flex: 1;
@@ -176,3 +187,31 @@ body {
   }
 }
 
+.scriptPicker {
+  position: fixed;
+  left: 20%;
+  top: 60px;
+  right: 20%;
+  bottom: 60px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  color: #000;
+
+  ul {
+    margin: 0;
+    list-style: none;
+    padding: 20px;
+
+    li {
+      line-height: 30px;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      font-size: 20px;
+      padding: 0 10px;
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(255,255,255,0.5);
+      }
+    }
+  }
+}

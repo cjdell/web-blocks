@@ -1,8 +1,8 @@
 var React = require('react');
 
-//setBlocks(0,10,0,100,10,100,1)
+var ScriptPicker = require('./ScriptPicker.jsx');
 
-var scriptStorage = new ScriptStorage();
+//setBlocks(0,10,0,100,10,100,1)
 
 var scriptContext = {};
 
@@ -14,7 +14,7 @@ Object.defineProperty(scriptContext, 'hi', {
 
 Object.defineProperty(scriptContext, 'help', {
   get: function() {
-    return ['Help goes here', 'more help'].join('\n');
+    return ['Here\'s a command you try: setBlocks(x1,y1,z1,x2,y2,z2,type)', 'See the "Script" tab for sample commands'].join('\n');
   }
 });
 
@@ -22,7 +22,7 @@ var introMessage = 'Hello there, here you can write JavaScript! For more info ty
 
 var CodeEditor = React.createClass({
   getInitialState: function() {
-    return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }] };
+    return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }], scriptName: 'Scratch Pad' };
   },
   processCmd: function(e) {
     if (e.which === 13) {
@@ -52,7 +52,7 @@ var CodeEditor = React.createClass({
   runClicked: function() {
     var scriptTextarea = this.refs.script.getDOMNode();
 
-    scriptStorage.putScript('Current', scriptTextarea.value);
+    this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
 
     try {
       var scriptCode = scriptTextarea.value;
@@ -64,10 +64,12 @@ var CodeEditor = React.createClass({
     }
   },
   loadClicked: function() {
-
+    this.setState({ scriptPickerVisible: true });
   },
   saveClicked: function() {
+    var scriptTextarea = this.refs.script.getDOMNode();
 
+    this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
   },
   tabClick: function(mode) {
     this.setState({ mode: mode });
@@ -80,7 +82,7 @@ var CodeEditor = React.createClass({
   componentDidMount: function() {
     var scriptTextarea = this.refs.script.getDOMNode();
 
-    scriptTextarea.value = scriptStorage.getScript('Current');
+    scriptTextarea.value = this.props.scriptStorage.getScript(this.state.scriptName);
   },
   componentDidUpdate: function() {
     var consoleTextarea = this.refs.code.getDOMNode();
@@ -91,6 +93,13 @@ var CodeEditor = React.createClass({
     if (this.state.mode === 'script') scriptTextarea.focus();
 
     ul.scrollTop = ul.scrollHeight;
+  },
+  scriptChosen: function(name) {
+    var scriptTextarea = this.refs.script.getDOMNode();
+
+    this.setState({ scriptPickerVisible: false, scriptName: name });
+
+    scriptTextarea.value = this.props.scriptStorage.getScript(name);
   },
   render: function() {
     var items = this.state.lines.map(function(line, index) {
@@ -114,40 +123,24 @@ var CodeEditor = React.createClass({
         </ul>
       </div>
       <div className={'codeView script ' + (this.state.mode === 'script' ? 'show' : 'hide')}>
+        <h3>{this.state.scriptName}</h3>
+
         <textarea ref="script"></textarea>
+
         <div className="buttons">
           <button onClick={this.loadClicked}>Load</button>
           <button onClick={this.runClicked}>Run</button>
           <button onClick={this.saveClicked}>Save</button>
         </div>
       </div>
+      <ScriptPicker
+      visible={this.state.scriptPickerVisible}
+      scriptStorage={this.props.scriptStorage}
+      onScriptChosen={this.scriptChosen}/>
     </div>
     );
   }
 });
 
-function ScriptStorage() {
-  function getScriptNames() {
-    return ['Current'];
-  }
-
-  function getScript(name) {
-    if (name === 'Current') {
-      return window.localStorage.currentScript || '';
-    }
-  }
-
-  function putScript(name, script) {
-    if (name === 'Current') {
-      window.localStorage.currentScript = script;
-    }
-  }
-
-  return {
-    getScriptNames: getScriptNames,
-    getScript: getScript,
-    putScript: putScript
-  };
-}
 
 module.exports = CodeEditor;

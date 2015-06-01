@@ -3,9 +3,8 @@
 console.log('GeometryWorker: online');
 
 self.importScripts('external.js');
-self.importScripts('../underscore.js');
-self.importScripts('../three.v71.js');
-
+self.importScripts('../lib/underscore.js');
+self.importScripts('../lib/three.v71.js');
 
 var _ = require('underscore');
 

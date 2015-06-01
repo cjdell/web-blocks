@@ -1,6 +1,12 @@
 var React = require('react');
 
+var ScriptStorage = require('../app/ScriptStorage');
+
 var CodeEditor = require('./CodeEditor.jsx');
+
+var scriptStorage = new ScriptStorage();
+
+scriptStorage.load();
 
 var ToolBox = React.createClass({
   getInitialState: function() {
@@ -45,8 +51,10 @@ var ToolBox = React.createClass({
 
     return (
     <div className="toolBox">
-      <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} />
-      <button onClick={this.toggleCodeEditor}>&lt;&gt;</button>
+      <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} scriptStorage={scriptStorage} />
+      <ul>
+        <li onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
+      </ul>
       <ul>{lis}</ul>
     </div>
     );

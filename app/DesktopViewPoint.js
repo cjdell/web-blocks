@@ -4,7 +4,7 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
 
   camera.position.x = 100;
   camera.position.y = 16;
-  camera.position.z = 100;
+  camera.position.z = 120;
 
   var movement = { x: 0, y: 0, z: 0 };
   var turn = { x: 0, y: 0 };
@@ -78,7 +78,7 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
   document.addEventListener('mousemove', mouseMove, false);
   document.addEventListener('mouseup', mouseUp, false);
 
-  var lon = 270, lat = 0;
+  var lon = 270, lat = -20;
 
   var zDelta = 0;
 

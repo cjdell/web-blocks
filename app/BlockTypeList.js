@@ -23,12 +23,6 @@ function BlockTypeList() {
       top: 'textures/water.png',
       side: 'textures/water.png'
     }
-  }, {
-    name: 'Sky',
-    textures: {
-      top: 'textures/sky.png',
-      side: 'textures/sky.png'
-    }
   }];
 
   function getImage(src) {
