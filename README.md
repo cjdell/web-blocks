@@ -9,6 +9,9 @@ Controls
 --------
 
 Move forwards / backwards: W and S
+
 Move sideways: A and D
+
 Look around: Arrow keys
+
 Code editor: Escape key
