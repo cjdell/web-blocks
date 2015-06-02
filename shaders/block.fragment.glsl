@@ -26,7 +26,9 @@ void main() {
 
   float isSide = 0.0;
 
-  if (vSide == 0.0 || vSide == 1.0 || vSide == 4.0 || vSide == 5.0) {
+  float side = floor(vSide);
+
+  if (side == 0.0 || side == 1.0 || side == 4.0 || side == 5.0) {
     isSide = 1.0;
   }
 
@@ -63,7 +65,7 @@ void main() {
   //vec3 fogCol = vec3(1.0, 1.0, 1.0) * ground + vec3(0.7333, 0.8, 1.0) * sky;
 
 // Only top face has shade
-  if (vSide == 2.0) {
+  if (side == 2.0) {
     gl_FragColor = gl_FragColor * (1.0 - (vShade / 255.0));
   }
 

@@ -23,9 +23,7 @@ function CuboidTool(context) {
 
       heightPos = pos.clone();
 
-      var size = endPos.clone().sub(startPos);
-
-      scaleCube(cube, startPos, size);
+      scaleCube(cube, startPos, endPos);
 
       state = 'select-height';
 
@@ -47,15 +45,11 @@ function CuboidTool(context) {
   }
 
   function onMouseMove(mouse, pos) {
-    var size;
-
     if (state === 'select-end') {
       endPos = pos.clone();
       endPos.y = startPos.y;
 
-      size = endPos.clone().sub(startPos);
-
-      scaleCube(cube, startPos, size);
+      scaleCube(cube, startPos, endPos);
 
     } else if (state === 'select-height') {
       var currentMouseHeight = context.getPositionOfMouseAlongXZPlane(endPos.x, endPos.z).y;
@@ -64,9 +58,7 @@ function CuboidTool(context) {
 
       heightPos.y = endPos.y + relMouseHeight;
 
-      size = heightPos.clone().sub(startPos);
-
-      scaleCube(cube, startPos, size);
+      scaleCube(cube, startPos, heightPos);
     }
   }
 
@@ -80,7 +72,7 @@ function CuboidTool(context) {
     var cube = new THREE.Mesh(geometry, material);
 
     cube.position.x = pos.x + 0.5;
-    cube.position.y = pos.y + 0.55;
+    cube.position.y = pos.y + 0.5;
     cube.position.z = pos.z + 0.5;
 
     cube.rotation.x = Math.PI / 2;
@@ -94,7 +86,30 @@ function CuboidTool(context) {
     return cube;
   }
 
-  function scaleCube(cube, pos, size) {
+  function scaleCube(cube, fromPos, toPos) {
+    fromPos = fromPos.clone();
+    toPos = toPos.clone();
+
+    if (fromPos.x > toPos.x) {
+      var x = fromPos.x;
+      fromPos.x = toPos.x;
+      toPos.x = x;
+    }
+
+    if (fromPos.y > toPos.y) {
+      var y = fromPos.y;
+      fromPos.y = toPos.y;
+      toPos.y = y;
+    }
+
+    if (fromPos.z > toPos.z) {
+      var z = fromPos.z;
+      fromPos.z = toPos.z;
+      toPos.z = z;
+    }
+
+    var size = toPos.clone().sub(fromPos);
+
     size = size.clone();
 
     //console.log('size', size);
@@ -103,12 +118,12 @@ function CuboidTool(context) {
     size.y += size.y >= 0 ? 1 : -1;
     size.z += size.z >= 0 ? 1 : -1;
 
-    cube.position.x = pos.x + size.x / 2;
-    cube.position.y = pos.y + size.y / 2;
-    cube.position.z = pos.z + size.z / 2;
+    cube.position.x = fromPos.x + size.x / 2;
+    cube.position.y = fromPos.y + size.y / 2;
+    cube.position.z = fromPos.z + size.z / 2;
 
     cube.scale.x = size.x;
-    cube.scale.z = size.y;
+    cube.scale.z = size.y + 0.1;
     cube.scale.y = size.z;
   }
 

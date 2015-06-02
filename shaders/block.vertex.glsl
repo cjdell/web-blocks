@@ -28,7 +28,7 @@ void main() {
     vPos = (modelMatrix * vec4(newPosition, 1.0)).xyz;
 
     vType = floor(mod(vData, 256.0));
-    vSide = floor(mod(vData / 256.0, 256.0));
+    vSide = floor(mod(vData / 256.0, 256.0)) + 0.1; // Precision hack, gets floored by fragment shader
     vShade = floor(vData / 65536.0);
 
     if (vType == 3.0) {
