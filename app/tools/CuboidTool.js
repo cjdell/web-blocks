@@ -68,7 +68,7 @@ function CuboidTool(context) {
 
   function addCube(pos) {
     var geometry = new THREE.CubeGeometry(1, 1, 1);
-    var material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    var material = new THREE.MeshLambertMaterial({ color: 0xffff00, side: THREE.DoubleSide });
     var cube = new THREE.Mesh(geometry, material);
 
     cube.position.x = pos.x + 0.5;

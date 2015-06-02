@@ -171,7 +171,7 @@ function Game() {
 
     frame += 1;
 
-    if (frame % 25 === 0) {
+    if (frame % 10 === 0) {
       var changes = culling.getNewlyVisiblePartitions();
 
       worldViewer.exposeNewPartitions(changes);
