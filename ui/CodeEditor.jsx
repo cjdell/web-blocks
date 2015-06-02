@@ -20,16 +20,41 @@ Object.defineProperty(scriptContext, 'help', {
 
 var introMessage = 'Hello there, here you can write JavaScript! For more info type: help';
 
+var lineBack = 0;
+
 var CodeEditor = React.createClass({
   getInitialState: function() {
-    return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }], scriptName: 'Scratch Pad' };
+    return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }], commands: [], scriptName: 'Scratch Pad' };
   },
   processCmd: function(e) {
+    var consoleTextarea = this.refs.code.getDOMNode();
+
+    if (e.which === 38) {
+      if (this.state.commands.length - lineBack > 0) {
+        lineBack++;
+
+        var lastCmd = this.state.commands[this.state.commands.length - lineBack];
+        consoleTextarea.value = lastCmd;
+      }
+
+      e.preventDefault();
+    }
+
     if (e.which === 13) {
-      var cmd = this.refs.code.getDOMNode().value;
-      this.refs.code.getDOMNode().value = '';
+      var cmd = consoleTextarea.value;
+      consoleTextarea.value = '';
+
+      // Take the CR off the end
+      if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) cmd = cmd.substring(0, cmd.length - 1);
+      if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) cmd = cmd.substring(0, cmd.length - 1);
+
+      this.state.commands.push(cmd);
+      lineBack = 0;
+
       this.addLine(cmd, 'command');
       this.runCmd(cmd);
+
+      e.preventDefault();
     }
   },
   addLine: function(line, type) {

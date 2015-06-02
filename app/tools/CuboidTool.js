@@ -122,9 +122,9 @@ function CuboidTool(context) {
     cube.position.y = fromPos.y + size.y / 2;
     cube.position.z = fromPos.z + size.z / 2;
 
-    cube.scale.x = size.x;
+    cube.scale.x = size.x + 0.1;
     cube.scale.z = size.y + 0.1;
-    cube.scale.y = size.z;
+    cube.scale.y = size.z + 0.1;
   }
 
   function removeCube(cube) {
