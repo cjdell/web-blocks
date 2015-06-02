@@ -10,7 +10,7 @@ var buffer = require('vinyl-buffer');
 var reactify = require('reactify');
 
 var config = {
-  external: ['underscore'],
+  external: ['underscore', 'whatwg-fetch'],
   watch: false,
   sourceMaps: true
 };

@@ -1,28 +1,28 @@
 var _ = require('underscore');
 
 function ScriptStorage() {
-  var scripts = [];
+  var scripts = null;
+
+  load();
 
   function load() {
+    var loaded = [];
+
     if (window.localStorage.scripts) {
-      scripts = JSON.parse(window.localStorage.scripts);
+      loaded = JSON.parse(window.localStorage.scripts);
     }
 
-    scripts = scripts.concat(samples);
+    loaded = loaded.concat(samples);
+
+    scripts = _.sortBy(loaded, 'modified');
   }
 
   function save() {
-    sort();
-
     var scriptsToSave = _.filter(scripts, function(s) {
       return !s.sample;
     });
 
     window.localStorage.scripts = JSON.stringify(scriptsToSave);
-  }
-
-  function sort() {
-    scripts = _.sortBy(scripts, 'modified');
   }
 
   function getScriptNames() {
@@ -59,7 +59,7 @@ function ScriptStorage() {
       return;
     }
 
-    scripts.push({
+    scripts.unshift({
       name: name,
       sample: false,
       modified: new Date(),

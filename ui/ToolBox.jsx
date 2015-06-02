@@ -6,8 +6,6 @@ var CodeEditor = require('./CodeEditor.jsx');
 
 var scriptStorage = new ScriptStorage();
 
-scriptStorage.load();
-
 var ToolBox = React.createClass({
   getInitialState: function() {
     return {
@@ -24,7 +22,7 @@ var ToolBox = React.createClass({
     this.setState({ codeEditorVisible: !this.state.codeEditorVisible });
   },
   componentDidMount: function() {
-    document.addEventListener('keyup', function() {
+    document.addEventListener('keyup', function(event) {
       // Toggle code editor on escape key
       if (event.keyCode === 27) this.toggleCodeEditor();
     }.bind(this), false);

@@ -20,6 +20,9 @@ function Game() {
   var frame = 0;
   var log = false;
 
+  var vertexShader = null;
+  var fragmentShader = null;
+
   function init(platform) {
     workerInterface = new WorkerInterface();
 
@@ -37,8 +40,10 @@ function Game() {
 
     blockTypeList = new BlockTypeList();
 
-    return workerInterface.init()
-    .then(function(worldInfo) {
+    return Promise.all([workerInterface.init(), loadShaders()])
+    .then(function(res) {
+      var worldInfo = res[0];
+
       uniforms = {};
 
       uniforms.grass = { type: 'tv', value: null };
@@ -57,8 +62,8 @@ function Game() {
       var blockMaterial = new THREE.ShaderMaterial({
         attributes: attributes,
         uniforms: uniforms,
-        vertexShader: document.getElementById('vertexShader').textContent,
-        fragmentShader: document.getElementById('fragmentShader').textContent,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
         vertexColors: THREE.VertexColors,
         transparent: false,
         lights: true,
@@ -183,6 +188,20 @@ function Game() {
 
   function setBlockType(blockTypeIndex) {
     return interaction.setType(blockTypeIndex);
+  }
+
+  function loadShaders() {
+    return Promise.all([
+      self.fetch('shaders/block.vertex.glsl'),
+      self.fetch('shaders/block.fragment.glsl')
+    ])
+    .then(function(res) {
+      return Promise.all([res[0].text(), res[1].text()]);
+    })
+    .then(function(data) {
+      vertexShader = data[0];
+      fragmentShader = data[1];
+    });
   }
 
   return {
