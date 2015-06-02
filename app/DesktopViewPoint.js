@@ -11,6 +11,21 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
 
   var mouse = new THREE.Vector2();
 
+  window.addEventListener('resize', _.debounce(onWindowResize, 500), false);
+
+  function onWindowResize() {
+    var width = viewPort.clientWidth, height = viewPort.clientHeight;
+
+    console.log('onWindowResize', width, height);
+
+    if (renderer) {
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(width, height);
+    }
+  }
+
   function keyDown(event) {
     if (window.blockMovement) return;
 
