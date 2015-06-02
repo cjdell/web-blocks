@@ -55,7 +55,10 @@ var ToolBox = React.createClass({
         <li onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
       </ul>
       <ul>{lis}</ul>
-      <div className="author">Created by: <a href="https://twitter.com/cjdell" target="_blank">@cjdell</a></div>
+      <div className="author">
+        <div>Created by: <a href="https://twitter.com/cjdell" target="_blank">@cjdell</a></div>
+        <div><a href="https://github.com/cjdell/web-blocks" target="_blank">GitHub</a></div>
+      </div>
     </div>
     );
   }
