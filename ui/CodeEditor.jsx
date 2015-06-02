@@ -14,7 +14,7 @@ Object.defineProperty(scriptContext, 'hi', {
 
 Object.defineProperty(scriptContext, 'help', {
   get: function() {
-    return ['Here\'s a command you try: setBlocks(x1,y1,z1,x2,y2,z2,type)', 'See the "Script" tab for sample commands'].join('\n');
+    return ['Here you can type JavaScript commands, try typing 1+1', 'To see some awesome commands, click the "Script" tab and load a sample program! :-)'].join('\n');
   }
 });
 

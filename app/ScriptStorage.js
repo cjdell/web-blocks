@@ -36,7 +36,7 @@ function ScriptStorage() {
 
     if (matches.length > 0) return matches[0].code;
 
-    if (name === 'Scratch Pad') return '// Type your JavaScript here or select a sample by clicking "Load"\n';
+    if (name === 'Scratch Pad') return '// Type your code here or select a sample script by clicking the "Load" button below\n';
 
     return '';
   }

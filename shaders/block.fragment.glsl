@@ -62,18 +62,14 @@ void main() {
 
   float shine = 0.0;
 
+  // Make water somewhat wavey
   if (type == 3.0) {
-    shine = sin(vPos.x + time * 0.5) * sin(vPos.z + time * 0.3) * 0.1;
+    shine = sin(vPos.x + time * 0.5) * sin(vPos.z + time * 0.3) * 0.05;
   }
 
   float fog = min(1.0, pow((gl_FragCoord.z / gl_FragCoord.w) / 96.0, 1.8));
 
-  //float sky = (vPos.y / 32.0);
-  //float ground = 1.0 - (vPos.y / 32.0);
-  //
-  //vec3 fogCol = vec3(1.0, 1.0, 1.0) * ground + vec3(0.7333, 0.8, 1.0) * sky;
-
-// Only top face has shade
+  // Only top face has shade
   if (side == 2.0) {
     gl_FragColor = gl_FragColor * (1.0 - (vShade / 255.0));
   }
@@ -87,8 +83,4 @@ void main() {
   }*/
 
   gl_FragColor = gl_FragColor + vec4(1.0, 1.0, 1.0, 0.0) * shine;
-
-  //gl_FragColor = vec4(vPos, 1.0);
-
-  //gl_FragColor.r = sin(vAbsPos.x);
 }
