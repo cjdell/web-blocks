@@ -79,4 +79,4 @@ var checkForChangedPartitions = _.debounce(function() {
     action: 'update',
     changes: dirty
   });
-}, 250);
+}, 20);

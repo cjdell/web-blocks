@@ -40,7 +40,8 @@ var ToolBox = React.createClass({
         return (
         <li key={index}
             onClick={this.blockTypeClick.bind(this, index)}
-            className={index === this.state.blockTypeIndex ? 'selected' : ''}>
+            className={index === this.state.blockTypeIndex ? 'selected' : ''}
+            style={{ 'background-image': "url('" + blockType.textures.side + "')" }}>
           {blockType.name}
         </li>
         );
@@ -49,7 +50,7 @@ var ToolBox = React.createClass({
 
     return (
     <div className="toolBox">
-      <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} scriptStorage={scriptStorage} />
+      <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
       <ul>
         <li onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
       </ul>
