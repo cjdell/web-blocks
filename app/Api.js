@@ -1,8 +1,10 @@
 function Api(workerInterface, viewPoint) {
   var help = [
     'Here you can type JavaScript commands!',
-    'Not sure what do type? Try this:',
+    'Not sure what do type? Here\'s some you can try:',
+    '  setPosition(100,12,110)',
     '  setBlock(100,10,100,1)',
+    '  setBlocks(100,10,100,100,20,100,1)',
     'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
   ].join('\n');
 

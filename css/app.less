@@ -93,14 +93,17 @@ body {
       height: 40px;
       line-height: 40px;
       text-align: center;
-      background: rgba(255,255,255,0.5);
-      color: #000;
+      background: rgba(127,127,127,0.5);
       border-radius: 4px 4px 0 0;
+      border: solid 2px #777;
+      border-bottom: none;
       margin-right: 8px;
 
       a {
         cursor: pointer;
         display: block;
+        color: #fff;
+        text-shadow: 1px 1px 1px #000;
       }
     }
   }
@@ -129,6 +132,7 @@ body {
 
         li {
           white-space: pre;
+          text-shadow: 1px 1px 1px #000;
 
           &.intro { color: #ffff00; }
           &.command { color: #cccccc; }
@@ -148,6 +152,7 @@ body {
         line-height: 30px;
         margin: 0;
         padding: 0;
+        text-shadow: 1px 1px 1px #000;
       }
 
       textarea {
@@ -160,20 +165,21 @@ body {
         display: -webkit-flex;
         display: flex;
         padding: 4px;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.5);
         border-radius: 4px;
 
         button {
           -webkit-flex: 1;
           flex: 1;
           height: 40px;
-          background: rgba(255, 255, 255, 0.5);
+          background: rgba(0, 0, 0, 0.5);
           color: #fff;
           border: none;
           font-size: 20px;
           cursor: pointer;
           border-radius: 4px;
           margin: 4px;
+          text-shadow: 1px 1px 1px #000;
         }
       }
     }
@@ -194,6 +200,7 @@ body {
       padding: 0;
       width: 100%;
       resize: none;
+      text-shadow: 1px 1px 1px #000;
     }
   }
 
