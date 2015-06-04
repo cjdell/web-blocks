@@ -3,6 +3,7 @@ var BlockTypeList = require('./BlockTypeList');
 var Interaction = require('./Interaction');
 var WorldViewer = require('./WorldViewer');
 var WorkerInterface = require('./WorkerInterface');
+var Api = require('./Api');
 
 function Game() {
   var workerInterface = null;
@@ -38,6 +39,9 @@ function Game() {
     scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
 
     blockTypeList = new BlockTypeList();
+
+    // Expose API as global for console access
+    self.api = new Api(workerInterface);
 
     return Promise.all([workerInterface.init(), loadShaders()])
     .then(function(res) {

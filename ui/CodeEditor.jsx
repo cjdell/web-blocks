@@ -2,22 +2,6 @@ var React = require('react');
 
 var ScriptPicker = require('./ScriptPicker.jsx');
 
-//setBlocks(0,10,0,100,10,100,1)
-
-var scriptContext = {};
-
-Object.defineProperty(scriptContext, 'hi', {
-  get: function() {
-    return 'Hi there!';
-  }
-});
-
-Object.defineProperty(scriptContext, 'help', {
-  get: function() {
-    return ['Here you can type JavaScript commands, try typing 1+1', 'To see some awesome commands, click the "Script" tab and load a sample program! :-)'].join('\n');
-  }
-});
-
 var introMessage = 'Hello there, here you can write JavaScript! For more info type: help';
 
 var lineBack = 0;
@@ -67,7 +51,7 @@ var CodeEditor = React.createClass({
 
     try {
       var func = new Function('with (arguments[0]) { return ' + cmd + '; }');
-      var res = func(scriptContext);
+      var res = func(window.api);
       if (res) this.addLine(res.toString(), 'answer');
     } catch (err) {
       this.addLine(err.toString(), 'error');
@@ -82,7 +66,7 @@ var CodeEditor = React.createClass({
     try {
       var scriptCode = scriptTextarea.value;
       var func = new Function('with (arguments[0]) { ' + scriptCode + '; }');
-      func(scriptContext);
+      func(window.api);
     } catch (err) {
       alert(err);
       console.error('parse error', err);

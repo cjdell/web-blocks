@@ -96,21 +96,6 @@ function WorkerInterface() {
     changeListener = listener;
   }
 
-  function exposeWindowMethods() {
-    self.getBlock = function(x, y, z) {
-      return getBlock(new THREE.Vector3(x, y, z))
-      .then(function(result) {
-        return result.type;
-      });
-    };
-
-    self.setBlocks = function(x1, y1, z1, x2, y2, z2, type) {
-      setBlocks(new THREE.Vector3(x1, y1, z1), new THREE.Vector3(x2, y2, z2), type, true);
-    };
-  }
-
-  exposeWindowMethods();
-
   return {
     init: init,
     getBlock: getBlock,
@@ -122,4 +107,3 @@ function WorkerInterface() {
 }
 
 module.exports = WorkerInterface;
-
