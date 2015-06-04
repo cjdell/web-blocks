@@ -56,6 +56,8 @@ function ScriptStorage() {
       match.code = code;
       match.modified = new Date();
 
+      save();
+
       return;
     }
 
@@ -124,4 +126,16 @@ var samples = [{
     '  }',
     '}'
   ].join('\n')
+}, {
+  name: 'Trail',
+  sample: true,
+  modified: new Date(2015, 5, 4),
+  code: [
+    'setInterval(function() {',
+    '  var pos = getPosition();',
+    '  setBlock(pos.x,pos.y,pos.z,1);',
+    '},200);'
+  ].join('\n')
 }];
+
+

@@ -6,23 +6,14 @@ var introMessage = 'Hello there, here you can write JavaScript! For more info ty
 
 var lineBack = 0;
 
+var codeRunner = new CodeRunner();
+
 var CodeEditor = React.createClass({
   getInitialState: function() {
     return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }], commands: [], scriptName: 'Scratch Pad' };
   },
-  processCmd: function(e) {
+  keyPress: function(e) {
     var consoleTextarea = this.refs.code.getDOMNode();
-
-    if (e.which === 38) {
-      if (this.state.commands.length - lineBack > 0) {
-        lineBack++;
-
-        var lastCmd = this.state.commands[this.state.commands.length - lineBack];
-        consoleTextarea.value = lastCmd;
-      }
-
-      e.preventDefault();
-    }
 
     if (e.which === 13) {
       var cmd = consoleTextarea.value;
@@ -33,10 +24,29 @@ var CodeEditor = React.createClass({
       if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) cmd = cmd.substring(0, cmd.length - 1);
 
       this.state.commands.push(cmd);
+
       lineBack = 0;
 
       this.addLine(cmd, 'command');
       this.runCmd(cmd);
+
+      e.preventDefault();
+    }
+  },
+  keyUp: function(e) {
+    var consoleTextarea = this.refs.code.getDOMNode();
+
+    if (e.which === 38 || e.which === 40) {
+      if (e.which === 38) dir = 1;
+      if (e.which === 40) dir = -1;
+
+      var newLineBack = lineBack + dir;
+
+      if (this.state.commands.length - newLineBack >= 0 && newLineBack > 0) {
+        consoleTextarea.value = this.state.commands[this.state.commands.length - newLineBack];
+
+        lineBack = newLineBack;
+      }
 
       e.preventDefault();
     }
@@ -49,28 +59,23 @@ var CodeEditor = React.createClass({
   runCmd: function(cmd) {
     var that = this;
 
-    try {
-      var func = new Function('with (arguments[0]) { return ' + cmd + '; }');
-      var res = func(window.api);
-      if (res) this.addLine(res.toString(), 'answer');
-    } catch (err) {
-      this.addLine(err.toString(), 'error');
-      console.error('parse error', err);
+    var res = codeRunner.run(cmd, true);
+
+    if (res instanceof Promise) {
+      return res.then(function(res) {
+        that.addLine(res, 'answer');
+      });
     }
+
+    this.addLine(res, 'answer');
   },
   runClicked: function() {
     var scriptTextarea = this.refs.script.getDOMNode();
+    var scriptCode = scriptTextarea.value;
 
-    this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
+    this.props.scriptStorage.putScript(this.state.scriptName, scriptCode);
 
-    try {
-      var scriptCode = scriptTextarea.value;
-      var func = new Function('with (arguments[0]) { ' + scriptCode + '; }');
-      func(window.api);
-    } catch (err) {
-      alert(err);
-      console.error('parse error', err);
-    }
+    codeRunner.run(scriptCode, false);
   },
   loadClicked: function() {
     this.setState({ scriptPickerVisible: true });
@@ -128,7 +133,7 @@ var CodeEditor = React.createClass({
       <div className={'codeView console ' + (this.state.mode === 'console' ? 'show' : 'hide')}>
         <ul ref="lines" onClick={this.linesClick}>
           {items}
-          <li><textarea ref="code" onKeyUp={this.processCmd}></textarea></li>
+          <li><textarea ref="code" onKeyPress={this.keyPress} onKeyUp={this.keyUp}></textarea></li>
         </ul>
       </div>
       <div className={'codeView script ' + (this.state.mode === 'script' ? 'show' : 'hide')}>
@@ -151,5 +156,37 @@ var CodeEditor = React.createClass({
   }
 });
 
+function CodeRunner() {
+  function run(code, expr) {
+    var toRun;
+
+    if (expr) {
+      toRun = 'with (arguments[0]) { return (' + code + '); }';
+    } else {
+      toRun = 'with (arguments[0]) { ' + code + '; }';
+    }
+
+    try {
+      var func = new Function(toRun);
+
+      var res = func(window.api);
+
+      if (typeof res !== 'undefined') {
+        if (res instanceof Promise) return res;
+
+        if (typeof res === 'object') return JSON.stringify(res);
+
+        return res.toString();
+      }
+    } catch (err) {
+      alert(err);
+      console.error('parse error', err);
+    }
+  }
+
+  return {
+    run: run
+  };
+}
 
 module.exports = CodeEditor;

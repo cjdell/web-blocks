@@ -23,7 +23,7 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
   }
 
   function addPartition(partitionIndex) {
-    console.time('addPartition' + partitionIndex);
+    //console.time('addPartition' + partitionIndex);
 
     var partitionCache = partitionCaches[partitionIndex];
 
@@ -33,7 +33,7 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
   }
 
   function updatePartition(partitionIndex) {
-    console.time('updatePartition' + partitionIndex);
+    //console.time('updatePartition' + partitionIndex);
 
     workerInterface.getPartition(partitionIndex).then(gotPartition);
   }
@@ -47,7 +47,7 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
 
     var toUpdate = _.intersection(changeIndices, visibleIndices);
 
-    console.log('toUpdate', toUpdate);
+    //console.log('toUpdate', toUpdate);
 
     toUpdate.forEach(function(index) {
       updatePartition(index);
@@ -97,8 +97,8 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
 
     scene.add(partitionCache.mesh);
 
-    console.timeEnd('addPartition' + partitionIndex);
-    console.timeEnd('updatePartition' + partitionIndex);
+    //console.timeEnd('addPartition' + partitionIndex);
+    //console.timeEnd('updatePartition' + partitionIndex);
   }
 
   function removePartition(partitionIndex) {
@@ -111,7 +111,7 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
 
   function exposeNewPartitions(changes) {
     changes.toBeAdded.forEach(function(partitionIndex) {
-      console.log('toBeAdded', partitionIndex);
+      //console.log('toBeAdded', partitionIndex);
       addPartition(partitionIndex);
     });
 

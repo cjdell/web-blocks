@@ -79,7 +79,7 @@ self.onmessage = function(e) {
 var checkForChangedPartitions = _.debounce(function() {
   var dirty = world.getDirtyPartitions();
 
-  console.log('checkForChangedPartitions', dirty.length, dirty);
+  //console.log('checkForChangedPartitions', dirty.length, dirty);
 
   self.postMessage({
     action: 'update',

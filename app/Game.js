@@ -41,9 +41,6 @@ function Game() {
 
     blockTypeList = new BlockTypeList();
 
-    // Expose API as global for console access
-    api = self.api = new Api(workerInterface);
-
     return Promise.all([workerInterface.init(), loadShaders()])
     .then(function(res) {
       var worldInfo = res[0];
@@ -95,6 +92,9 @@ function Game() {
       culling = new Culling(camera, worldInfo);
 
       interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo);
+
+      // Expose API as global for console access
+      api = self.api = new Api(workerInterface, viewPoint);
 
       render(); // Kick off the render loop
     });

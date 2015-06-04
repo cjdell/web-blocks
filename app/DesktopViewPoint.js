@@ -62,36 +62,36 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
     if (event.keyCode === 39) turn.x = 0;       // Right Arrow (Turn Right)
   }
 
-  var down = false, mouseDownX = 0, mouseDownY = 0, mouseX = 0, mouseY = 0;
-
-  function mouseDown(event) {
-    down = true;
-    mouseDownX = event.clientX;
-    mouseDownY = event.clientY;
-    mouseX = 0;
-    mouseY = 0;
-  }
-
-  function mouseMove(event) {
-    mouseX = event.clientX - mouseDownX;
-    mouseY = event.clientY - mouseDownY;
-
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
-  }
-
-  function mouseUp(event) {
-    down = false;
-
-    //lookMode = !lookMode;
-  }
+  //var down = false, mouseDownX = 0, mouseDownY = 0, mouseX = 0, mouseY = 0;
+  //
+  //function mouseDown(event) {
+  //  down = true;
+  //  mouseDownX = event.clientX;
+  //  mouseDownY = event.clientY;
+  //  mouseX = 0;
+  //  mouseY = 0;
+  //}
+  //
+  //function mouseMove(event) {
+  //  mouseX = event.clientX - mouseDownX;
+  //  mouseY = event.clientY - mouseDownY;
+  //
+  //  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+  //  mouse.y = -( event.clientY / window.innerHeight ) * 2 + 1;
+  //}
+  //
+  //function mouseUp(event) {
+  //  down = false;
+  //
+  //  //lookMode = !lookMode;
+  //}
 
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
 
-  document.addEventListener('mousedown', mouseDown, false);
-  document.addEventListener('mousemove', mouseMove, false);
-  document.addEventListener('mouseup', mouseUp, false);
+  //document.addEventListener('mousedown', mouseDown, false);
+  //document.addEventListener('mousemove', mouseMove, false);
+  //document.addEventListener('mouseup', mouseUp, false);
 
   var lon = 270, lat = -20;
 
@@ -100,6 +100,8 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var lastFrame = Date.now();
 
   function tick() {
+    //if (!movement.x && !movement.y && !movement.z && !turn.x && !turn.y) return;
+
     //camera.position.x += speed * (movement.x / 60);
     //camera.position.y += speed * (movement.y / 60);
     //camera.position.z += speed * (movement.z / 60);
@@ -140,11 +142,13 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
     var yy = 100 * Math.cos(phi) + camera.position.y;
     var zz = 100 * Math.sin(phi) * Math.sin(theta) + camera.position.z;
 
-    camera.lookAt(new THREE.Vector3(xx, yy, zz));
+    var target = new THREE.Vector3(xx, yy, zz);
+
+    camera.lookAt(target);
 
     // Move the light
 
-    light.position.set(camera.position.x, camera.position.y,  camera.position.z);
+    light.position.set(camera.position.x, camera.position.y, camera.position.z);
 
     restrain(camera);
   }
@@ -159,8 +163,29 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
     camera.position.z = Math.min(camera.position.z, worldInfo.blockDimensions.z);
   }
 
+  function getPosition() {
+    return camera.position;
+  }
+
+  function setPosition(pos) {
+    camera.position.set(pos.x, pos.y, pos.z);
+  }
+
+  function getTarget() {
+    return { lon: lon, lat: lat };
+  }
+
+  function setTarget(target) {
+    lon = target.lon;
+    lat = target.lat;
+  }
+
   return {
-    tick: tick
+    tick: tick,
+    getPosition: getPosition,
+    setPosition: setPosition,
+    getTarget: getTarget,
+    setTarget: setTarget
   };
 }
 
