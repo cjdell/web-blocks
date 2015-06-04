@@ -16,6 +16,7 @@ function Game() {
   var viewPoint = null;
   var culling = null;
   var interaction = null;
+  var api = null;
 
   var uniforms = null;
   var frame = 0;
@@ -41,7 +42,7 @@ function Game() {
     blockTypeList = new BlockTypeList();
 
     // Expose API as global for console access
-    self.api = new Api(workerInterface);
+    api = self.api = new Api(workerInterface);
 
     return Promise.all([workerInterface.init(), loadShaders()])
     .then(function(res) {
@@ -141,10 +142,15 @@ function Game() {
     });
   }
 
+  function getApi() {
+
+  }
+
   return {
     init: init,
     getBlockTypes: getBlockTypes,
-    setBlockType: setBlockType
+    setBlockType: setBlockType,
+    getApi: getApi
   };
 }
 

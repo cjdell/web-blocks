@@ -1,44 +1,36 @@
 function WorkerInterface() {
   var geoWorker = new Worker('build/worker.js');
 
-  var initCallback = null;
-  var getBlockCallback = {};
-  var getPartitionCallback = {};
-
+  var callbacks = {};
   var changeListener = null;
+  var lastId = 0;
 
-  function init() {
+  function invoke(action, data) {
     return new Promise(function(resolve, reject) {
-      initCallback = function(data) {
-        return resolve(data);
+      if (typeof action !== 'string') return reject(new Error('Invalid action'));
+
+      var invocation = {
+        action: action,
+        id: lastId++,
+        data: data
       };
 
-      geoWorker.postMessage({
-        action: 'init'
-      });
+      callbacks[invocation.id] = resolve;
+
+      geoWorker.postMessage(invocation);
     });
+  }
+
+  function init() {
+    return invoke('init');
   }
 
   function getBlock(pos) {
-    return new Promise(function(resolve, reject) {
-      var key = pos.x + '-' + pos.y + '-' + pos.z;
-
-      getBlockCallback[key] = function(data) {
-        getBlockCallback[key] = null;
-        return resolve(data);
-      };
-
-      geoWorker.postMessage({
-        action: 'getBlock',
-        pos: pos
-      });
-    });
+    return invoke('getBlock', { pos: pos });
   }
 
   function setBlocks(start, end, type, update) {
-    //console.log('setBlocks', start, end, type, update);
-    geoWorker.postMessage({
-      action: 'setBlocks',
+    return invoke('setBlocks', {
       start: start,
       end: end,
       type: type,
@@ -56,35 +48,12 @@ function WorkerInterface() {
   }
 
   function getPartition(index) {
-    //console.log('getPartition', index);
-
-    return new Promise(function(resolve, reject) {
-      getPartitionCallback[index] = function(data) {
-        getPartitionCallback[index] = null;
-        return resolve(data);
-      };
-
-      geoWorker.postMessage({
-        action: 'getPartition',
-        index: index
-      });
-    });
+    return invoke('getPartition', { index: index });
   }
 
   geoWorker.onmessage = function(e) {
-    //console.log(e.data);
-
-    if (e.data.action === 'init') {
-      return initCallback(e.data);
-    }
-
-    if (e.data.action === 'getBlock') {
-      var key = e.data.pos.x + '-' + e.data.pos.y + '-' + e.data.pos.z;
-      return getBlockCallback[key] ? getBlockCallback[key](e.data) : null;
-    }
-
-    if (e.data.action === 'getPartition') {
-      return getPartitionCallback[e.data.index] ? getPartitionCallback[e.data.index](e.data) : null;
+    if (typeof e.data.id === 'number') {
+      return callbacks[e.data.id](e.data.data);
     }
 
     if (e.data.action === 'update') {
