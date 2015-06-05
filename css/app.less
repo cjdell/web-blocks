@@ -21,7 +21,20 @@ body {
 .viewPort {
   flex: 1;
   -webkit-flex: 1;
-  height: 100vh;
+  position: relative;
+
+  .helpBar {
+    height: 40px;
+    line-height: 40px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-left: 10px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+  }
 }
 
 .toolBox {
@@ -43,14 +56,23 @@ body {
       text-shadow: 1px 1px 1px #000;
       background-size: 100%;
       border: solid 2px #fff;
-    }
 
-    li:last-child {
-      margin-bottom: 0;
-    }
+      &.codeButton {
+        background: #9999ff;
 
-    li.selected {
-      border: solid 2px #000;
+        -webkit-animation-name: pulsate;
+        -webkit-animation-duration: 2s;
+        -webkit-animation-timing-function: ease-in-out;
+        -webkit-animation-iteration-count: infinite
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      &.selected {
+        border: solid 2px #000;
+      }
     }
   }
 
@@ -93,7 +115,7 @@ body {
       height: 40px;
       line-height: 40px;
       text-align: center;
-      background: rgba(127,127,127,0.5);
+      background: rgba(127, 127, 127, 0.5);
       border-radius: 4px 4px 0 0;
       border: solid 2px #777;
       border-bottom: none;
@@ -134,9 +156,15 @@ body {
           white-space: pre;
           text-shadow: 1px 1px 1px #000;
 
-          &.intro { color: #ffff00; }
-          &.command { color: #cccccc; }
-          &.answer { color: #ffffff; }
+          &.intro {
+            color: #ffff00;
+          }
+          &.command {
+            color: #cccccc;
+          }
+          &.answer {
+            color: #ffffff;
+          }
         }
       }
     }
@@ -232,8 +260,20 @@ body {
       cursor: pointer;
 
       &:hover {
-        background: rgba(255,255,255,0.5);
+        background: rgba(255, 255, 255, 0.5);
       }
     }
+  }
+}
+
+@-webkit-keyframes pulsate {
+  0% {
+    opacity: 0.7
+  }
+  50% {
+    opacity: 1.0
+  }
+  100% {
+    opacity: 0.7
   }
 }

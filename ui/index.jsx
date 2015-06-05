@@ -49,7 +49,9 @@ var ViewPort = React.createClass({
   },
   render: function() {
     return (
-    <div className="viewPort"></div>
+    <div className="viewPort">
+      <div className="helpBar">Keys: [W] = Forwards, [S] = Backwards, [A] = Move Left, [D] = Move Right, Arrow Keys = Look around, [ESCAPE] = Toggle Code Editor</div>
+    </div>
     );
   }
 });

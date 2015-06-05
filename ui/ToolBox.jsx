@@ -52,7 +52,7 @@ var ToolBox = React.createClass({
     <div className="toolBox">
       <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
       <ul>
-        <li onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
+        <li className="codeButton" onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
       </ul>
       <ul>{lis}</ul>
       <div className="author">
