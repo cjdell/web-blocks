@@ -8,9 +8,10 @@ var watchify = require('watchify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var reactify = require('reactify');
+var brfs = require('brfs');
 
 var config = {
-  external: ['underscore', 'whatwg-fetch'],
+  external: ['underscore', 'whatwg-fetch', 'buffer'],
   watch: false,
   sourceMaps: true
 };
@@ -75,6 +76,7 @@ function appBrowserify(src, dest) {
   if (config.watch) b = watchify(b);
 
   b.transform(reactify);
+  b.transform(brfs);
 
   // On any dep update, runs the bundler
   if (config.watch) b.on('update', bundle);

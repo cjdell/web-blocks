@@ -10,6 +10,8 @@ function Api(workerInterface, viewPoint) {
 
   var hi = 'Hi there!';
 
+  var intervalRefs = [];
+
   function setBlock(x, y, z, type) {
     workerInterface.setBlocks(new THREE.Vector3(x | 0, y | 0, z | 0), new THREE.Vector3(x | 0, y | 0, z | 0), type, true);
   }
@@ -41,6 +43,16 @@ function Api(workerInterface, viewPoint) {
     viewPoint.setTarget({ lon: lon, lat: lat });
   }
 
+  function setInterval(func, interval) {
+    var ref = self.setInterval(func, interval);
+    intervalRefs.push(ref);
+  }
+
+  function clearIntervals() {
+    intervalRefs.forEach(self.clearInterval);
+    intervalRefs = [];
+  }
+
   return {
     help: help,
     hi: hi,
@@ -50,7 +62,9 @@ function Api(workerInterface, viewPoint) {
     getPosition: getPosition,
     setPosition: setPosition,
     getTarget: getTarget,
-    setTarget: setTarget
+    setTarget: setTarget,
+    setInterval: setInterval,
+    clearIntervals: clearIntervals
   };
 }
 

@@ -14,6 +14,7 @@
     "whatwg-fetch": "^0.9.0"
   },
   "devDependencies": {
+    "brfs": "^1.4.0",
     "browserify": "^10.2.0",
     "esprima-fb": "^15001.1.0-dev-harmony-fb",
     "expect.js": "^0.3.1",

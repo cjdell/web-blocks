@@ -1,3 +1,4 @@
+var fs = require('fs');
 var _ = require('underscore');
 
 function ScriptStorage() {
@@ -46,11 +47,10 @@ function ScriptStorage() {
       return script.name === name;
     });
 
-    var overwriteSample = false;
-
     if (matches.length > 0) {
       var match = matches[0];
 
+      // Don't overwrite samples
       if (match.sample) return putScript(name + ' (modified)', code);
 
       match.code = code;
@@ -86,56 +86,32 @@ var samples = [{
   name: 'Cube',
   sample: true,
   modified: new Date(2015, 5, 1),
-  code: 'setBlocks(95,5,95,105,15,105,1);'
+  code: fs.readFileSync('./samples/Cube.js')
 }, {
   name: 'Pyramid',
   sample: true,
   modified: new Date(2015, 5, 1),
-  code: [
-    'for (var i = 0; i < 10; i++) {',
-    '  setBlocks(90 + i, 5 + i, 90 + i, 110 - i, 5 + i, 110 - i, 2);',
-    '}'
-  ].join('\n')
+  code: fs.readFileSync('./samples/Pyramid.js')
 }, {
   name: 'Circle',
   sample: true,
   modified: new Date(2015, 5, 1),
-  code: [
-    'for (var x = -20; x < 20; x++) {',
-    '  for (var z = -20; z < 20; z++) {',
-    '    if (Math.sqrt(x * x + z * z) < 19) {',
-    '      setBlocks(x + 100, 0, z + 100, x + 100, 10, z + 100, 1);',
-    '    }',
-    '  }',
-    '}'
-  ].join('\n')
+  code: fs.readFileSync('./samples/Circle.js')
 }, {
   name: 'Rings',
   sample: true,
   modified: new Date(2015, 5, 2),
-  code: [
-    'for (var x = 0; x < 60; x++) {',
-    '  for (var z = 0; z < 60; z++) {',
-    '    var r = Math.sqrt(Math.pow(x - 30, 2) + Math.pow(z - 30, 2));',
-    '    if (r <= 30 && r > 27) {',
-    '      setBlocks(x + 20, 0, z + 20, x + 20, 20, z + 20, 1);',
-    '    }',
-    '    if (r <= 24 && r > 21) {',
-    '      setBlocks(x + 20, 0, z + 20, x + 20, 20, z + 20, 2);',
-    '    }',
-    '  }',
-    '}'
-  ].join('\n')
+  code: fs.readFileSync('./samples/Rings.js')
 }, {
   name: 'Trail',
   sample: true,
   modified: new Date(2015, 5, 4),
-  code: [
-    'setInterval(function() {',
-    '  var pos = getPosition();',
-    '  setBlock(pos.x,pos.y,pos.z,1);',
-    '},200);'
-  ].join('\n')
+  code: fs.readFileSync('./samples/Trail.js')
+}, {
+  name: 'Dizzy',
+  sample: true,
+  modified: new Date(2015, 5, 7),
+  code: fs.readFileSync('./samples/Dizzy.js')
 }];
 
 

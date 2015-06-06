@@ -166,6 +166,8 @@ function CodeRunner() {
       toRun = 'with (arguments[0]) { ' + code + '; }';
     }
 
+    window.api.clearIntervals();
+
     try {
       var func = new Function(toRun);
 
