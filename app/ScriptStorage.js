@@ -112,6 +112,9 @@ var samples = [{
   sample: true,
   modified: new Date(2015, 5, 7),
   code: fs.readFileSync('./samples/Dizzy.js')
+}, {
+  name: 'House',
+  sample: true,
+  modified: new Date(2015, 5, 7),
+  code: fs.readFileSync('./samples/House.js')
 }];
-
-
