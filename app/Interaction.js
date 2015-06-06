@@ -1,6 +1,6 @@
 var CuboidTool = require('./tools/CuboidTool');
 
-function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
+function Interaction(viewPort, scene, camera, workerInterface, worldInfo, webcam) {
   var mouse = new THREE.Vector2(), down = false;
   var raycaster = new THREE.Raycaster();
 
@@ -145,6 +145,8 @@ function Interaction(viewPort, scene, camera, workerInterface, worldInfo) {
 
   function setType(_type) {
     type = _type;
+
+    if (type === 4) webcam.init();
   }
 
   return {

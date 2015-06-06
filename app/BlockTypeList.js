@@ -23,6 +23,12 @@ function BlockTypeList() {
       top: 'textures/water.png',
       side: 'textures/water.png'
     }
+  }, {
+    name: 'Webcam',
+    textures: {
+      top: null,
+      side: null
+    }
   }];
 
   function getImage(src) {
@@ -52,7 +58,7 @@ function BlockTypeList() {
     var ctx = canvas.getContext('2d');
 
     var blockTypePromises = blockTypes.map(function(blockType, index) {
-      if (index === 0) return null;
+      if (blockType.textures.top === null) return null;
 
       var top = getImage(blockType.textures.top);
       var side = getImage(blockType.textures.side);

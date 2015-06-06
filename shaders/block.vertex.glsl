@@ -46,6 +46,11 @@ void main() {
         vPos.y += sin(time / 3.0) / 4.0 - 0.5;
     }
 
+    if (type == 4.0) {
+        // Webcam uses original coords
+        vUv = uv;
+    }
+
     vSide = side + 0.1;
     vType = type + 0.1;
     vShade = shade + 0.1;

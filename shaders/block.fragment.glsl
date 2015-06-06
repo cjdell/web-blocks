@@ -1,6 +1,7 @@
 #define M_PI 3.1415926535897932384626433832795
 
 uniform sampler2D textures;
+uniform sampler2D webcam;
 
 uniform vec3 ambientLightColor;
 
@@ -34,7 +35,12 @@ void main() {
     isSide = 1.0;
   }
 
-  vec4 col = texture2D(textures, uv);
+  vec4 col;
+
+  if (type == 4.0)
+    col = texture2D(webcam, uv);
+  else
+    col = texture2D(textures, uv);
 
   // Pretty basic lambertian lighting...
   vec4 addedLights = vec4(0.0, 0.0, 0.0, 1.0);

@@ -4,6 +4,7 @@ var Interaction = require('./Interaction');
 var WorldViewer = require('./WorldViewer');
 var WorkerInterface = require('./WorkerInterface');
 var Api = require('./Api');
+var Webcam = require('./Webcam');
 
 function Game() {
   var workerInterface = null;
@@ -17,6 +18,7 @@ function Game() {
   var culling = null;
   var interaction = null;
   var api = null;
+  var webcam = null;
 
   var uniforms = null;
   var frame = 0;
@@ -48,6 +50,7 @@ function Game() {
       uniforms = {};
 
       uniforms.textures = { type: 't', value: null };
+      uniforms.webcam = { type: 't', value: null };
       uniforms.color = { type: 'f', value: 1.0 };
       uniforms.time = { type: 'f', value: 0.0 };
 
@@ -90,10 +93,18 @@ function Game() {
 
       culling = new Culling(camera, worldInfo);
 
-      interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo);
+      webcam = new Webcam(scene);
+
+      interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo, webcam);
 
       // Expose API as global for console access
       api = self.api = new Api(workerInterface, viewPoint);
+
+
+
+      //webcam.init();
+
+      blockMaterial.uniforms.webcam.value = webcam.getTexture();
 
       render(); // Kick off the render loop
     });
@@ -101,6 +112,8 @@ function Game() {
 
   function render() {
     requestAnimationFrame(render);
+
+    webcam.render();
 
     uniforms.time.value += 0.1;
 

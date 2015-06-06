@@ -34,7 +34,7 @@ function PartitionGeometry(partition) {
   }
 
   function consumeChanges() {
-    console.time('consumeChanges' + partition.index);
+    //console.time('consumeChanges' + partition.index);
 
     var changes = partition.getVisibleBlocks();
 
@@ -70,7 +70,7 @@ function PartitionGeometry(partition) {
       }
     }
 
-    console.timeEnd('consumeChanges' + partition.index);
+    //console.timeEnd('consumeChanges' + partition.index);
   }
 
   function getPositionFromIndex(index) {
