@@ -1,7 +1,6 @@
 #define M_PI 3.1415926535897932384626433832795
 
-uniform sampler2D grass[4];
-uniform sampler2D info;
+uniform sampler2D textures;
 
 uniform vec3 ambientLightColor;
 
@@ -15,7 +14,6 @@ varying vec3 vPos;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying vec3 vOffset;
-varying float vData;
 
 varying float vType;
 varying float vSide;
@@ -28,6 +26,7 @@ void main() {
 
   float type = floor(vType);
   float side = floor(vSide);
+  float shade = floor(vShade);
 
   float isSide = 0.0;
 
@@ -35,20 +34,7 @@ void main() {
     isSide = 1.0;
   }
 
-  // Number of textures per cube
-  float sideCount = 8.0;
-
-  // Number block types
-  float typeCount = 8.0;
-
-  uv.x = uv.x * (1.0 / sideCount) + isSide * (1.0 / sideCount);
-  uv.y = uv.y * (1.0 / typeCount) + type * (1.0 / typeCount);
-
-  //// Force stone texture only
-  //uv.x = uv.x / 8.0;
-  //uv.y = uv.y / 8.0 + (1.0 / 8.0);
-
-  vec4 col = texture2D(info, uv);
+  vec4 col = texture2D(textures, uv);
 
   // Pretty basic lambertian lighting...
   vec4 addedLights = vec4(0.0, 0.0, 0.0, 1.0);
@@ -71,7 +57,7 @@ void main() {
 
   // Only top face has shade
   if (side == 2.0) {
-    gl_FragColor = gl_FragColor * (1.0 - (vShade / 255.0));
+    gl_FragColor = gl_FragColor * (1.0 - (shade / 255.0));
   }
 
   gl_FragColor = gl_FragColor * (1.0 - fog) + vec4(fogColor, 0.0) * fog;

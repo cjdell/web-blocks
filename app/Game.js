@@ -47,8 +47,7 @@ function Game() {
 
       uniforms = {};
 
-      uniforms.grass = { type: 'tv', value: null };
-      uniforms.info = { type: 't', value: null };
+      uniforms.textures = { type: 't', value: null };
       uniforms.color = { type: 'f', value: 1.0 };
       uniforms.time = { type: 'f', value: 0.0 };
 
@@ -74,7 +73,7 @@ function Game() {
       //var blockMaterial = new THREE.MeshLambertMaterial({ color: 0xbbccff });
 
       blockTypeList.getBlockTexture().then(function(texture) {
-        blockMaterial.uniforms.info.value = texture;
+        blockMaterial.uniforms.textures.value = texture;
       });
 
       worldViewer = new WorldViewer(scene, worldInfo, blockMaterial, workerInterface);

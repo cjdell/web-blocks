@@ -72,12 +72,19 @@ function BlockTypeList() {
     });
   }
 
+  //function getBlockTextures() {
+  //  return blockTypes.map(function(blockType) {
+  //    return THREE.ImageUtils.loadTexture(blockType.textures.top);
+  //  });
+  //}
+
   function getBlockTypes() {
     return blockTypes;
   }
 
   return {
     getBlockTexture: getBlockTexture,
+    //getBlockTextures: getBlockTextures,
     getBlockTypes: getBlockTypes
   };
 }

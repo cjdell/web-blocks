@@ -1,14 +1,12 @@
 attribute vec3 offset;
 attribute float data;
 
-uniform sampler2D info;
 uniform float time;
 
 varying vec3 vPos;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying vec3 vOffset;
-varying float vData;
 
 varying float vType;
 varying float vSide;
@@ -16,9 +14,7 @@ varying float vShade;
 
 void main() {
   vNormal = normal;
-  vUv = uv;
   vOffset = offset;
-  vData = data;
 
   float on = 1.0;
 
@@ -27,15 +23,34 @@ void main() {
 
     vPos = (modelMatrix * vec4(newPosition, 1.0)).xyz;
 
-    vType = floor(mod(vData, 256.0)) + 0.1;         // Precision hack, gets floored by fragment shader
-    vSide = floor(mod(vData / 256.0, 256.0)) + 0.1;
-    vShade = floor(vData / 65536.0);
+    float type = floor(mod(data, 256.0));
+    float side = floor(mod(data / 256.0, 256.0));
+    float shade = floor(data / 65536.0);
 
-    if (vType >= 3.0 && vType < 3.9) {
+    // Number of textures per cube
+    float sideCount = 8.0;
+
+    // Number block types
+    float typeCount = 8.0;
+
+    float isSide = 0.0;
+
+    if (side == 0.0 || side == 1.0 || side == 4.0 || side == 5.0) {
+      isSide = 1.0;
+    }
+
+    vUv.x = uv.x * (1.0 / sideCount) + isSide * (1.0 / sideCount);
+    vUv.y = uv.y * (1.0 / typeCount) + type * (1.0 / typeCount);
+
+    if (type == 3.0) {
         vPos.y += sin(time / 3.0) / 4.0 - 0.5;
     }
 
-    /*if (vType == 1.0) {
+    vSide = side + 0.1;
+    vType = type + 0.1;
+    vShade = shade + 0.1;
+
+    /*if (type == 1.0) {
         //vPos.x += sin((vPos.y + vPos.x) / 4.0 + time / 3.0) * 20.0;
         vPos.x += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
         vPos.y += cos((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
