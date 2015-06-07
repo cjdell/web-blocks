@@ -27,7 +27,7 @@ function PartitionGeometry(partition) {
     bufferGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
     bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
     bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(vertexCount * 2), 2));
-    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(new Float32Array(vertexCount), 1));
+    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
     bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(new Float32Array(vertexCount), 1));
 
     //console.timeEnd('ensureBufferSize');

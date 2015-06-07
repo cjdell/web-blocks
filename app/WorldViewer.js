@@ -80,7 +80,7 @@ function WorldViewer(scene, worldInfo, shaderMaterial, workerInterface) {
     bufferGeometry.addAttribute('position', new THREE.BufferAttribute(geo.data.position, 3));
     bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(geo.data.normal, 3));
     bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(geo.data.uv, 2));
-    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(geo.data.data, 1));
+    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(geo.data.data, 3));
     bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(geo.data.offset, 1));
 
     bufferGeometry.computeBoundingSphere();

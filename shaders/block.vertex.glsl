@@ -1,5 +1,5 @@
 attribute vec3 offset;
-attribute float data;
+attribute vec3 data;
 
 uniform float time;
 
@@ -23,9 +23,9 @@ void main() {
 
     vPos = (modelMatrix * vec4(newPosition, 1.0)).xyz;
 
-    float type = floor(mod(data, 256.0));
-    float side = floor(mod(data / 256.0, 256.0));
-    float shade = floor(data / 65536.0);
+    float type = data.x;
+    float side = data.y;
+    float shade = data.z;
 
     // Number of textures per cube
     float sideCount = 8.0;
@@ -51,6 +51,7 @@ void main() {
         vUv = uv;
     }
 
+    // Rounding hack...
     vSide = side + 0.1;
     vType = type + 0.1;
     vShade = shade + 0.1;

@@ -58,7 +58,7 @@ function Game() {
       uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], uniforms]);
 
       var attributes = {
-        data: { type: 'f', value: null },
+        data: { type: 'v3', value: null },
         offset: { type: 'f', value: null }
       };
 
