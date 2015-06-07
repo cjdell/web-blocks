@@ -37,6 +37,8 @@ var ToolBox = React.createClass({
       var blockTypes = this.props.game.getBlockTypes();
 
       lis = blockTypes.map(function(blockType, index) {
+        if (blockType.hideFromToolbox) return;
+
         return (
         <li key={index}
             onClick={this.blockTypeClick.bind(this, index)}

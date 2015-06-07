@@ -19,6 +19,7 @@ varying vec3 vOffset;
 varying float vType;
 varying float vSide;
 varying float vShade;
+varying vec3 vColour;
 
 uniform vec3 fogColor;
 
@@ -41,6 +42,10 @@ void main() {
     col = texture2D(webcam, uv);
   else
     col = texture2D(textures, uv);
+
+  if (type == 5.0) {
+    col = normalize(col + vec4(vColour, 0.0));
+  }
 
   // Pretty basic lambertian lighting...
   vec4 addedLights = vec4(0.0, 0.0, 0.0, 1.0);

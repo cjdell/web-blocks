@@ -29,6 +29,13 @@ function BlockTypeList() {
       top: null,
       side: null
     }
+  }, {
+    name: 'Colour',
+    hideFromToolbox: true,
+    textures: {
+      top: 'textures/stone.png',
+      side: 'textures/stone.png'
+    }
   }];
 
   function getImage(src) {
