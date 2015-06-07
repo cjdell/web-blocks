@@ -1,8 +1,6 @@
 var Cube = require('./Cube');
 
 function PartitionGeometry(partition) {
-  //console.log('NEW PartitionGeometry');
-
   var FACE_PER_CUBE = 6;
   var VERTICES_PER_FACE = 6;
   var VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
@@ -22,20 +20,14 @@ function PartitionGeometry(partition) {
 
     var vertexCount = cubeCapacity * VERTICES_PER_CUBE;
 
-    //console.time('ensureBufferSize');
-
     bufferGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
     bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
     bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(vertexCount * 2), 2));
-    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
+    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(new Float32Array(vertexCount * 4), 4));
     bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(new Float32Array(vertexCount), 1));
-
-    //console.timeEnd('ensureBufferSize');
   }
 
   function consumeChanges() {
-    //console.time('consumeChanges' + partition.index);
-
     var changes = partition.getVisibleBlocks();
 
     ensureBufferSize(changes.maxId + 1);
@@ -45,32 +37,31 @@ function PartitionGeometry(partition) {
     var blocks = changes.blocks;
 
     for (var i = 0; i <= changes.maxId; i++) {
-      var o = i * 5;
+      var o = i * 6;
 
-      var cId = blocks[o + 0];
-      var cIndex = blocks[o + 1];
-      var cIndexInWorld = blocks[o + 2];
-      var cType = blocks[o + 3];
-      var cShade = blocks[o + 4];
+      var id = blocks[o + 0];
+      var index = blocks[o + 1];
+      var indexInWorld = blocks[o + 2];
+      var type = blocks[o + 3];
+      var shade = blocks[o + 4];
+      var colour = blocks[o + 5];
 
-      var position = getPositionFromIndex(cIndex);
+      var position = getPositionFromIndex(index);
 
       var x = position.x, y = position.y, z = position.z;
 
-      var cube = new Cube(bufferGeometry, cId);
+      var cube = new Cube(bufferGeometry, id);
 
       cube.init();
 
-      if (cType !== 0) {
+      if (type !== 0) {
         cube.translate(x - dimX / 2, y - dimY / 2, z - dimZ / 2);
-        cube.setOffset(cIndexInWorld);
-        cube.setData(cType, cShade);
+        cube.setOffset(indexInWorld);
+        cube.setData(type, shade, colour);
       } else {
         cube.remove();
       }
     }
-
-    //console.timeEnd('consumeChanges' + partition.index);
   }
 
   function getPositionFromIndex(index) {

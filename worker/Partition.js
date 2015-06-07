@@ -9,24 +9,29 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
   var dirty = false;
   var occupied = 0;   // Total of everything that isn't air
 
+  var VALUES_PER_BLOCK = 2;
+
   function initIfRequired() {
     if (blocks === null) {
-      blocks = new Uint32Array(capacity);
+      blocks = new Uint8Array(capacity * 2);
     }
   }
 
   function getBlock(position) {
     var index = getIndex(position.x, position.y, position.z);
 
-    return blocks[index];
+    return new Uint8Array([blocks[VALUES_PER_BLOCK * index]]);
   }
 
-  function setBlockWithIndex(index, type) {
-    var currentType = blocks[index];
+  function setBlockWithIndex(index, type, colour) {
+    var offset = VALUES_PER_BLOCK * index;
+
+    var currentType = blocks[offset + 0];
 
     if (currentType === type) return;
 
-    blocks[index] = type;
+    blocks[offset + 0] = type;
+    blocks[offset + 1] = colour | 0;
 
     if (currentType === 0)
       occupied += 1;
@@ -36,8 +41,8 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
     dirty = true;
   }
 
-  function setBlock(position, type) {
-    setBlockWithIndex(getIndex(position.x, position.y, position.z), type);
+  function setBlock(position, type, colour) {
+    setBlockWithIndex(getIndex(position.x, position.y, position.z), type, colour);
   }
 
   function setBlocks(start, end, type) {
@@ -78,14 +83,14 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
     var zdi = index - (dimensions.x * dimensions.y);
     var zui = index + (dimensions.x * dimensions.y);
 
-    var xd = blocks[xdi];
-    var xu = blocks[xui];
+    var xd = blocks[VALUES_PER_BLOCK * xdi];
+    var xu = blocks[VALUES_PER_BLOCK * xui];
 
-    var yd = blocks[ydi];
-    var yu = blocks[yui];
+    var yd = blocks[VALUES_PER_BLOCK * ydi];
+    var yu = blocks[VALUES_PER_BLOCK * yui];
 
-    var zd = blocks[zdi];
-    var zu = blocks[zui];
+    var zd = blocks[VALUES_PER_BLOCK * zdi];
+    var zu = blocks[VALUES_PER_BLOCK * zui];
 
     return !(xd && xu && yd && yu && zd && zu);
   }
@@ -155,24 +160,30 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
   function getVisibleBlocks() {
     //console.time('getVisibleBlocks');
 
+    var valuesPerBlock = 6;
+
     updateHeightMap();
 
     var id = 0;
-    var changes = new Int32Array(occupied * 5);
+    var changes = new Int32Array(occupied * valuesPerBlock);
 
     for (var index = 0; index < capacity; index++) {
-      var type = blocks[index];
+      var offset = VALUES_PER_BLOCK * index;
+
+      var type = blocks[offset + 0];
+      var colour = blocks[offset + 1];
 
       if (type !== 0 && canBlockBeSeen(index)) {
         var pos = getPositionFromIndex(index);
 
         var shade = computeOcclusion(pos) * 16;
 
-        changes[id * 5 + 0] = id;
-        changes[id * 5 + 1] = index;
-        changes[id * 5 + 2] = getBlockIndexInWorld(index);
-        changes[id * 5 + 3] = type;
-        changes[id * 5 + 4] = shade;
+        changes[id * valuesPerBlock + 0] = id;
+        changes[id * valuesPerBlock + 1] = index;
+        changes[id * valuesPerBlock + 2] = getBlockIndexInWorld(index);
+        changes[id * valuesPerBlock + 3] = type;
+        changes[id * valuesPerBlock + 4] = shade;
+        changes[id * valuesPerBlock + 5] = colour;
 
         id += 1;
       }
@@ -229,7 +240,7 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
     for (var y = dimensions.y - 1; y >= 0; y--) {
       var index = getIndex(x, y, z);
 
-      if (blocks[index] !== 0) return y;
+      if (blocks[VALUES_PER_BLOCK * index] !== 0) return y;
     }
 
     return 0;
@@ -244,7 +255,6 @@ function Partition(dimensions, partitionPosition, worldDimensions, partitionInde
     initIfRequired: initIfRequired,
     getBlock: getBlock,
     setBlock: setBlock,
-    setBlocks: setBlocks,
     setRandomHeight: setRandomHeight,
     isDirty: isDirty,
     getVisibleBlocks: getVisibleBlocks

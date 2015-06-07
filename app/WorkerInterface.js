@@ -29,11 +29,12 @@ function WorkerInterface() {
     return invoke('getBlock', { pos: pos });
   }
 
-  function setBlocks(start, end, type, update) {
+  function setBlocks(start, end, type, colour, update) {
     return invoke('setBlocks', {
       start: start,
       end: end,
       type: type,
+      colour: colour,
       update: update
     });
   }

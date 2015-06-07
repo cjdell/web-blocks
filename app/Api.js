@@ -12,12 +12,12 @@ function Api(workerInterface, viewPoint) {
 
   var intervalRefs = [];
 
-  function setBlock(x, y, z, type) {
-    workerInterface.setBlocks(new THREE.Vector3(x | 0, y | 0, z | 0), new THREE.Vector3(x | 0, y | 0, z | 0), type, true);
+  function setBlock(x, y, z, type, colour) {
+    workerInterface.setBlocks(new THREE.Vector3(x | 0, y | 0, z | 0), new THREE.Vector3(x | 0, y | 0, z | 0), type, colour, true);
   }
 
-  function setBlocks(x1, y1, z1, x2, y2, z2, type) {
-    workerInterface.setBlocks(new THREE.Vector3(x1 | 0, y1 | 0, z1 | 0), new THREE.Vector3(x2 | 0, y2 | 0, z2 | 0), type, true);
+  function setBlocks(x1, y1, z1, x2, y2, z2, type, colour) {
+    workerInterface.setBlocks(new THREE.Vector3(x1 | 0, y1 | 0, z1 | 0), new THREE.Vector3(x2 | 0, y2 | 0, z2 | 0), type, colour, true);
   }
 
   function getBlock(x, y, z) {

@@ -36,7 +36,7 @@ function CuboidTool(context) {
     } else if (state === 'select-height') {
       heightPos.y = endPos.y + relMouseHeight;
 
-      context.workerInterface.setBlocks(startPos, heightPos, context.type, true);
+      context.workerInterface.setBlocks(startPos, heightPos, context.type, 0, true);
 
       removeCube(cube);
 
@@ -67,7 +67,7 @@ function CuboidTool(context) {
   }
 
   function addCube(pos) {
-    var geometry = new THREE.CubeGeometry(1, 1, 1);
+    var geometry = new THREE.BoxGeometry(1, 1, 1);
     var material = new THREE.MeshLambertMaterial({ color: 0xffff00, side: THREE.DoubleSide });
     var cube = new THREE.Mesh(geometry, material);
 
@@ -111,8 +111,6 @@ function CuboidTool(context) {
     var size = toPos.clone().sub(fromPos);
 
     size = size.clone();
-
-    //console.log('size', size);
 
     size.x += size.x >= 0 ? 1 : -1;
     size.y += size.y >= 0 ? 1 : -1;

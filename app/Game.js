@@ -58,7 +58,7 @@ function Game() {
       uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], uniforms]);
 
       var attributes = {
-        data: { type: 'v3', value: null },
+        data: { type: 'v4', value: null },
         offset: { type: 'f', value: null }
       };
 
@@ -99,10 +99,6 @@ function Game() {
 
       // Expose API as global for console access
       api = self.api = new Api(workerInterface, viewPoint);
-
-
-
-      //webcam.init();
 
       blockMaterial.uniforms.webcam.value = webcam.getTexture();
 
@@ -154,15 +150,10 @@ function Game() {
     });
   }
 
-  function getApi() {
-
-  }
-
   return {
     init: init,
     getBlockTypes: getBlockTypes,
-    setBlockType: setBlockType,
-    getApi: getApi
+    setBlockType: setBlockType
   };
 }
 

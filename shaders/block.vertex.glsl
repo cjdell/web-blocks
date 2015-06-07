@@ -1,5 +1,5 @@
 attribute vec3 offset;
-attribute vec3 data;
+attribute vec4 data;
 
 uniform float time;
 
@@ -26,6 +26,7 @@ void main() {
     float type = data.x;
     float side = data.y;
     float shade = data.z;
+    float colour = data.w;
 
     // Number of textures per cube
     float sideCount = 8.0;

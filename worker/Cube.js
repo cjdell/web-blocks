@@ -8,7 +8,7 @@ function Cube(bufferGeometry, cubeIndex) {
   var VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
 
   var POSITION_VALUES_PER_VERTEX = 3;
-  var DATA_VALUES_PER_VERTEX = 3;
+  var DATA_VALUES_PER_VERTEX = 4;
 
   var vertexOffset = cubeIndex * VERTICES_PER_CUBE;
 
@@ -54,7 +54,7 @@ function Cube(bufferGeometry, cubeIndex) {
     }
   }
 
-  function setData(type, shade) {
+  function setData(type, shade, colour) {
     for (var i = dataOffset, v = 0; i < dataOffset + VERTICES_PER_CUBE * DATA_VALUES_PER_VERTEX; i += DATA_VALUES_PER_VERTEX, v++) {
       var plane = (v / VERTICES_PER_FACE) | 0;
       var side = plane % 6;
@@ -62,6 +62,7 @@ function Cube(bufferGeometry, cubeIndex) {
       bufferGeometry.attributes.data.array[i + 0] = type;
       bufferGeometry.attributes.data.array[i + 1] = side;
       bufferGeometry.attributes.data.array[i + 2] = shade;
+      bufferGeometry.attributes.data.array[i + 3] = colour;
     }
   }
 

@@ -64,7 +64,7 @@ self.onmessage = function(e) {
   }
 
   if (e.data.action === 'setBlocks') {
-    world.setBlocks(e.data.data.start, e.data.data.end, e.data.data.type, e.data.data.update);
+    world.setBlocks(e.data.data.start, e.data.data.end, e.data.data.type, e.data.data.colour);
 
     if (e.data.data.update) checkForChangedPartitions();
   }
@@ -78,8 +78,6 @@ self.onmessage = function(e) {
 
 var checkForChangedPartitions = _.debounce(function() {
   var dirty = world.getDirtyPartitions();
-
-  //console.log('checkForChangedPartitions', dirty.length, dirty);
 
   self.postMessage({
     action: 'update',

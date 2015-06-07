@@ -72,10 +72,10 @@ function World(worldDimensionsInPartitions, partitionDimensionsInBlocks) {
 
     //console.log(rx, ry, rz)
 
-    return partition.getBlock(new THREE.Vector3(rx, ry, rz));
+    return partition.getBlock(new THREE.Vector3(rx, ry, rz))[0];
   }
 
-  function setBlocks(start, end, type) {
+  function setBlocks(start, end, type, colour) {
     // TODO: Need to optimise
 
     var x1 = Math.min(start.x, end.x);
@@ -108,7 +108,7 @@ function World(worldDimensionsInPartitions, partitionDimensionsInBlocks) {
                 if (x >= partition.offset.x && x < partition.offset.x + partitionDimensionsInBlocks.x) {
                   if (y >= partition.offset.y && y < partition.offset.y + partitionDimensionsInBlocks.y) {
                     if (z >= partition.offset.z && z < partition.offset.z + partitionDimensionsInBlocks.z) {
-                      partition.setBlock(new THREE.Vector3(x - partition.offset.x, y - partition.offset.y, z - partition.offset.z), type);
+                      partition.setBlock(new THREE.Vector3(x - partition.offset.x, y - partition.offset.y, z - partition.offset.z), type, colour);
                     }
                   }
                 }

@@ -4,8 +4,6 @@ function WorldGeometry(world) {
   var partitionGeometries = new Array(world.getPartitionCapacity());
 
   function getPartitionGeometry(partitionIndex) {
-    //console.log('getPartitionGeometry', partitionIndex);
-
     var partitionGeometry = partitionGeometries[partitionIndex];
 
     if (!partitionGeometry) {
