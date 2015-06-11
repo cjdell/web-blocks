@@ -8,13 +8,15 @@ self.importScripts('../lib/three.v71.js');
 
 var _ = require('underscore');
 
-var World = require('./World');
+var World = require('./World').default.NewWorld;
 var WorldGeometry = require('./WorldGeometry');
 
 var world, worldGeometry;
 
 function init(invocation) {
   world = new World(new THREE.Vector3(32, 1, 32), new THREE.Vector3(16, 32, 16));
+  
+  world.init();
 
   worldGeometry = new WorldGeometry(world);
 

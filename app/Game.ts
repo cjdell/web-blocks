@@ -11,7 +11,7 @@ import tr from './TextRenderer';
 
 module Game {
   export interface Game {
-    init(platform: any);
+    init(platform: any): Promise<void>;
   }
   
   export function NewGame() {
@@ -38,7 +38,7 @@ module Game {
     var vertexShader: string = null;
     var fragmentShader: string = null;
   
-    function init(platform: any) {
+    function init(platform: any): Promise<void> {
       workerInterface = wi.NewWorkerInterface();
   
       renderer = platform.getRenderer();

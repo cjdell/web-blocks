@@ -5,7 +5,7 @@ import wi from './WorkerInterface';
 
 module WorldViewer {
   export interface WorldViewer {
-    exposeNewPartitions(changes:number[]):void
+    exposeNewPartitions(changes: number[]): void
   }
   
   interface PartitionCacheItem {
@@ -13,10 +13,21 @@ module WorldViewer {
     index: number;
   }
   
-  export function NewWorldViewer(scene:THREE.Scene, worldInfo:any, shaderMaterial:THREE.Material, workerInterface:wi.WorkerInterface):WorldViewer {
-    var partitionCaches:PartitionCacheItem[] = null;
+  export function NewWorldViewer(scene: THREE.Scene, worldInfo: any, shaderMaterial: THREE.Material, workerInterface: wi.WorkerInterface): WorldViewer {
+    var partitionCaches: PartitionCacheItem[] = null;
   
     init();
+    
+    workerInterface.addChangeListener(function(data: any) {
+      var changeIndices = <number[]>data.changes;
+      var visibleIndices = <number[]>getVisiblePartitionIndices();
+  
+      var toUpdate = _.intersection(changeIndices, visibleIndices);
+  
+      toUpdate.forEach(function(index) {
+        updatePartition(index);
+      });
+    });
   
     function init() {
       partitionCaches = new Array(worldInfo.partitionCapacity);
@@ -24,7 +35,7 @@ module WorldViewer {
       addSky();
     }
   
-    function getMesh(bufferGeometry:THREE.BufferGeometry, offset:THREE.Vector3):THREE.Mesh {
+    function getMesh(bufferGeometry: THREE.BufferGeometry, offset: THREE.Vector3): THREE.Mesh {
       var mesh = new THREE.Mesh(bufferGeometry, shaderMaterial);
   
       mesh.position.x += offset.x + 8;
@@ -37,9 +48,7 @@ module WorldViewer {
       return mesh;
     }
   
-    function addPartition(partitionIndex:number):void {
-      //console.time('addPartition' + partitionIndex);
-  
+    function addPartition(partitionIndex: number): void {
       var partitionCache = partitionCaches[partitionIndex];
   
       if (!partitionCache) {
@@ -50,27 +59,9 @@ module WorldViewer {
       scene.add(partitionCache.mesh);
     }
   
-    function updatePartition(partitionIndex:number) {
-      //console.time('updatePartition' + partitionIndex);
-  
+    function updatePartition(partitionIndex: number) {
       workerInterface.getPartition(partitionIndex).then(gotPartition);
     }
-  
-    workerInterface.addChangeListener(function(data:any) {
-      var changeIndices = <number[]>data.changes;
-      var visibleIndices = <number[]>getVisiblePartitionIndices();
-  
-      //console.log('changeIndices', changeIndices);
-      //console.log('visibleIndices', visibleIndices);
-  
-      var toUpdate = _.intersection(changeIndices, visibleIndices);
-  
-      //console.log('toUpdate', toUpdate);
-  
-      toUpdate.forEach(function(index) {
-        updatePartition(index);
-      });
-    });
   
     function getVisiblePartitionIndices() {
       return partitionCaches
@@ -82,7 +73,7 @@ module WorldViewer {
       });
     }
   
-    function gotPartition(data:any) {
+    function gotPartition(data: any) {
       var geo = data.geo, partitionIndex = data.index;
   
       var partitionCache = partitionCaches[partitionIndex];
@@ -114,12 +105,9 @@ module WorldViewer {
       partitionCaches[partitionIndex] = partitionCache;
   
       scene.add(partitionCache.mesh);
-  
-      //console.timeEnd('addPartition' + partitionIndex);
-      //console.timeEnd('updatePartition' + partitionIndex);
     }
   
-    function removePartition(partitionIndex:number) {
+    function removePartition(partitionIndex: number) {
       var partitionCache = partitionCaches[partitionIndex];
   
       if (!partitionCache) return;
@@ -127,13 +115,13 @@ module WorldViewer {
       scene.remove(partitionCache.mesh);
     }
   
-    function exposeNewPartitions(changes:any) {
-      changes.toBeAdded.forEach(function(partitionIndex:number) {
+    function exposeNewPartitions(changes: any) {
+      changes.toBeAdded.forEach(function(partitionIndex: number) {
         //console.log('toBeAdded', partitionIndex);
         addPartition(partitionIndex);
       });
   
-      changes.toBeRemoved.forEach(function(partitionIndex:number) {
+      changes.toBeRemoved.forEach(function(partitionIndex: number) {
         removePartition(partitionIndex);
       });
     }
