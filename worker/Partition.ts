@@ -12,6 +12,8 @@ module Partition {
     getVisibleBlocks(): VisibleBlocksResult;
     isDirty(): boolean;
     
+    index: number;
+    dimensions: THREE.Vector3;
     offset: THREE.Vector3;
   }
   

@@ -26,7 +26,7 @@ gulp.task('build-app', function() {
 });
 
 gulp.task('build-worker', function() {
-  return appBrowserify('./worker/GeometryWorker.js', 'worker.js');
+  return appBrowserify('./worker/GeometryWorker.ts', 'worker.js');
 });
 
 gulp.task('build-css', function() {

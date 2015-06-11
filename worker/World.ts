@@ -6,8 +6,13 @@ import part from './Partition';
 module World {
   export interface World {
     init(): void;
+    getPartitionCapacity(): number;
+    getPartitionBoundaries(): any;
+    getBlockDimensions(): THREE.Vector3;
+    getPartitionByIndex(partitionIndex: number): part.Partition;
     getBlock(pos: THREE.Vector3): number;
     addBlock(index: number, side: number, type: number): void;
+    setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void;
     getDirtyPartitions(): number[];
   }
   
@@ -19,8 +24,12 @@ module World {
     var worldDimensionsInBlocks = new THREE.Vector3(worldDimensionsInPartitions.x * partitionDimensionsInBlocks.x, worldDimensionsInPartitions.y * partitionDimensionsInBlocks.y, worldDimensionsInPartitions.z * partitionDimensionsInBlocks.z);
   
     var partitions: part.Partition[];
+    
+    var h: number;
   
     function init(): void {
+      h = Math.random() * partitionDimensionsInBlocks.y * worldDimensionsInPartitions.y;
+      
       partitions = <part.Partition[]>(new Array(capacity));
   
       for (var z = 0; z < worldDimensionsInPartitions.z; z++) {
@@ -52,8 +61,6 @@ module World {
   
       return partition;
     }
-  
-    var h = Math.random() * partitionDimensionsInBlocks.y * worldDimensionsInPartitions.y;
   
     function getPartitionByIndex(partitionIndex: number): part.Partition {
       var partition = getPartition(partitionIndex);
