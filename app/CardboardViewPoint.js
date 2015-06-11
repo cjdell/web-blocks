@@ -1,3 +1,5 @@
+var THREE = require('three');
+
 function CardboardViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var controls = null;
 

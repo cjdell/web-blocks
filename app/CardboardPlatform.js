@@ -1,3 +1,9 @@
+var THREE = require('three');
+
+require('../lib/StereoEffect');
+require('../lib/DeviceOrientationControls');
+require('../lib/OrbitControls');
+
 var CardboardViewPoint = require('./CardboardViewPoint');
 
 function CardboardPlatform() {

@@ -2,7 +2,7 @@ require('whatwg-fetch');
 
 var DesktopPlatform = require('./DesktopPlatform');
 var CardboardPlatform = require('./CardboardPlatform');
-var Game = require('./Game');
+var Game = require('./Game').default.NewGame;
 
 function App() {
   var platform = null;

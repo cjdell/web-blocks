@@ -1,3 +1,5 @@
+var THREE = require('three');
+
 var DesktopViewPoint = require('./DesktopViewPoint');
 var UserInterface = require('../ui/index.jsx');
 

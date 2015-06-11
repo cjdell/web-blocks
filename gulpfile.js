@@ -9,9 +9,10 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var reactify = require('reactify');
 var brfs = require('brfs');
+var tsify = require('tsify');
 
 var config = {
-  external: ['underscore', 'whatwg-fetch', 'buffer'],
+  external: ['underscore', 'whatwg-fetch', 'buffer', 'three'],
   watch: false,
   sourceMaps: true
 };
@@ -28,7 +29,7 @@ gulp.task('build-worker', function() {
   return appBrowserify('./worker/GeometryWorker.js', 'worker.js');
 });
 
-gulp.task('build-css', function () {
+gulp.task('build-css', function() {
   return gulp.src('./css/app.less')
   .pipe(less())
   .pipe(gulp.dest('./build'));
@@ -73,13 +74,16 @@ function appBrowserify(src, dest) {
 
   var b = browserify(opts);
 
-  if (config.watch) b = watchify(b);
+  b.plugin('tsify', { noImplicitAny: true, target: 'ES5', module: 'commonjs' });
 
   b.transform(reactify);
   b.transform(brfs);
 
-  // On any dep update, runs the bundler
-  if (config.watch) b.on('update', bundle);
+  if (config.watch) {
+    b = watchify(b);
+    // On any dep update, runs the bundler
+    b.on('update', bundle);
+  }
 
   // Output build logs to terminal
   b.on('log', util.log);

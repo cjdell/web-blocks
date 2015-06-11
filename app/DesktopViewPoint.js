@@ -1,3 +1,6 @@
+var _ = require('underscore');
+var THREE = require('three');
+
 function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var speed = 10;
   var lookMode = false;
