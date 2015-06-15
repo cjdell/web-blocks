@@ -1,0 +1,44 @@
+{
+    "version": "1.5.0-alpha",
+    "compileOnSave": false,
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./app/Api.ts",
+        "./app/BlockTypeList.ts",
+        "./app/Culling.ts",
+        "./app/Game.ts",
+        "./app/Interaction.ts",
+        "./app/TextRenderer.ts",
+        "./app/Webcam.ts",
+        "./app/WorkerInterface.ts",
+        "./app/WorldViewer.ts",
+        "./app/tools/CuboidTool.ts",
+        "./app/tools/ToolBase.ts",
+        "./typings/es6-promise/es6-promise.d.ts",
+        "./typings/threejs/three.d.ts",
+        "./typings/tsd.d.ts",
+        "./typings/underscore/underscore.d.ts",
+        "./worker/Command.ts",
+        "./worker/Common.ts",
+        "./worker/Cube.ts",
+        "./worker/GeometryWorker.ts",
+        "./worker/ImprovedNoise.ts",
+        "./worker/Partition.ts",
+        "./worker/PartitionGeometry.ts",
+        "./worker/World.ts",
+        "./worker/WorldGeometry.ts"
+    ]
+}

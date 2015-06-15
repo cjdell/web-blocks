@@ -13,6 +13,7 @@ import _ = require('underscore');
 
 import w from './World';
 import wg from './WorldGeometry';
+import com from './Common';
 
 var world: w.World;
 var worldGeometry: wg.WorldGeometry;
@@ -24,8 +25,13 @@ interface Invocation {
 }
 
 function init(invocation: Invocation): void {
-  world = w.NewWorld(new THREE.Vector3(32, 1, 32), new THREE.Vector3(16, 32, 16));
-  
+  var worldInfo: com.WorldInfo = {
+    worldDimensionsInPartitions: new THREE.Vector3(32, 1, 32),
+    partitionDimensionsInBlocks:new THREE.Vector3(16, 32, 16)
+  };
+
+  world = w.NewWorld(worldInfo);
+
   world.init();
 
   worldGeometry = wg.NewWorldGeometry(world);
@@ -42,7 +48,7 @@ function init(invocation: Invocation): void {
 
 self.onmessage = function(e) {
   var invocation = <Invocation>e.data;
-  
+
   if (invocation.action === 'init') {
     return init(invocation);
   }
@@ -78,7 +84,10 @@ self.onmessage = function(e) {
   }
 
   if (invocation.action === 'setBlocks') {
-    world.setBlocks(invocation.data.start, invocation.data.end, invocation.data.type, invocation.data.colour);
+    let start = new THREE.Vector3(invocation.data.start.x, invocation.data.start.y, invocation.data.start.z);
+    let end = new THREE.Vector3(invocation.data.end.x, invocation.data.end.y, invocation.data.end.z);
+
+    world.setBlocks(start, end, invocation.data.type, invocation.data.colour);
 
     if (invocation.data.update) checkForChangedPartitions();
   }

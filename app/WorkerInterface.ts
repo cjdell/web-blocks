@@ -3,21 +3,21 @@ import THREE = require('three');
 
 module WorkerInterface {
   export interface WorkerInterface {
-    init():Promise<Object>;
-    getBlock(pos:THREE.Vector3):Promise<number>;
-    setBlocks(start:THREE.Vector3, end:THREE.Vector3, type:number, colour:number, update:boolean):Promise<Object>;
-    getPartition(index:number):Promise<Object>;
-    addChangeListener(listener:Function):void;
+    init(): Promise<Object>;
+    getBlock(pos: THREE.Vector3): Promise<number>;
+    setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number, update: boolean): Promise<Object>;
+    getPartition(index: number): Promise<Object>;
+    addChangeListener(listener: Function): void;
   }
 
-  export function NewWorkerInterface():WorkerInterface {
+  export function NewWorkerInterface(): WorkerInterface {
     var geoWorker = new Worker('build/worker.js');
 
-    var callbacks:{ [id:number]:Function } = {};
-    var changeListener:Function = null;
+    var callbacks: { [id: number]: Function } = {};
+    var changeListener: Function = null;
     var lastId = 0;
 
-    function invoke<ReturnType>(action:string, data:Object) {
+    function invoke<ReturnType>(action: string, data: Object) {
       return new Promise<ReturnType>(function(resolve, reject) {
         var invocation = {
           action: action,
@@ -35,14 +35,14 @@ module WorkerInterface {
       return invoke<Object>('init', null);
     }
 
-    function getBlock(pos:THREE.Vector3) {
+    function getBlock(pos: THREE.Vector3) {
       return invoke<Object>('getBlock', { pos: pos })
-      .then(function(result:any) {
+        .then(function(result: any) {
         return <number>result.type;
       });
     }
 
-    function setBlocks(start:THREE.Vector3, end:THREE.Vector3, type:number, colour:number, update:boolean) {
+    function setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number, update: boolean) {
       return invoke<Object>('setBlocks', {
         start: start,
         end: end,
@@ -52,7 +52,7 @@ module WorkerInterface {
       });
     }
 
-    function addBlock(position:THREE.Vector3, side:number, type:number) {
+    function addBlock(position: THREE.Vector3, side: number, type: number) {
       geoWorker.postMessage({
         action: 'addBlock',
         position: position,
@@ -61,7 +61,7 @@ module WorkerInterface {
       });
     }
 
-    function getPartition(index:number) {
+    function getPartition(index: number) {
       return invoke<Object>('getPartition', { index: index });
     }
 
@@ -75,7 +75,7 @@ module WorkerInterface {
       }
     };
 
-    function addChangeListener(listener:Function) {
+    function addChangeListener(listener: Function) {
       changeListener = listener;
     }
 

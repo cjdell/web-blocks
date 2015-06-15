@@ -15,7 +15,7 @@ module Interaction {
     var raycaster = new THREE.Raycaster();
 
     var type = 1;
-    var tool:any = null;
+    var tool: tb.Tool = null;
 
     var isDesktop = true; // TODO: Detect mobile
 
@@ -44,7 +44,7 @@ module Interaction {
       var pos = getBlockPositionOfMouse();
 
       if (!tool) {
-        var context = <tb.Context>{
+        var context: tb.Context = {
           scene: scene,
           type: type,
           workerInterface: workerInterface,
