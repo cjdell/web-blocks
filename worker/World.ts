@@ -2,12 +2,14 @@
 import THREE = require('three');
 
 import part from './Partition';
-import cmd from './Command';
+import cmd from './Commands/Command';
+import cc from './Commands/CuboidCommand';
 import com from './Common';
 
 module World {
   export interface World {
     init(): void;
+    undo(): void;
     getPartitionCapacity(): number;
     getPartitionBoundaries(): any;
     getBlockDimensions(): THREE.Vector3;
@@ -19,26 +21,26 @@ module World {
   }
 
   export function NewWorld(worldInfo: com.WorldInfo): World {
-    var capacity = worldInfo.worldDimensionsInPartitions.x * worldInfo.worldDimensionsInPartitions.y * worldInfo.worldDimensionsInPartitions.z;
-    var partitionCapacity = worldInfo.partitionDimensionsInBlocks.x * worldInfo.partitionDimensionsInBlocks.y * worldInfo.partitionDimensionsInBlocks.z;
-    var worldDimensionsInBlocks = new THREE.Vector3(worldInfo.worldDimensionsInPartitions.x * worldInfo.partitionDimensionsInBlocks.x, worldInfo.worldDimensionsInPartitions.y * worldInfo.partitionDimensionsInBlocks.y, worldInfo.worldDimensionsInPartitions.z * worldInfo.partitionDimensionsInBlocks.z);
+    let capacity = worldInfo.worldDimensionsInPartitions.x * worldInfo.worldDimensionsInPartitions.y * worldInfo.worldDimensionsInPartitions.z;
+    let partitionCapacity = worldInfo.partitionDimensionsInBlocks.x * worldInfo.partitionDimensionsInBlocks.y * worldInfo.partitionDimensionsInBlocks.z;
+    let worldDimensionsInBlocks = new THREE.Vector3(worldInfo.worldDimensionsInPartitions.x * worldInfo.partitionDimensionsInBlocks.x, worldInfo.worldDimensionsInPartitions.y * worldInfo.partitionDimensionsInBlocks.y, worldInfo.worldDimensionsInPartitions.z * worldInfo.partitionDimensionsInBlocks.z);
 
-    var partitions: part.Partition[];
+    let partitions: part.Partition[];
 
-    var h: number;
+    let h: number;
 
     function init(): void {
       h = Math.random() * worldInfo.partitionDimensionsInBlocks.y * worldInfo.worldDimensionsInPartitions.y;
 
       partitions = new Array<part.Partition>(capacity);
 
-      for (var z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
-        for (var y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
-          for (var x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
-            var partitionPosition = new THREE.Vector3(x, y, z);
-            var partitionIndex = getPartitionIndex(x, y, z);
+      for (let z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
+        for (let y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
+          for (let x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
+            let partitionPosition = new THREE.Vector3(x, y, z);
+            let partitionIndex = getPartitionIndex(x, y, z);
 
-            var partition = part.NewPartition(worldInfo.partitionDimensionsInBlocks, partitionPosition, worldInfo.worldDimensionsInPartitions, partitionIndex);
+            let partition = part.NewPartition(worldInfo.partitionDimensionsInBlocks, partitionPosition, worldInfo.worldDimensionsInPartitions, partitionIndex);
 
             partitions[partitionIndex] = partition;
           }
@@ -55,7 +57,7 @@ module World {
     }
 
     function getPartition(partitionIndex: number): part.Partition {
-      var partition = partitions[partitionIndex];
+      let partition = partitions[partitionIndex];
 
       partition.initIfRequired();
 
@@ -63,7 +65,7 @@ module World {
     }
 
     function getPartitionByIndex(partitionIndex: number): part.Partition {
-      var partition = getPartition(partitionIndex);
+      let partition = getPartition(partitionIndex);
 
       partition.setRandomHeight(h);
 
@@ -75,36 +77,50 @@ module World {
     }
 
     function getBlock(pos: THREE.Vector3): number {
-      var px = (pos.x / worldInfo.partitionDimensionsInBlocks.x) | 0;
-      var py = (pos.y / worldInfo.partitionDimensionsInBlocks.y) | 0;
-      var pz = (pos.z / worldInfo.partitionDimensionsInBlocks.z) | 0;
+      let px = (pos.x / worldInfo.partitionDimensionsInBlocks.x) | 0;
+      let py = (pos.y / worldInfo.partitionDimensionsInBlocks.y) | 0;
+      let pz = (pos.z / worldInfo.partitionDimensionsInBlocks.z) | 0;
 
-      var partitionIndex = getPartitionIndex(px, py, pz);
-      var partition = getPartition(partitionIndex);
+      let partitionIndex = getPartitionIndex(px, py, pz);
+      let partition = getPartition(partitionIndex);
 
-      var rx = pos.x - px * worldInfo.partitionDimensionsInBlocks.x;
-      var ry = pos.y - py * worldInfo.partitionDimensionsInBlocks.y;
-      var rz = pos.z - pz * worldInfo.partitionDimensionsInBlocks.z;
+      let rx = pos.x - px * worldInfo.partitionDimensionsInBlocks.x;
+      let ry = pos.y - py * worldInfo.partitionDimensionsInBlocks.y;
+      let rz = pos.z - pz * worldInfo.partitionDimensionsInBlocks.z;
 
       //console.log(rx, ry, rz)
 
       return partition.getBlock(new THREE.Vector3(rx, ry, rz))[0];
     }
 
+    const commands = new Array<cmd.Command>();
+
     function applyCommand(command: cmd.Command): void {
-      var indices = command.getAffectedPartitionIndices();
+      commands.push(command);
 
-      // console.log('applyCommand: indices:', indices);
-
-      var partitions = indices.map(getPartitionByIndex);
+      const indices = command.getAffectedPartitionIndices();
+      const partitions = indices.map(getPartitionByIndex);
 
       partitions.forEach(function(partition) {
         command.redo(partition);
       });
     }
 
+    function undo(): void {
+      if (commands.length === 0) return;
+      
+      const command = commands.pop();
+
+      const indices = command.getAffectedPartitionIndices();
+      const partitions = indices.map(getPartitionByIndex);
+
+      partitions.forEach(function(partition) {
+        command.undo(partition);
+      });
+    }
+
     function setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void {
-      var command = new cmd.CuboidCommand(worldInfo, 0, {
+      const command = new cc.CuboidCommand(worldInfo, 0, {
         start: start,
         end: end,
         type: type,
@@ -115,7 +131,7 @@ module World {
     }
 
     function addBlock(index: number, side: number, type: number): void {
-      var position = getPositionFromIndex(index);
+      let position = getPositionFromIndex(index);
 
       if (type === 0) {
         return setBlocks(position, position, type, 0);
@@ -151,29 +167,29 @@ module World {
 
     // TODO: Commonise
     function getPositionFromIndex(index: number): THREE.Vector3 {
-      var z = Math.floor(index / (worldDimensionsInBlocks.x * worldDimensionsInBlocks.y));
-      var y = Math.floor((index - z * worldDimensionsInBlocks.x * worldDimensionsInBlocks.y) / worldDimensionsInBlocks.x);
-      var x = index - worldDimensionsInBlocks.x * (y + worldDimensionsInBlocks.y * z);
+      let z = Math.floor(index / (worldDimensionsInBlocks.x * worldDimensionsInBlocks.y));
+      let y = Math.floor((index - z * worldDimensionsInBlocks.x * worldDimensionsInBlocks.y) / worldDimensionsInBlocks.x);
+      let x = index - worldDimensionsInBlocks.x * (y + worldDimensionsInBlocks.y * z);
 
       return new THREE.Vector3(x, y, z);
     }
 
     function getPartitionBoundaries(): any[] {
-      var partitionBoundaries = <any[]>[];
+      let partitionBoundaries = <any[]>[];
 
-      for (var z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
-        for (var y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
-          for (var x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
-            var partitionIndex = getPartitionIndex(x, y, z);
+      for (let z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
+        for (let y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
+          for (let x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
+            let partitionIndex = getPartitionIndex(x, y, z);
 
-            var boundaryPoints = <THREE.Vector3[]>[];
+            let boundaryPoints = <THREE.Vector3[]>[];
 
-            for (var bx = 0; bx < 2; bx++) {
-              for (var by = 0; by < 2; by++) {
-                for (var bz = 0; bz < 2; bz++) {
-                  var x1 = worldInfo.partitionDimensionsInBlocks.x * (x + bx);
-                  var y1 = worldInfo.partitionDimensionsInBlocks.y * (y + by);
-                  var z1 = worldInfo.partitionDimensionsInBlocks.z * (z + bz);
+            for (let bx = 0; bx < 2; bx++) {
+              for (let by = 0; by < 2; by++) {
+                for (let bz = 0; bz < 2; bz++) {
+                  let x1 = worldInfo.partitionDimensionsInBlocks.x * (x + bx);
+                  let y1 = worldInfo.partitionDimensionsInBlocks.y * (y + by);
+                  let z1 = worldInfo.partitionDimensionsInBlocks.z * (z + bz);
 
                   boundaryPoints.push(new THREE.Vector3(x1, y1, z1));
                 }
@@ -189,11 +205,11 @@ module World {
     }
 
     function getDirtyPartitions(): number[] {
-      var dirty = <number[]>[];
+      let dirty = <number[]>[];
 
-      for (var partitionIndex = 0; partitionIndex < capacity; partitionIndex++) {
-        //var partition = getPartition(partitionIndex);
-        var partition = partitions[partitionIndex];
+      for (let partitionIndex = 0; partitionIndex < capacity; partitionIndex++) {
+        //let partition = getPartition(partitionIndex);
+        let partition = partitions[partitionIndex];
 
         if (partition.isDirty()) {
           dirty.push(partitionIndex);
@@ -205,6 +221,7 @@ module World {
 
     return {
       init: init,
+      undo: undo,
       getBlock: getBlock,
       setBlocks: setBlocks,
       addBlock: addBlock,

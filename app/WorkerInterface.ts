@@ -4,6 +4,7 @@ import THREE = require('three');
 module WorkerInterface {
   export interface WorkerInterface {
     init(): Promise<Object>;
+    undo(): Promise<Object>;
     getBlock(pos: THREE.Vector3): Promise<number>;
     setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number, update: boolean): Promise<Object>;
     getPartition(index: number): Promise<Object>;
@@ -11,15 +12,15 @@ module WorkerInterface {
   }
 
   export function NewWorkerInterface(): WorkerInterface {
-    var geoWorker = new Worker('build/worker.js');
+    let geoWorker = new Worker('build/worker.js');
 
-    var callbacks: { [id: number]: Function } = {};
-    var changeListener: Function = null;
-    var lastId = 0;
+    let callbacks: { [id: number]: Function } = {};
+    let changeListener: Function = null;
+    let lastId = 0;
 
     function invoke<ReturnType>(action: string, data: Object) {
       return new Promise<ReturnType>(function(resolve, reject) {
-        var invocation = {
+        let invocation = {
           action: action,
           id: lastId++,
           data: data
@@ -33,6 +34,10 @@ module WorkerInterface {
 
     function init() {
       return invoke<Object>('init', null);
+    }
+
+    function undo() {
+      return invoke<Object>('undo', null);
     }
 
     function getBlock(pos: THREE.Vector3) {
@@ -81,6 +86,7 @@ module WorkerInterface {
 
     return {
       init: init,
+      undo: undo,
       getBlock: getBlock,
       setBlocks: setBlocks,
       addBlock: addBlock,

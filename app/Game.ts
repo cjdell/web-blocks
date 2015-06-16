@@ -15,28 +15,28 @@ module Game {
   }
 
   export function NewGame() {
-    var workerInterface: wi.WorkerInterface = null;
-    var renderer: any = null;
-    var viewPort: any = null;
-    var camera: THREE.Camera = null;
-    var scene: THREE.Scene = null;
-    var blockTypeList: btl.BlockTypeList = null;
-    var worldViewer: wv.WorldViewer = null;
-    var viewPoint: any = null;
-    var culling: any = null;
-    var interaction: int.Interaction = null;
-    var api: _api.Api = null;
-    var webcam: wc.Webcam = null;
-    var textRenderer: tr.TextRenderer = null;
+    let workerInterface: wi.WorkerInterface = null;
+    let renderer: any = null;
+    let viewPort: any = null;
+    let camera: THREE.Camera = null;
+    let scene: THREE.Scene = null;
+    let blockTypeList: btl.BlockTypeList = null;
+    let worldViewer: wv.WorldViewer = null;
+    let viewPoint: any = null;
+    let culling: any = null;
+    let interaction: int.Interaction = null;
+    let api: _api.Api = null;
+    let webcam: wc.Webcam = null;
+    let textRenderer: tr.TextRenderer = null;
 
-    var win = <any>self;
+    let win = <any>self;
 
-    var uniforms: any = null;
-    var frame = 0;
-    var log = false;
+    let uniforms: any = null;
+    let frame = 0;
+    let log = false;
 
-    var vertexShader: string = null;
-    var fragmentShader: string = null;
+    let vertexShader: string = null;
+    let fragmentShader: string = null;
 
     function init(platform: any): Promise<void> {
       workerInterface = wi.NewWorkerInterface();
@@ -56,7 +56,7 @@ module Game {
 
       return Promise.all([workerInterface.init(), loadShaders()])
         .then(function(res) {
-        var worldInfo = res[0];
+        let worldInfo = res[0];
 
         uniforms = {};
 
@@ -68,12 +68,12 @@ module Game {
         uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['lights'], uniforms]);
         uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], uniforms]);
 
-        var attributes: any = {
+        let attributes: any = {
           data: { type: 'v4', value: null },
           offset: { type: 'f', value: null }
         };
 
-        var blockMaterial = new THREE.ShaderMaterial({
+        let blockMaterial = new THREE.ShaderMaterial({
           attributes: attributes,
           uniforms: uniforms,
           vertexShader: vertexShader,
@@ -84,17 +84,17 @@ module Game {
           fog: true
         });
 
-        //var blockMaterial = new THREE.MeshLambertMaterial({ color: 0xbbccff });
+        //let blockMaterial = new THREE.MeshLambertMaterial({ color: 0xbbccff });
 
         blockTypeList.getBlockTexture().then(function(texture) {
           blockMaterial.uniforms.textures.value = texture;
         });
 
-        var ambientLight = new THREE.AmbientLight(0x777777);
+        let ambientLight = new THREE.AmbientLight(0x777777);
         scene.add(ambientLight);
 
         // Create light
-        var pointLight = new THREE.PointLight(0xffffff, 1.0);
+        let pointLight = new THREE.PointLight(0xffffff, 1.0);
         pointLight.position.set(5.0, 5.0, 5.0);
         scene.add(pointLight);
 
@@ -130,7 +130,7 @@ module Game {
       frame += 1;
 
       if (frame % 10 === 0) {
-        var changes = culling.getNewlyVisiblePartitions();
+        let changes = culling.getNewlyVisiblePartitions();
 
         worldViewer.exposeNewPartitions(changes);
       }

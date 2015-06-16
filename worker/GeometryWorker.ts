@@ -1,22 +1,20 @@
 /// <reference path="../typings/tsd.d.ts" />
 'use strict';
 
-console.log('GeometryWorker: online');
-
-var win = <any>self;
-
+let win = <any>self;
 win.importScripts('external.js');
-win.importScripts('../lib/underscore.js');
-win.importScripts('../lib/three.v71.js');
 
 import _ = require('underscore');
+import THREE = require('three');
 
 import w from './World';
 import wg from './WorldGeometry';
 import com from './Common';
 
-var world: w.World;
-var worldGeometry: wg.WorldGeometry;
+console.log('GeometryWorker: online');
+
+let world: w.World;
+let worldGeometry: wg.WorldGeometry;
 
 interface Invocation {
   id: number;
@@ -25,9 +23,9 @@ interface Invocation {
 }
 
 function init(invocation: Invocation): void {
-  var worldInfo: com.WorldInfo = {
+  let worldInfo: com.WorldInfo = {
     worldDimensionsInPartitions: new THREE.Vector3(32, 1, 32),
-    partitionDimensionsInBlocks:new THREE.Vector3(16, 32, 16)
+    partitionDimensionsInBlocks: new THREE.Vector3(16, 32, 16)
   };
 
   world = w.NewWorld(worldInfo);
@@ -47,14 +45,25 @@ function init(invocation: Invocation): void {
 }
 
 self.onmessage = function(e) {
-  var invocation = <Invocation>e.data;
+  let invocation = <Invocation>e.data;
 
   if (invocation.action === 'init') {
     return init(invocation);
   }
 
+  if (invocation.action === 'undo') {
+    world.undo();
+
+    checkForChangedPartitions();
+
+    win.postMessage({
+      id: invocation.id,
+      data: {}
+    });
+  }
+
   if (invocation.action === 'getPartition') {
-    var geo = worldGeometry.getPartitionGeometry(invocation.data.index);
+    let geo = worldGeometry.getPartitionGeometry(invocation.data.index);
 
     win.postMessage({
       id: invocation.id,
@@ -63,16 +72,16 @@ self.onmessage = function(e) {
         geo: geo
       }
     }, [
-      geo.data.position.buffer,
-      geo.data.normal.buffer,
-      geo.data.uv.buffer,
-      geo.data.data.buffer,
-      geo.data.offset.buffer
-    ]);
+        geo.data.position.buffer,
+        geo.data.normal.buffer,
+        geo.data.uv.buffer,
+        geo.data.data.buffer,
+        geo.data.offset.buffer
+      ]);
   }
 
   if (invocation.action === 'getBlock') {
-    var type = world.getBlock(invocation.data.pos);
+    let type = world.getBlock(invocation.data.pos);
 
     win.postMessage({
       id: invocation.id,
@@ -100,7 +109,7 @@ self.onmessage = function(e) {
 };
 
 var checkForChangedPartitions = _.debounce(function() {
-  var dirty = world.getDirtyPartitions();
+  let dirty = world.getDirtyPartitions();
 
   win.postMessage({
     action: 'update',

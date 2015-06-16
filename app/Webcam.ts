@@ -9,25 +9,25 @@ module Webcam {
   }
 
   export function NewWebcam(scene: THREE.Scene): Webcam {
-    var video: HTMLVideoElement;
-    var videoImageContext: CanvasRenderingContext2D;
-    var videoTexture: THREE.Texture;
-    var videoImage: HTMLCanvasElement;
-    var inited = false;
+    let video: HTMLVideoElement;
+    let videoImageContext: CanvasRenderingContext2D;
+    let videoTexture: THREE.Texture;
+    let videoImage: HTMLCanvasElement;
+    let inited = false;
 
     videoImage = document.createElement('canvas');
     videoTexture = new THREE.Texture(videoImage);
 
     function init() {
-      var nav = <any>navigator;
-      var win = <any>window;
+      let nav = <any>navigator;
+      let win = <any>window;
 
-      var getUserMedia = <any>(nav.getUserMedia || nav.webkitGetUserMedia || nav.mozGetUserMedia);
-      var URL = <any>(win.URL || win.webkitURL);
+      let getUserMedia = <any>(nav.getUserMedia || nav.webkitGetUserMedia || nav.mozGetUserMedia);
+      let URL = <any>(win.URL || win.webkitURL);
 
       getUserMedia = getUserMedia.bind(navigator);
 
-      var camvideo = document.createElement('video');
+      let camvideo = document.createElement('video');
 
       camvideo.autoplay = true;
       camvideo.width = 640;
@@ -60,7 +60,7 @@ module Webcam {
       }
 
       function noStream(e: any) {
-        var msg = 'No camera available.';
+        let msg = 'No camera available.';
 
         if (e.code == 1) {
           msg = 'User denied access to use camera.';
@@ -83,13 +83,13 @@ module Webcam {
       videoTexture.minFilter = THREE.LinearFilter;
       videoTexture.magFilter = THREE.LinearFilter;
 
-      var movieMaterial = new THREE.MeshBasicMaterial({ map: videoTexture, overdraw: 1, side: THREE.DoubleSide });
+      let movieMaterial = new THREE.MeshBasicMaterial({ map: videoTexture, overdraw: 1, side: THREE.DoubleSide });
 
       // the geometry on which the movie will be displayed;
       // 		movie image will be scaled to fit these dimensions.
-      var movieGeometry = new THREE.PlaneGeometry(20, 20, 1, 1);
+      let movieGeometry = new THREE.PlaneGeometry(20, 20, 1, 1);
 
-      var movieScreen = new THREE.Mesh(movieGeometry, movieMaterial);
+      let movieScreen = new THREE.Mesh(movieGeometry, movieMaterial);
 
       movieScreen.position.set(100, 10, 100);
 
