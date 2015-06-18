@@ -2,8 +2,9 @@
 import THREE = require('three');
 
 import cmd from './Command';
+import ucmd from './UndoableCommand';
 import part from '../Partition';
-import com from '../Common';
+import com from '../../common/Common';
 
 module CuboidCommand {
   export interface CuboidCommandOptions {
@@ -22,17 +23,13 @@ module CuboidCommand {
     [index: number]: PartitionSnapshot;
   }
 
-  export class CuboidCommand implements cmd.Command {
-    worldInfo: com.WorldInfo
-    version: number;
+  export class CuboidCommand extends ucmd.UndoableCommand {
     options: CuboidCommandOptions;
-    snapshots: PartitionSnapshots;
 
     constructor(worldInfo: com.WorldInfo, version: number, options: CuboidCommandOptions) {
-      this.worldInfo = worldInfo;
-      this.version = version;
+      super(worldInfo, version);
+
       this.options = options;
-      this.snapshots = {};
 
       com.ensureStartEndOrder(this.options.start, this.options.end);
     }
@@ -46,7 +43,7 @@ module CuboidCommand {
       for (let px = p1.x; px <= p2.x; px++) {
         for (let py = p1.y; py <= p2.y; py++) {
           for (let pz = p1.z; pz <= p2.z; pz++) {
-            let partitionIndex = com.getPartitionIndex(this.worldInfo, new THREE.Vector3(px, py, pz));
+            const partitionIndex = com.getPartitionIndex(this.worldInfo, new THREE.Vector3(px, py, pz));
             indices.push(partitionIndex);
           }
         }
@@ -72,43 +69,18 @@ module CuboidCommand {
         (1 + end.y - start.y) *
         (1 + end.z - start.z);
 
-      const snapshot: PartitionSnapshot = {
-        indices: new Int32Array(blocks),
-        blockData: new Uint8Array(blocks * 2)
-      };
+      this.allocateSnapshot(partition, blocks);
 
-      let i = 0;
+      let blockNumber = 0;
 
       for (let z = start.z; z <= end.z; z++) {
         for (let y = start.y; y <= end.y; y++) {
-          for (let x = start.x; x <= end.x; x++ , i++) {
-            const position = new THREE.Vector3(x - partition.offset.x, y - partition.offset.y, z - partition.offset.z);
-            const blockIndex = com.getBlockIndexWithinPartition(this.worldInfo, position);
-            const blockData = partition.getBlock(position);
+          for (let x = start.x; x <= end.x; x++ , blockNumber++) {
+            const positionInWorld = new THREE.Vector3(x, y, z);
 
-            snapshot.indices[i] = blockIndex;
-            snapshot.blockData[i * 2 + 0] = blockData[0];
-            snapshot.blockData[i * 2 + 1] = blockData[1];
-
-            partition.setBlock(position, this.options.type, this.options.colour);
+            this.setBlock(partition, blockNumber, positionInWorld, this.options.type, this.options.colour);
           }
         }
-      }
-
-      this.snapshots[partition.index] = snapshot;
-    }
-
-    undo(partition: part.Partition): void {
-      const snapshot = this.snapshots[partition.index];
-
-      for (let i = 0; i < snapshot.indices.length; i++) {
-        const index = snapshot.indices[i];
-        const position = com.getPositionFromIndex(this.worldInfo, index);
-
-        const type = snapshot.blockData[i * 2 + 0];
-        const colour = snapshot.blockData[i * 2 + 1];
-
-        partition.setBlock(position, type, colour);
       }
     }
   }

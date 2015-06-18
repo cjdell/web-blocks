@@ -4,6 +4,7 @@ import THREE = require('three');
 import wi from './WorkerInterface';
 import tb from './tools/ToolBase';
 import ct from './tools/CuboidTool';
+import com from '../common/Common';
 
 module Interaction {
   export interface Interaction {
@@ -11,9 +12,10 @@ module Interaction {
   }
 
   export function NewInteraction(viewPort: HTMLElement, scene: THREE.Scene, camera: THREE.Camera, workerInterface: wi.WorkerInterface, worldInfo: any, webcam: any): Interaction {
-    let mouse = new THREE.Vector2(), down = false;
-    let raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
 
+    let down = false;
     let type = 1;
     let tool: tb.Tool = null;
 
@@ -51,10 +53,10 @@ module Interaction {
     function mouseUp(event: any) {
       down = false;
 
-      let pos = getBlockPositionOfMouse();
+      const pos = getBlockPositionOfMouse();
 
       if (!tool) {
-        let context: tb.Context = {
+        const context: tb.Context = {
           scene: scene,
           type: type,
           workerInterface: workerInterface,
@@ -75,7 +77,7 @@ module Interaction {
     function getBlockPositionOfMouse() {
       raycaster.setFromCamera(mouse, camera);
 
-      let intersects = raycaster.intersectObjects(scene.children);
+      const intersects = raycaster.intersectObjects(scene.children);
 
       if (intersects.length > 0) {
         let hitBlock: THREE.Intersection = null;
@@ -91,36 +93,36 @@ module Interaction {
 
         hitBlock = intersects[i];
 
-        let vertexIndex = hitBlock.face.a;
+        const vertexIndex = hitBlock.face.a;
 
-        let offset = getOffset(<THREE.Mesh>hitBlock.object, vertexIndex);
+        const offset = getOffset(<THREE.Mesh>hitBlock.object, vertexIndex);
 
         if (!offset) return null;
 
-        let side = getSide(<THREE.Mesh>hitBlock.object, vertexIndex);
+        const side = getSide(<THREE.Mesh>hitBlock.object, vertexIndex);
 
-        return getPositionFromIndex(offset);
+        return com.getWorldPositionFromIndex(worldInfo, offset);
       }
 
       return null;
     }
 
     function getPositionOfMouseAlongXZPlane(xPlane: number, zPlane: number) {
-      let vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+      const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
       vector.unproject(camera);
 
       //dot(vector);
 
-      let dir = vector.sub(camera.position).normalize();
+      const dir = vector.sub(camera.position).normalize();
 
-      let distancez = (zPlane - camera.position.z) / dir.z;
-      let posz = camera.position.clone().add(dir.multiplyScalar(distancez));
+      const distancez = (zPlane - camera.position.z) / dir.z;
+      const posz = camera.position.clone().add(dir.multiplyScalar(distancez));
 
       posz.x = posz.x | 0;
       posz.y = posz.y | 0;
 
-      let distancex = (xPlane - camera.position.x) / dir.x;
-      let posx = camera.position.clone().add(dir.multiplyScalar(distancex));
+      const distancex = (xPlane - camera.position.x) / dir.x;
+      const posx = camera.position.clone().add(dir.multiplyScalar(distancex));
 
       posx.x = posx.x | 0;
       posx.y = posx.y | 0;
@@ -137,24 +139,15 @@ module Interaction {
     function dot(pos: THREE.Vector3) {
       console.log(pos);
 
-      let geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-      let material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-      let cube = new THREE.Mesh(geometry, material);
+      const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+      const cube = new THREE.Mesh(geometry, material);
       cube.position.set(pos.x, pos.y, pos.z);
       scene.add(cube);
     }
 
-    // TODO: Commonise
-    function getPositionFromIndex(index: number) {
-      let z = Math.floor(index / (worldInfo.blockDimensions.x * worldInfo.blockDimensions.y));
-      let y = Math.floor((index - z * worldInfo.blockDimensions.x * worldInfo.blockDimensions.y) / worldInfo.blockDimensions.x);
-      let x = index - worldInfo.blockDimensions.x * (y + worldInfo.blockDimensions.y * z);
-
-      return new THREE.Vector3(x, y, z);
-    }
-
-    function getOffset(mesh: THREE.Mesh, vertexIndex: number) {
-      let geo: any = mesh.geometry;
+    function getOffset(mesh: THREE.Mesh, vertexIndex: number): number {
+      const geo: any = mesh.geometry;
 
       if (!geo.attributes || !geo.attributes.offset) return null;
 
@@ -162,7 +155,7 @@ module Interaction {
     }
 
     function getSide(mesh: THREE.Mesh, vertexIndex: number) {
-      let geo: any = mesh.geometry;
+      const geo: any = mesh.geometry;
 
       return Math.floor(geo.attributes.data.array[vertexIndex] / 256.0);
     }

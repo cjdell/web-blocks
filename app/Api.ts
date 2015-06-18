@@ -8,7 +8,7 @@ module Api {
   }
 
   export function NewApi(workerInterface: wi.WorkerInterface, viewPoint: any): Api {
-    let help = [
+    const help = [
       'Here you can type JavaScript commands!',
       'Not sure what to type? Here\'s some you can try:',
       '  setPosition(100,12,110)',
@@ -17,9 +17,9 @@ module Api {
       'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
     ].join('\n');
 
-    let hi = 'Hi there!';
+    const hi = 'Hi there!';
 
-    let intervalRefs = <number[]>[];
+    const intervalRefs = <number[]>[];
 
     function setBlock(x: number, y: number, z: number, type: number, colour: number): void {
       workerInterface.setBlocks(new THREE.Vector3(x | 0, y | 0, z | 0), new THREE.Vector3(x | 0, y | 0, z | 0), type, colour, true);
@@ -50,13 +50,13 @@ module Api {
     }
 
     function setInterval(func: Function, interval: number): void {
-      let ref = self.setInterval(func, interval);
+      const ref = self.setInterval(func, interval);
       intervalRefs.push(ref);
     }
 
     function clearIntervals(): void {
       intervalRefs.forEach(self.clearInterval);
-      intervalRefs = [];
+      intervalRefs.length = 0;
     }
 
     return {

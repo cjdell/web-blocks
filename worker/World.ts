@@ -4,14 +4,14 @@ import THREE = require('three');
 import part from './Partition';
 import cmd from './Commands/Command';
 import cc from './Commands/CuboidCommand';
-import com from './Common';
+import lc from './Commands/LandscapeCommand';
+import com from '../common/Common';
 
 module World {
   export interface World {
     init(): void;
     undo(): void;
     getPartitionCapacity(): number;
-    getPartitionBoundaries(): any;
     getBlockDimensions(): THREE.Vector3;
     getPartitionByIndex(partitionIndex: number): part.Partition;
     getBlock(pos: THREE.Vector3): number;
@@ -21,31 +21,38 @@ module World {
   }
 
   export function NewWorld(worldInfo: com.WorldInfo): World {
-    let capacity = worldInfo.worldDimensionsInPartitions.x * worldInfo.worldDimensionsInPartitions.y * worldInfo.worldDimensionsInPartitions.z;
-    let partitionCapacity = worldInfo.partitionDimensionsInBlocks.x * worldInfo.partitionDimensionsInBlocks.y * worldInfo.partitionDimensionsInBlocks.z;
-    let worldDimensionsInBlocks = new THREE.Vector3(worldInfo.worldDimensionsInPartitions.x * worldInfo.partitionDimensionsInBlocks.x, worldInfo.worldDimensionsInPartitions.y * worldInfo.partitionDimensionsInBlocks.y, worldInfo.worldDimensionsInPartitions.z * worldInfo.partitionDimensionsInBlocks.z);
+    const capacity = worldInfo.worldDimensionsInPartitions.x * worldInfo.worldDimensionsInPartitions.y * worldInfo.worldDimensionsInPartitions.z;
+    const partitionCapacity = worldInfo.partitionDimensionsInBlocks.x * worldInfo.partitionDimensionsInBlocks.y * worldInfo.partitionDimensionsInBlocks.z;
+    const worldDimensionsInBlocks = new THREE.Vector3(worldInfo.worldDimensionsInPartitions.x * worldInfo.partitionDimensionsInBlocks.x, worldInfo.worldDimensionsInPartitions.y * worldInfo.partitionDimensionsInBlocks.y, worldInfo.worldDimensionsInPartitions.z * worldInfo.partitionDimensionsInBlocks.z);
+
+    worldInfo.worldDimensionsInBlocks = worldDimensionsInBlocks;
+    worldInfo.partitionBoundaries = getPartitionBoundaries();
 
     let partitions: part.Partition[];
 
-    let h: number;
+    const commands = new Array<cmd.Command>();
 
     function init(): void {
-      h = Math.random() * worldInfo.partitionDimensionsInBlocks.y * worldInfo.worldDimensionsInPartitions.y;
-
       partitions = new Array<part.Partition>(capacity);
 
       for (let z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
         for (let y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
           for (let x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
-            let partitionPosition = new THREE.Vector3(x, y, z);
-            let partitionIndex = getPartitionIndex(x, y, z);
+            const partitionPosition = new THREE.Vector3(x, y, z);
+            const partitionIndex = getPartitionIndex(x, y, z);
 
-            let partition = part.NewPartition(worldInfo.partitionDimensionsInBlocks, partitionPosition, worldInfo.worldDimensionsInPartitions, partitionIndex);
+            const partition = part.NewPartition(worldInfo.partitionDimensionsInBlocks, partitionPosition, worldInfo.worldDimensionsInPartitions, partitionIndex);
 
             partitions[partitionIndex] = partition;
           }
         }
       }
+
+      // Apply the default landscape
+      const randomHeight = Math.random() * worldInfo.partitionDimensionsInBlocks.y * worldInfo.worldDimensionsInPartitions.y;
+      const landscapeCommand = new lc.LandscapeCommand(this.worldInfo, 0, { height: randomHeight });
+
+      applyCommand(landscapeCommand);
     }
 
     function getPartitionCapacity(): number {
@@ -56,18 +63,20 @@ module World {
       return partitions;
     }
 
-    function getPartition(partitionIndex: number): part.Partition {
-      let partition = partitions[partitionIndex];
+    // Lazily load the partitions at they are needed
+    function getPartitionByIndex(partitionIndex: number): part.Partition {
+      const partition = partitions[partitionIndex];
 
       partition.initIfRequired();
 
-      return partition;
-    }
+      // Apply commands as partitions are brought into existance
+      commands.forEach(function(command) {
+        const indices = command.getAffectedPartitionIndices();
 
-    function getPartitionByIndex(partitionIndex: number): part.Partition {
-      let partition = getPartition(partitionIndex);
-
-      partition.setRandomHeight(h);
+        if (indices === null || indices.indexOf(partitionIndex) !== -1) {
+          command.redo(partition);
+        }
+      });
 
       return partition;
     }
@@ -77,46 +86,44 @@ module World {
     }
 
     function getBlock(pos: THREE.Vector3): number {
-      let px = (pos.x / worldInfo.partitionDimensionsInBlocks.x) | 0;
-      let py = (pos.y / worldInfo.partitionDimensionsInBlocks.y) | 0;
-      let pz = (pos.z / worldInfo.partitionDimensionsInBlocks.z) | 0;
+      const px = (pos.x / worldInfo.partitionDimensionsInBlocks.x) | 0;
+      const py = (pos.y / worldInfo.partitionDimensionsInBlocks.y) | 0;
+      const pz = (pos.z / worldInfo.partitionDimensionsInBlocks.z) | 0;
 
-      let partitionIndex = getPartitionIndex(px, py, pz);
-      let partition = getPartition(partitionIndex);
+      const partitionIndex = getPartitionIndex(px, py, pz);
+      const partition = partitions[partitionIndex];
 
-      let rx = pos.x - px * worldInfo.partitionDimensionsInBlocks.x;
-      let ry = pos.y - py * worldInfo.partitionDimensionsInBlocks.y;
-      let rz = pos.z - pz * worldInfo.partitionDimensionsInBlocks.z;
+      if (!partition.isInited()) return 0;
 
-      //console.log(rx, ry, rz)
+      const rx = pos.x - px * worldInfo.partitionDimensionsInBlocks.x;
+      const ry = pos.y - py * worldInfo.partitionDimensionsInBlocks.y;
+      const rz = pos.z - pz * worldInfo.partitionDimensionsInBlocks.z;
 
       return partition.getBlock(new THREE.Vector3(rx, ry, rz))[0];
     }
-
-    const commands = new Array<cmd.Command>();
 
     function applyCommand(command: cmd.Command): void {
       commands.push(command);
 
       const indices = command.getAffectedPartitionIndices();
-      const partitions = indices.map(getPartitionByIndex);
+      let partitionsToApply = partitions;
 
-      partitions.forEach(function(partition) {
-        command.redo(partition);
-      });
+      if (indices !== null) partitionsToApply = indices.map(i => partitions[i]);
+
+      partitionsToApply.filter(p => p.isInited()).forEach(command.redo, command);
     }
 
     function undo(): void {
       if (commands.length === 0) return;
-      
+
       const command = commands.pop();
 
       const indices = command.getAffectedPartitionIndices();
-      const partitions = indices.map(getPartitionByIndex);
+      let partitionsToApply = partitions;
 
-      partitions.forEach(function(partition) {
-        command.undo(partition);
-      });
+      if (indices !== null) partitionsToApply = indices.map(i => partitions[i]);
+
+      partitionsToApply.filter(p => p.isInited()).forEach(command.undo, command);
     }
 
     function setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void {
@@ -131,13 +138,11 @@ module World {
     }
 
     function addBlock(index: number, side: number, type: number): void {
-      let position = getPositionFromIndex(index);
+      const position = com.getWorldPositionFromIndex(worldInfo, index);
 
       if (type === 0) {
         return setBlocks(position, position, type, 0);
       }
-
-      console.log('position', position);
 
       if (side === 0.0) {
         position.x++;
@@ -165,31 +170,22 @@ module World {
       return x + worldInfo.worldDimensionsInPartitions.x * (y + worldInfo.worldDimensionsInPartitions.y * z);
     }
 
-    // TODO: Commonise
-    function getPositionFromIndex(index: number): THREE.Vector3 {
-      let z = Math.floor(index / (worldDimensionsInBlocks.x * worldDimensionsInBlocks.y));
-      let y = Math.floor((index - z * worldDimensionsInBlocks.x * worldDimensionsInBlocks.y) / worldDimensionsInBlocks.x);
-      let x = index - worldDimensionsInBlocks.x * (y + worldDimensionsInBlocks.y * z);
-
-      return new THREE.Vector3(x, y, z);
-    }
-
     function getPartitionBoundaries(): any[] {
-      let partitionBoundaries = <any[]>[];
+      const partitionBoundaries = <any[]>[];
 
       for (let z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
         for (let y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
           for (let x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
-            let partitionIndex = getPartitionIndex(x, y, z);
+            const partitionIndex = getPartitionIndex(x, y, z);
 
-            let boundaryPoints = <THREE.Vector3[]>[];
+            const boundaryPoints = <THREE.Vector3[]>[];
 
             for (let bx = 0; bx < 2; bx++) {
               for (let by = 0; by < 2; by++) {
                 for (let bz = 0; bz < 2; bz++) {
-                  let x1 = worldInfo.partitionDimensionsInBlocks.x * (x + bx);
-                  let y1 = worldInfo.partitionDimensionsInBlocks.y * (y + by);
-                  let z1 = worldInfo.partitionDimensionsInBlocks.z * (z + bz);
+                  const x1 = worldInfo.partitionDimensionsInBlocks.x * (x + bx);
+                  const y1 = worldInfo.partitionDimensionsInBlocks.y * (y + by);
+                  const z1 = worldInfo.partitionDimensionsInBlocks.z * (z + bz);
 
                   boundaryPoints.push(new THREE.Vector3(x1, y1, z1));
                 }
@@ -205,11 +201,10 @@ module World {
     }
 
     function getDirtyPartitions(): number[] {
-      let dirty = <number[]>[];
+      const dirty = <number[]>[];
 
       for (let partitionIndex = 0; partitionIndex < capacity; partitionIndex++) {
-        //let partition = getPartition(partitionIndex);
-        let partition = partitions[partitionIndex];
+        const partition = partitions[partitionIndex];
 
         if (partition.isDirty()) {
           dirty.push(partitionIndex);
@@ -229,7 +224,6 @@ module World {
       getPartitions: getPartitions,
       getPartitionByIndex: getPartitionByIndex,
       getBlockDimensions: getBlockDimensions,
-      getPartitionBoundaries: getPartitionBoundaries,
       getDirtyPartitions: getDirtyPartitions
     };
   }

@@ -1,7 +1,6 @@
 /// <reference path="../typings/tsd.d.ts" />
 'use strict';
-
-let win = <any>self;
+const win = <any>self;
 win.importScripts('external.js');
 
 import _ = require('underscore');
@@ -9,7 +8,7 @@ import THREE = require('three');
 
 import w from './World';
 import wg from './WorldGeometry';
-import com from './Common';
+import com from '../common/Common';
 
 console.log('GeometryWorker: online');
 
@@ -23,9 +22,12 @@ interface Invocation {
 }
 
 function init(invocation: Invocation): void {
-  let worldInfo: com.WorldInfo = {
+  const worldInfo: com.WorldInfo = {
     worldDimensionsInPartitions: new THREE.Vector3(32, 1, 32),
-    partitionDimensionsInBlocks: new THREE.Vector3(16, 32, 16)
+    partitionDimensionsInBlocks: new THREE.Vector3(16, 32, 16),
+    worldDimensionsInBlocks: null,
+    partitionBoundaries: null,
+    partitionCapacity: 0
   };
 
   world = w.NewWorld(worldInfo);
@@ -36,16 +38,12 @@ function init(invocation: Invocation): void {
 
   return win.postMessage({
     id: invocation.id,
-    data: {
-      partitionBoundaries: world.getPartitionBoundaries(),
-      partitionCapacity: world.getPartitionCapacity(),
-      blockDimensions: world.getBlockDimensions()
-    }
+    data: worldInfo
   });
 }
 
 self.onmessage = function(e) {
-  let invocation = <Invocation>e.data;
+  const invocation = <Invocation>e.data;
 
   if (invocation.action === 'init') {
     return init(invocation);
@@ -63,7 +61,7 @@ self.onmessage = function(e) {
   }
 
   if (invocation.action === 'getPartition') {
-    let geo = worldGeometry.getPartitionGeometry(invocation.data.index);
+    const geo = worldGeometry.getPartitionGeometry(invocation.data.index);
 
     win.postMessage({
       id: invocation.id,
@@ -81,7 +79,7 @@ self.onmessage = function(e) {
   }
 
   if (invocation.action === 'getBlock') {
-    let type = world.getBlock(invocation.data.pos);
+    const type = world.getBlock(invocation.data.pos);
 
     win.postMessage({
       id: invocation.id,
@@ -93,8 +91,8 @@ self.onmessage = function(e) {
   }
 
   if (invocation.action === 'setBlocks') {
-    let start = new THREE.Vector3(invocation.data.start.x, invocation.data.start.y, invocation.data.start.z);
-    let end = new THREE.Vector3(invocation.data.end.x, invocation.data.end.y, invocation.data.end.z);
+    const start = new THREE.Vector3(invocation.data.start.x, invocation.data.start.y, invocation.data.start.z);
+    const end = new THREE.Vector3(invocation.data.end.x, invocation.data.end.y, invocation.data.end.z);
 
     world.setBlocks(start, end, invocation.data.type, invocation.data.colour);
 
@@ -109,7 +107,7 @@ self.onmessage = function(e) {
 };
 
 var checkForChangedPartitions = _.debounce(function() {
-  let dirty = world.getDirtyPartitions();
+  const dirty = world.getDirtyPartitions();
 
   win.postMessage({
     action: 'update',

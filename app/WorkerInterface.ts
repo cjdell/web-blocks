@@ -1,9 +1,11 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
+import com from '../common/Common';
+
 module WorkerInterface {
   export interface WorkerInterface {
-    init(): Promise<Object>;
+    init(): Promise<com.WorldInfo>;
     undo(): Promise<Object>;
     getBlock(pos: THREE.Vector3): Promise<number>;
     setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number, update: boolean): Promise<Object>;
@@ -33,7 +35,7 @@ module WorkerInterface {
     }
 
     function init() {
-      return invoke<Object>('init', null);
+      return invoke<com.WorldInfo>('init', null);
     }
 
     function undo() {

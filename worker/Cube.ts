@@ -1,9 +1,9 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-let positionTemplate = new Float32Array([0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5]);
-let normalTemplate = new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
-let uvTemplate = new Float32Array([0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]);
+const positionTemplate = new Float32Array([0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5]);
+const normalTemplate = new Float32Array([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
+const uvTemplate = new Float32Array([0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]);
 
 module Cube {
   export interface Cube {
@@ -15,31 +15,29 @@ module Cube {
   }
 
   export function NewCube(bufferGeometry: any, cubeIndex: number): Cube {
-    let FACE_PER_CUBE = 6;
-    let VERTICES_PER_FACE = 6;
-    let VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
+    const FACE_PER_CUBE = 6;
+    const VERTICES_PER_FACE = 6;
+    const VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
 
-    let POSITION_VALUES_PER_VERTEX = 3;
-    let DATA_VALUES_PER_VERTEX = 4;
+    const POSITION_VALUES_PER_VERTEX = 3;
+    const DATA_VALUES_PER_VERTEX = 4;
 
-    let vertexOffset = cubeIndex * VERTICES_PER_CUBE;
+    const vertexOffset = cubeIndex * VERTICES_PER_CUBE;
 
-    let positionOffset = vertexOffset * POSITION_VALUES_PER_VERTEX;
-    let uvOffset = vertexOffset * 2;
-    let dataOffset = vertexOffset * DATA_VALUES_PER_VERTEX;
+    const positionOffset = vertexOffset * POSITION_VALUES_PER_VERTEX;
+    const uvOffset = vertexOffset * 2;
+    const dataOffset = vertexOffset * DATA_VALUES_PER_VERTEX;
 
     function init(): void {
-      let i = 0, p = 0;
-
-      for (i = positionOffset, p = 0; i < positionOffset + VERTICES_PER_CUBE * POSITION_VALUES_PER_VERTEX; i++, p++) {
+      for (let i = positionOffset, p = 0; i < positionOffset + VERTICES_PER_CUBE * POSITION_VALUES_PER_VERTEX; i++ , p++) {
         bufferGeometry.attributes.position.array[i] = positionTemplate[p];
       }
 
-      for (i = positionOffset, p = 0; i < positionOffset + VERTICES_PER_CUBE * POSITION_VALUES_PER_VERTEX; i++, p++) {
+      for (let i = positionOffset, p = 0; i < positionOffset + VERTICES_PER_CUBE * POSITION_VALUES_PER_VERTEX; i++ , p++) {
         bufferGeometry.attributes.normal.array[i] = normalTemplate[p];
       }
 
-      for (i = uvOffset, p = 0; i < uvOffset + VERTICES_PER_CUBE * 2; i++, p++) {
+      for (let i = uvOffset, p = 0; i < uvOffset + VERTICES_PER_CUBE * 2; i++ , p++) {
         bufferGeometry.attributes.uv.array[i] = uvTemplate[p];
       }
     }
@@ -68,8 +66,8 @@ module Cube {
 
     function setData(type: number, shade: number, colour: number): void {
       for (let i = dataOffset, v = 0; i < dataOffset + VERTICES_PER_CUBE * DATA_VALUES_PER_VERTEX; i += DATA_VALUES_PER_VERTEX, v++) {
-        let plane = (v / VERTICES_PER_FACE) | 0;
-        let side = plane % 6;
+        const plane = (v / VERTICES_PER_FACE) | 0;
+        const side = plane % 6;
 
         bufferGeometry.attributes.data.array[i + 0] = type;
         bufferGeometry.attributes.data.array[i + 1] = side;

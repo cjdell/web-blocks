@@ -8,6 +8,7 @@ import wi from './WorkerInterface';
 import _api from './Api';
 import wc from './Webcam';
 import tr from './TextRenderer';
+import com from '../common/Common';
 
 module Game {
   export interface Game {
@@ -15,6 +16,9 @@ module Game {
   }
 
   export function NewGame() {
+    const win = <any>self;
+    const log = false;
+
     let workerInterface: wi.WorkerInterface = null;
     let renderer: any = null;
     let viewPort: any = null;
@@ -29,11 +33,8 @@ module Game {
     let webcam: wc.Webcam = null;
     let textRenderer: tr.TextRenderer = null;
 
-    let win = <any>self;
-
     let uniforms: any = null;
     let frame = 0;
-    let log = false;
 
     let vertexShader: string = null;
     let fragmentShader: string = null;
@@ -54,9 +55,8 @@ module Game {
 
       blockTypeList = btl.NewBlockTypeList();
 
-      return Promise.all([workerInterface.init(), loadShaders()])
-        .then(function(res) {
-        let worldInfo = res[0];
+      return Promise.all([workerInterface.init(), loadShaders()]).then(function(res) {
+        const worldInfo = <com.WorldInfo>res[0];
 
         uniforms = {};
 
@@ -68,12 +68,12 @@ module Game {
         uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['lights'], uniforms]);
         uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], uniforms]);
 
-        let attributes: any = {
+        const attributes: any = {
           data: { type: 'v4', value: null },
           offset: { type: 'f', value: null }
         };
 
-        let blockMaterial = new THREE.ShaderMaterial({
+        const blockMaterial = new THREE.ShaderMaterial({
           attributes: attributes,
           uniforms: uniforms,
           vertexShader: vertexShader,
@@ -90,11 +90,11 @@ module Game {
           blockMaterial.uniforms.textures.value = texture;
         });
 
-        let ambientLight = new THREE.AmbientLight(0x777777);
+        const ambientLight = new THREE.AmbientLight(0x777777);
         scene.add(ambientLight);
 
         // Create light
-        let pointLight = new THREE.PointLight(0xffffff, 1.0);
+        const pointLight = new THREE.PointLight(0xffffff, 1.0);
         pointLight.position.set(5.0, 5.0, 5.0);
         scene.add(pointLight);
 
@@ -130,7 +130,7 @@ module Game {
       frame += 1;
 
       if (frame % 10 === 0) {
-        let changes = culling.getNewlyVisiblePartitions();
+        const changes = culling.getNewlyVisiblePartitions();
 
         worldViewer.exposeNewPartitions(changes);
       }

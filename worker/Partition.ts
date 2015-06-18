@@ -1,16 +1,14 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import noise from './ImprovedNoise';
-
 module Partition {
   export interface Partition {
     initIfRequired(): void;
-    setRandomHeight(height: number): void;
     getBlock(position: THREE.Vector3): Uint8Array;
     setBlock(position: THREE.Vector3, type: number, colour: number): void;
     getVisibleBlocks(): VisibleBlocksResult;
     isDirty(): boolean;
+    isInited(): boolean;
 
     index: number;
     dimensions: THREE.Vector3;
@@ -23,8 +21,9 @@ module Partition {
   }
 
   export function NewPartition(dimensions: THREE.Vector3, partitionPosition: THREE.Vector3, worldDimensions: THREE.Vector3, partitionIndex: number): Partition {
-    let capacity = dimensions.x * dimensions.y * dimensions.z;
-    let offset = new THREE.Vector3(partitionPosition.x * dimensions.x, partitionPosition.y * dimensions.y, partitionPosition.z * dimensions.z);
+    const capacity = dimensions.x * dimensions.y * dimensions.z;
+    const offset = new THREE.Vector3(partitionPosition.x * dimensions.x, partitionPosition.y * dimensions.y, partitionPosition.z * dimensions.z);
+
     let blocks: Uint8Array = null;
     let dirty = false;
     let occupied = 0;   // Total of everything that isn't air
@@ -38,15 +37,15 @@ module Partition {
     }
 
     function getBlock(position: THREE.Vector3): Uint8Array {
-      let index = getIndex(position.x, position.y, position.z);
+      const index = getIndex(position.x, position.y, position.z);
 
       return new Uint8Array([blocks[VALUES_PER_BLOCK * index]]);
     }
 
     function setBlockWithIndex(index: number, type: number, colour: number): void {
-      let offset = VALUES_PER_BLOCK * index;
+      const offset = VALUES_PER_BLOCK * index;
 
-      let currentType = blocks[offset + 0];
+      const currentType = blocks[offset + 0];
 
       if (currentType === type) return;
 
@@ -84,36 +83,36 @@ module Partition {
     }
 
     function getPositionFromIndex(index: number) {
-      let z = Math.floor(index / (dimensions.x * dimensions.y));
-      let y = Math.floor((index - z * dimensions.x * dimensions.y) / dimensions.x);
-      let x = index - dimensions.x * (y + dimensions.y * z);
+      const z = Math.floor(index / (dimensions.x * dimensions.y));
+      const y = Math.floor((index - z * dimensions.x * dimensions.y) / dimensions.x);
+      const x = index - dimensions.x * (y + dimensions.y * z);
 
       return new THREE.Vector3(x, y, z);
     }
 
     function canBlockBeSeen(index: number): boolean {
-      let pos = getPositionFromIndex(index);
+      const pos = getPositionFromIndex(index);
 
       if (pos.x === 0 || pos.y === 0 || pos.z === 0) return true;
       if (pos.x === dimensions.x - 1 || pos.y === dimensions.y - 1 || pos.z === dimensions.z - 1) return true;
 
-      let xdi = index - 1;
-      let xui = index + 1;
+      const xdi = index - 1;
+      const xui = index + 1;
 
-      let ydi = index - dimensions.x;
-      let yui = index + dimensions.x;
+      const ydi = index - dimensions.x;
+      const yui = index + dimensions.x;
 
-      let zdi = index - (dimensions.x * dimensions.y);
-      let zui = index + (dimensions.x * dimensions.y);
+      const zdi = index - (dimensions.x * dimensions.y);
+      const zui = index + (dimensions.x * dimensions.y);
 
-      let xd = blocks[VALUES_PER_BLOCK * xdi];
-      let xu = blocks[VALUES_PER_BLOCK * xui];
+      const xd = blocks[VALUES_PER_BLOCK * xdi];
+      const xu = blocks[VALUES_PER_BLOCK * xui];
 
-      let yd = blocks[VALUES_PER_BLOCK * ydi];
-      let yu = blocks[VALUES_PER_BLOCK * yui];
+      const yd = blocks[VALUES_PER_BLOCK * ydi];
+      const yu = blocks[VALUES_PER_BLOCK * yui];
 
-      let zd = blocks[VALUES_PER_BLOCK * zdi];
-      let zu = blocks[VALUES_PER_BLOCK * zui];
+      const zd = blocks[VALUES_PER_BLOCK * zdi];
+      const zu = blocks[VALUES_PER_BLOCK * zui];
 
       return !(xd && xu && yd && yu && zd && zu);
     }
@@ -123,7 +122,7 @@ module Partition {
     }
 
     function getBlockIndexInWorld(blockIndex: number): number {
-      let position = getPositionFromIndex(blockIndex);
+      const position = getPositionFromIndex(blockIndex);
 
       position.x += offset.x;
       position.y += offset.y;
@@ -132,66 +131,29 @@ module Partition {
       return getWorldIndexFromWorldPosition(position.x, position.y, position.z);
     }
 
-    function setRandomHeight(h: number): void {
-      let width = dimensions.x, height = dimensions.z;
-
-      let data = <number[]>[];
-      let perlin = noise.NewImprovedNoise();
-      let size = width * height;
-      let quality = 1;
-      //let h = Math.random() * dimensions.y;
-
-      for (let j = 0; j < 4; j++) {
-        if (j == 0) for (let i = 0; i < size; i++) data[i] = 0;
-
-        let index = 0;
-
-        for (let x = offset.x; x < offset.x + width; x++) {
-          for (let z = offset.z; z < offset.z + height; z++, index++) {
-            data[index] += perlin.noise(x / quality, z / quality, h) * quality;
-          }
-        }
-
-        quality *= 4;
-      }
-
-      let index2 = 0;
-
-      for (let x = 0; x < width; x++) {
-        for (let z = 0; z < height; z++, index2++) {
-          let y2 = Math.min(Math.abs(data[index2] * 0.2), dimensions.y) | 0;
-
-          if (y2 >= 1) {
-            setBlocks(new THREE.Vector3(x, 0, z), new THREE.Vector3(x, y2, z), 2);
-          } else {
-            setBlocks(new THREE.Vector3(x, 1, z), new THREE.Vector3(x, 1, z), 3);
-          }
-        }
-      }
-    }
-
     function isDirty(): boolean {
       return dirty;
     }
 
     function getVisibleBlocks(): VisibleBlocksResult {
-      let valuesPerBlock = 6;
+      const valuesPerBlock = 6;
 
       updateHeightMap();
 
+      const changes = new Int32Array(occupied * valuesPerBlock);
+
       let id = 0;
-      let changes = new Int32Array(occupied * valuesPerBlock);
 
       for (let index = 0; index < capacity; index++) {
-        let offset = VALUES_PER_BLOCK * index;
+        const offset = VALUES_PER_BLOCK * index;
 
-        let type = blocks[offset + 0];
-        let colour = blocks[offset + 1];
+        const type = blocks[offset + 0];
+        const colour = blocks[offset + 1];
 
         if (type !== 0 && canBlockBeSeen(index)) {
-          let pos = getPositionFromIndex(index);
+          const pos = getPositionFromIndex(index);
 
-          let shade = computeOcclusion(pos) * 16;
+          const shade = computeOcclusion(pos) * 16;
 
           changes[id * valuesPerBlock + 0] = id;
           changes[id * valuesPerBlock + 1] = index;
@@ -212,7 +174,7 @@ module Partition {
     let heightMap = new Uint8Array(dimensions.x * dimensions.z);
 
     function computeOcclusion(pos: THREE.Vector3) {
-      let pindex = pos.z * dimensions.x + pos.x;
+      const pindex = pos.z * dimensions.x + pos.x;
 
       if (heightMap[pindex] > pos.y) return 8;
 
@@ -226,11 +188,11 @@ module Partition {
           if (x > dimensions.x - 1) continue;
           if (z > dimensions.z - 1) continue;
 
-          let r = Math.sqrt(Math.pow(pos.x - x, 2) + Math.pow(pos.z - z, 2));
+          const r = Math.sqrt(Math.pow(pos.x - x, 2) + Math.pow(pos.z - z, 2));
 
-          let index = z * dimensions.x + x;
+          const index = z * dimensions.x + x;
 
-          let height = heightMap[index] - pos.y;
+          const height = heightMap[index] - pos.y;
 
           if (height > 0) combinedHeight += height / (r * r);
         }
@@ -242,7 +204,7 @@ module Partition {
     function updateHeightMap() {
       for (let z = 0; z < dimensions.z; z++) {
         for (let x = 0; x < dimensions.x; x++) {
-          let index = z * dimensions.x + x;
+          const index = z * dimensions.x + x;
 
           heightMap[index] = getHighestPoint(x, z);
         }
@@ -251,12 +213,16 @@ module Partition {
 
     function getHighestPoint(x: number, z: number) {
       for (let y = dimensions.y - 1; y >= 0; y--) {
-        let index = getIndex(x, y, z);
+        const index = getIndex(x, y, z);
 
         if (blocks[VALUES_PER_BLOCK * index] !== 0) return y;
       }
 
       return 0;
+    }
+
+    function isInited(): boolean {
+      return blocks !== null;
     }
 
     return {
@@ -268,9 +234,9 @@ module Partition {
       initIfRequired: initIfRequired,
       getBlock: getBlock,
       setBlock: setBlock,
-      setRandomHeight: setRandomHeight,
       isDirty: isDirty,
-      getVisibleBlocks: getVisibleBlocks
+      getVisibleBlocks: getVisibleBlocks,
+      isInited: isInited
     };
   }
 }

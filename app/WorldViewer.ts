@@ -2,6 +2,7 @@ import THREE = require('three');
 import _ = require('underscore');
 
 import wi from './WorkerInterface';
+import com from '../common/Common';
 
 module WorldViewer {
   export interface WorldViewer {
@@ -13,7 +14,7 @@ module WorldViewer {
     index: number;
   }
 
-  export function NewWorldViewer(scene: THREE.Scene, worldInfo: any, shaderMaterial: THREE.Material, workerInterface: wi.WorkerInterface): WorldViewer {
+  export function NewWorldViewer(scene: THREE.Scene, worldInfo: com.WorldInfo, shaderMaterial: THREE.Material, workerInterface: wi.WorkerInterface): WorldViewer {
     let partitionCaches: PartitionCacheItem[] = null;
 
     init();
@@ -131,14 +132,14 @@ module WorldViewer {
       let material = new THREE.MeshBasicMaterial({ color: 0xbbccff, side: THREE.DoubleSide });
       let plane = new THREE.Mesh(geometry, material);
 
-      plane.position.x = worldInfo.blockDimensions.x / 2;
+      plane.position.x = worldInfo.worldDimensionsInBlocks.x / 2;
       plane.position.y = 100;
-      plane.position.z = worldInfo.blockDimensions.z / 2;
+      plane.position.z = worldInfo.worldDimensionsInBlocks.z / 2;
 
       plane.rotation.x = Math.PI / 2;
 
-      plane.scale.x = (worldInfo.blockDimensions.x * 100);
-      plane.scale.y = (worldInfo.blockDimensions.z * 100);
+      plane.scale.x = (worldInfo.worldDimensionsInBlocks.x * 100);
+      plane.scale.y = (worldInfo.worldDimensionsInBlocks.z * 100);
 
       scene.add(plane);
     }
