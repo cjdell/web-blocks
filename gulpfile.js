@@ -12,7 +12,7 @@ var brfs = require('brfs');
 var tsify = require('tsify');
 
 var config = {
-  external: ['underscore', 'whatwg-fetch', 'buffer', 'three'],
+  external: ['underscore', 'whatwg-fetch', 'buffer', 'three', 'es6-promise'],
   watch: false,
   sourceMaps: true
 };

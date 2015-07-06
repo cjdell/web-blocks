@@ -1,4 +1,5 @@
 require('whatwg-fetch');
+require('es6-promise').polyfill();
 
 var DesktopPlatform = require('./DesktopPlatform');
 var CardboardPlatform = require('./CardboardPlatform');
