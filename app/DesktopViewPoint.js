@@ -162,7 +162,7 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
     camera.position.z = Math.max(camera.position.z, 0);
 
     camera.position.x = Math.min(camera.position.x, worldInfo.worldDimensionsInBlocks.x);
-    camera.position.y = Math.min(camera.position.y, worldInfo.worldDimensionsInBlocks.y);
+    camera.position.y = Math.min(camera.position.y, worldInfo.worldDimensionsInBlocks.y * 2);
     camera.position.z = Math.min(camera.position.z, worldInfo.worldDimensionsInBlocks.z);
   }
 

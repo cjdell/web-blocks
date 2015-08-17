@@ -41,10 +41,10 @@ var ToolBox = React.createClass({
 
         return (
         <li key={index}
+            title={blockType.name}
             onClick={this.blockTypeClick.bind(this, index)}
             className={index === this.state.blockTypeIndex ? 'selected' : ''}
-            style={{ 'background-image': "url('" + blockType.textures.side + "')" }}>
-          {blockType.name}
+            style={ blockType.textures.side ? { 'background-image': "url('" + blockType.textures.side + "')" } : {} }>
         </li>
         );
       }, this);
@@ -53,10 +53,10 @@ var ToolBox = React.createClass({
     return (
     <div className="toolBox">
       <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
-      <ul>
+      <ul className="large">
         <li className="codeButton" onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
       </ul>
-      <ul>{lis}</ul>
+      <ul className="small">{lis}</ul>
       <div className="author">
         <div>Created by: <a href="https://twitter.com/cjdell" target="_blank">@cjdell</a></div>
         <div><a href="https://github.com/cjdell/web-blocks" target="_blank">GitHub</a></div>

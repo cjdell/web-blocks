@@ -21,6 +21,7 @@ module Game {
 
     let workerInterface: WorkerInterface = null;
     let renderer: any = null;
+    let effect: any = null;
     let viewPort: any = null;
     let camera: THREE.Camera = null;
     let scene: THREE.Scene = null;
@@ -43,9 +44,10 @@ module Game {
       workerInterface = new WorkerInterface();
 
       renderer = platform.getRenderer();
+      effect = platform.getEffect();
       viewPort = platform.getViewPort();
 
-      if (renderer.setClearColor) renderer.setClearColor(0xffffff, 1);
+      renderer.setClearColor(0xffffff, 1);
 
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -99,7 +101,7 @@ module Game {
         scene.add(pointLight);
 
         worldViewer = new WorldViewer(scene, worldInfo, blockMaterial, workerInterface);
-        viewPoint = new platform.ViewPoint(camera, pointLight, viewPort, renderer, worldInfo);
+        viewPoint = new platform.ViewPoint(camera, pointLight, viewPort, effect, worldInfo);
         culling = new Culling(camera, worldInfo);
         webcam = new Webcam();
         interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo, webcam);
@@ -135,7 +137,7 @@ module Game {
         worldViewer.exposeNewPartitions(changes);
       }
 
-      renderer.render(scene, camera);
+      effect.render(scene, camera);
 
       if (log) console.timeEnd('frame');
     }

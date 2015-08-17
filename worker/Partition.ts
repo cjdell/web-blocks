@@ -32,10 +32,8 @@ export default class Partition {
     this.heightMap = new Uint8Array(this.worldInfo.partitionDimensionsInBlocks.x * this.worldInfo.partitionDimensionsInBlocks.z);
   }
 
-  initIfRequired(): void {
-    if (this.blocks === null) {
-      this.blocks = new Uint8Array(this.capacity * VALUES_PER_BLOCK);
-    }
+  init(): void {
+    this.blocks = new Uint8Array(this.capacity * VALUES_PER_BLOCK);
   }
 
   getBlock(rx: number, ry: number, rz: number): Uint8Array {

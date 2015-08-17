@@ -158,18 +158,22 @@ var CodeEditor = React.createClass({
 
 function CodeRunner() {
   function run(code, expr) {
-    var toRun;
+    var toRun = '';
+
+    Object.keys(window.api).forEach(function(key) {
+      toRun += 'var ' + key + ' = window.api.' + key + ';\n';
+    });
 
     if (expr) {
-      toRun = 'with (arguments[0]) { return (' + code + '); }';
+      toRun += 'return (' + code + ');';
     } else {
-      toRun = 'with (arguments[0]) { ' + code + '; }';
+      toRun += code;
     }
 
     window.api.clearIntervals();
 
     try {
-      var func = new Function(toRun);
+      var func = new Function('context', toRun);
 
       var res = func(window.api);
 

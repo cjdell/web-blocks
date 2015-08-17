@@ -15,7 +15,7 @@ export class LandscapeCommand extends UndoableCommand {
   options: LandscapeCommandOptions;
 
   constructor(worldInfo: com.WorldInfo, version: number, options: LandscapeCommandOptions) {
-    super(worldInfo, version);
+    super(worldInfo, version, options);
 
     this.options = options;
   }

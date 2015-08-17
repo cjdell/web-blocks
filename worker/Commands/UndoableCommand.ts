@@ -14,14 +14,12 @@ interface PartitionSnapshots {
   [index: number]: PartitionSnapshot;
 }
 
-export default class UndoableCommand implements Command {
-  worldInfo: com.WorldInfo
-  version: number;
+export default class UndoableCommand extends Command {
   snapshots: PartitionSnapshots;
 
-  constructor(worldInfo: com.WorldInfo, version: number) {
-    this.worldInfo = worldInfo;
-    this.version = version;
+  constructor(worldInfo: com.WorldInfo, version: number, options: any) {
+    super(worldInfo, version, options);
+
     this.snapshots = {};
   }
 
@@ -47,14 +45,6 @@ export default class UndoableCommand implements Command {
     snapshot.blockData[blockNumber * 2 + 1] = blockData[1];
 
     partition.setBlock(rx, ry, rz, type, colour);
-  }
-
-  getAffectedPartitionIndices(): number[] {
-    throw new Error('Not implemented');
-  }
-
-  redo(partition: Partition): void {
-    throw new Error('Not implemented');
   }
 
   undo(partition: Partition): void {

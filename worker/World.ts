@@ -35,6 +35,8 @@ export default class World {
     this.partitionCapacity = worldInfo.partitionCapacity;
 
     worldInfo.partitionBoundaries = this.getPartitionBoundaries();
+
+    // setTimeout(() => this.saveCommands(), 2000);
   }
 
   registerChangeHandler(handler: ChangeHandler) {
@@ -65,11 +67,7 @@ export default class World {
           const ppos = new com.IntVector3(x, y, z);
           const pindex = this.worldInfo.pindex2(x, y, z);
 
-          const partition = new Partition(this.worldInfo, ppos);
-
-          // console.log('init', partitionIndex);
-
-          this.partitions[pindex] = partition;
+          this.partitions[pindex] = new Partition(this.worldInfo, ppos);
         }
       }
     }
@@ -91,9 +89,7 @@ export default class World {
 
   loadPartition(partition: Partition) {
     if (!partition.isInited()) {
-      // console.log('loadPartition', partition.index)
-
-      partition.initIfRequired();
+      partition.init();
 
       // Apply commands as partitions are brought into existance
       this.commands.forEach(command => {
@@ -139,9 +135,11 @@ export default class World {
 
     if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
 
-    // console.log('applyCommand', indices);
-
     partitionsToApply.filter(p => p.isInited()).forEach(command.redo, command);
+  }
+
+  saveCommands(): void {
+    console.log(JSON.stringify(this.commands));
   }
 
   undo(): void {
@@ -325,7 +323,7 @@ export default class World {
   }
 
   getVisibleBlocks(partitionIndex: number): Int32Array {
-    console.time('getVisibleBlocks');
+    // console.time('getVisibleBlocks');
 
     const partition = this.getPartitionByIndex(partitionIndex);
 
@@ -381,7 +379,7 @@ export default class World {
       ret[i] = visibleBlocks[i];
     }
 
-    console.timeEnd('getVisibleBlocks');
+    // console.timeEnd('getVisibleBlocks');
 
     return ret;
   }

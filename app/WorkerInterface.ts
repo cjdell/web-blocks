@@ -15,7 +15,11 @@ export default class WorkerInterface {
 
     this.geoWorker.onmessage = e => {
       if (typeof e.data.id === 'number') {
-        return this.callbacks[e.data.id](e.data.data);
+        const callback = this.callbacks[e.data.id];
+
+        delete this.callbacks[e.data.id];
+        
+        return callback(e.data.data);
       }
 
       if (e.data.action === 'update') {

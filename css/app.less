@@ -38,17 +38,36 @@ body {
 }
 
 .toolBox {
-  width: 100px;
+  width: 96px;
 
   > ul {
-    padding: 10px;
     margin: 0;
+    overflow: hidden;
+
+    &.small {
+      padding: 8px 0 0 8px;
+
+      li {
+        width: 36px;
+        height: 36px;
+        float: left;
+        margin: 0 8px 8px 0;
+      }
+    }
+
+    &.large {
+      padding: 8px 0 0 8px;
+
+      li {
+        width: 82px;
+        height: 82px;
+        margin: 0 8px 8px 0;
+      }
+    }
 
     li {
       list-style: none;
-      width: 80px;
-      height: 80px;
-      margin-bottom: 10px;
+
       text-align: center;
       line-height: 76px;
       background: #ddd;

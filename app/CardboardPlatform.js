@@ -8,30 +8,34 @@ var CardboardViewPoint = require('./CardboardViewPoint');
 
 function CardboardPlatform() {
   var renderer = null;
+  var effect = null;
   var viewPort = null;
 
   function init(container) {
-    var webGlRenderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer();
+    viewPort = container;
 
     var width = window.innerWidth, height = window.innerHeight;
 
-    webGlRenderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-    webGlRenderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+    renderer.setSize(width, height);
 
-    container.appendChild(webGlRenderer.domElement);
+    container.appendChild(renderer.domElement);
 
-    var effect = new THREE.StereoEffect(webGlRenderer);
-
+    effect = new THREE.StereoEffect(renderer);
     effect.setSize(width, height);
+  }
 
-    renderer = effect;
-    viewPort = container;
-
-    return effect;
+  function getUserInterface() {
+    return null;
   }
 
   function getRenderer() {
     return renderer;
+  }
+
+  function getEffect() {
+    return effect;
   }
 
   function getViewPort() {
@@ -41,7 +45,9 @@ function CardboardPlatform() {
   return {
     ViewPoint: CardboardViewPoint,
     init: init,
+    getUserInterface: getUserInterface,
     getRenderer: getRenderer,
+    getEffect: getEffect,
     getViewPort: getViewPort
   };
 }

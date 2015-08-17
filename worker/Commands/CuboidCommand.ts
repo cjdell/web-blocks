@@ -26,7 +26,7 @@ export class CuboidCommand extends UndoableCommand {
   options: CuboidCommandOptions;
 
   constructor(worldInfo: com.WorldInfo, version: number, options: CuboidCommandOptions) {
-    super(worldInfo, version);
+    super(worldInfo, version, options);
 
     this.options = options;
 

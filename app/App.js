@@ -24,11 +24,11 @@ function App() {
 
     var ui = platform.getUserInterface();
 
-    ui.setGame(game);
+    if (ui) ui.setGame(game);
   }
 
   function detectmob() {
-    //return true;
+    // return true;
     return navigator.userAgent.match(/Android/i)
     || navigator.userAgent.match(/webOS/i)
     || navigator.userAgent.match(/iPhone/i)

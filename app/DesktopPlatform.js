@@ -33,6 +33,10 @@ function DesktopPlatform() {
     return renderer;
   }
 
+  function getEffect() {
+    return renderer;
+  }
+
   function getViewPort() {
     return viewPort;
   }
@@ -42,6 +46,7 @@ function DesktopPlatform() {
     init: init,
     getUserInterface: getUserInterface,
     getRenderer: getRenderer,
+    getEffect: getEffect,
     getViewPort: getViewPort
   };
 }
