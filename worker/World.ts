@@ -1,232 +1,388 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
+import _ = require('underscore');
 
-import part from './Partition';
-import cmd from './Commands/Command';
-import cc from './Commands/CuboidCommand';
-import lc from './Commands/LandscapeCommand';
 import com from '../common/Common';
+import Partition from './Partition';
+import Command from './Commands/Command';
+import { CuboidCommand } from './Commands/CuboidCommand';
+import { LandscapeCommand } from './Commands/LandscapeCommand';
 
-module World {
-  export interface World {
-    init(): void;
-    undo(): void;
-    getPartitionCapacity(): number;
-    getBlockDimensions(): THREE.Vector3;
-    getPartitionByIndex(partitionIndex: number): part.Partition;
-    getBlock(pos: THREE.Vector3): number;
-    addBlock(index: number, side: number, type: number): void;
-    setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void;
-    getDirtyPartitions(): number[];
+export interface ChangeHandler {
+  callback(change: com.Change): void;
+  options: com.ChangeHandlerOptions;
+}
+
+const VALUES_PER_BLOCK = 3 | 0;
+const VALUES_PER_VBLOCK = 7 | 0;
+
+export default class World {
+  worldInfo: com.WorldInfo;
+
+  capacity: number;
+  partitionCapacity: number;
+
+  commands = new Array<Command>();
+  changeHandlers = Array<ChangeHandler>();
+  recentChanges = Array<com.Change>();
+
+  partitions: Partition[];
+
+  constructor(worldInfo: com.WorldInfo) {
+    this.worldInfo = worldInfo;
+
+    this.capacity = worldInfo.worldPartitionCapacity;
+    this.partitionCapacity = worldInfo.partitionCapacity;
+
+    worldInfo.partitionBoundaries = this.getPartitionBoundaries();
   }
 
-  export function NewWorld(worldInfo: com.WorldInfo): World {
-    const capacity = worldInfo.worldDimensionsInPartitions.x * worldInfo.worldDimensionsInPartitions.y * worldInfo.worldDimensionsInPartitions.z;
-    const partitionCapacity = worldInfo.partitionDimensionsInBlocks.x * worldInfo.partitionDimensionsInBlocks.y * worldInfo.partitionDimensionsInBlocks.z;
-    const worldDimensionsInBlocks = new THREE.Vector3(worldInfo.worldDimensionsInPartitions.x * worldInfo.partitionDimensionsInBlocks.x, worldInfo.worldDimensionsInPartitions.y * worldInfo.partitionDimensionsInBlocks.y, worldInfo.worldDimensionsInPartitions.z * worldInfo.partitionDimensionsInBlocks.z);
+  registerChangeHandler(handler: ChangeHandler) {
+    this.changeHandlers.push(handler);
+  }
 
-    worldInfo.worldDimensionsInBlocks = worldDimensionsInBlocks;
-    worldInfo.partitionBoundaries = getPartitionBoundaries();
+  flushChanges = _.debounce(() => {
+    this.recentChanges.forEach(change => {
+      this.changeHandlers.forEach(changeHandler => {
+        const start = changeHandler.options.start;
+        const end = changeHandler.options.end;
+        const pos = change.position;
 
-    let partitions: part.Partition[];
+        // Is it inside the boundary?
+        pos.clone().clamp(start, end).equals(pos);
 
-    const commands = new Array<cmd.Command>();
+        changeHandler.callback(change);
+      });
+    });
+  }, 200);
 
-    function init(): void {
-      partitions = new Array<part.Partition>(capacity);
+  init(): void {
+    this.partitions = new Array<Partition>(this.capacity);
 
-      for (let z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
-        for (let y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
-          for (let x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
-            const partitionPosition = new THREE.Vector3(x, y, z);
-            const partitionIndex = getPartitionIndex(x, y, z);
+    for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
+      for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
+        for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
+          const ppos = new com.IntVector3(x, y, z);
+          const pindex = this.worldInfo.pindex2(x, y, z);
 
-            const partition = part.NewPartition(worldInfo.partitionDimensionsInBlocks, partitionPosition, worldInfo.worldDimensionsInPartitions, partitionIndex);
+          const partition = new Partition(this.worldInfo, ppos);
 
-            partitions[partitionIndex] = partition;
-          }
+          // console.log('init', partitionIndex);
+
+          this.partitions[pindex] = partition;
         }
       }
-
-      // Apply the default landscape
-      const randomHeight = Math.random() * worldInfo.partitionDimensionsInBlocks.y * worldInfo.worldDimensionsInPartitions.y;
-      const landscapeCommand = new lc.LandscapeCommand(this.worldInfo, 0, { height: randomHeight });
-
-      applyCommand(landscapeCommand);
     }
 
-    function getPartitionCapacity(): number {
-      return partitionCapacity;
-    }
+    // Apply the default landscape
+    const randomHeight = this.worldInfo.partitionDimensionsInBlocks.y >> 1;
+    const landscapeCommand = new LandscapeCommand(this.worldInfo, 0 | 0, { height: randomHeight });
 
-    function getPartitions(): part.Partition[] {
-      return partitions;
-    }
+    this.applyCommand(landscapeCommand);
+  }
 
-    // Lazily load the partitions at they are needed
-    function getPartitionByIndex(partitionIndex: number): part.Partition {
-      const partition = partitions[partitionIndex];
+  getPartitionCapacity(): number {
+    return this.partitionCapacity;
+  }
+
+  getPartitions(): Partition[] {
+    return this.partitions;
+  }
+
+  loadPartition(partition: Partition) {
+    if (!partition.isInited()) {
+      // console.log('loadPartition', partition.index)
 
       partition.initIfRequired();
 
       // Apply commands as partitions are brought into existance
-      commands.forEach(function(command) {
+      this.commands.forEach(command => {
         const indices = command.getAffectedPartitionIndices();
 
-        if (indices === null || indices.indexOf(partitionIndex) !== -1) {
+        if (indices === null || indices.indexOf(partition.index) !== (-1 | 0)) {
           command.redo(partition);
         }
       });
+    }
+  }
 
-      return partition;
+  // Lazily load the partitions at they are needed
+  getPartitionByIndex(partitionIndex: number): Partition {
+    const partition = this.partitions[partitionIndex];
+
+    // if (!partition) throw new Error('Invalid partition');
+
+    this.loadPartition(partition);
+
+    return partition;
+  }
+
+  getBlock(wx: number, wy: number, wz: number): number {
+    const ppos = this.worldInfo.ppos2(wx, wy, wz);
+
+    if (!this.worldInfo.vppos2(ppos.x, ppos.y, ppos.z)) return 0 | 0;
+
+    const rpos = this.worldInfo.rposw2(wx, wy, wz);
+    const rindex = this.worldInfo.rindex2(rpos.x, rpos.y, rpos.z);
+
+    const pindex = this.worldInfo.pindex2(ppos.x, ppos.y, ppos.z);
+    const partition = this.getPartitionByIndex(pindex);
+
+    return partition.blocks[rindex * VALUES_PER_BLOCK];
+  }
+
+  applyCommand(command: Command): void {
+    this.commands.push(command);
+
+    const indices = command.getAffectedPartitionIndices();
+    let partitionsToApply = this.partitions;
+
+    if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
+
+    // console.log('applyCommand', indices);
+
+    partitionsToApply.filter(p => p.isInited()).forEach(command.redo, command);
+  }
+
+  undo(): void {
+    if (this.commands.length === (0 | 0)) return;
+
+    const command = this.commands.pop();
+
+    const indices = command.getAffectedPartitionIndices();
+    let partitionsToApply = this.partitions;
+
+    if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
+
+    partitionsToApply.filter(p => p.isInited()).forEach(command.undo, command);
+  }
+
+  setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {
+    const command = new CuboidCommand(this.worldInfo, 0 | 0, {
+      start: new com.IntVector3(wx1, wy1, wz1),
+      end: new com.IntVector3(wx2, wy2, wz2),
+      type: type,
+      colour: colour
+    });
+
+    return this.applyCommand(command);
+  }
+
+  addBlock(windex: number, side: number, type: number): void {
+    let { x: wx, y: wy, z: wz } = this.worldInfo.wpos2(windex);
+
+    if (type === 0) {
+      return this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);
     }
 
-    function getBlockDimensions(): THREE.Vector3 {
-      return worldDimensionsInBlocks;
+    if (side === 0) {
+      wx++;
+    }
+    if (side === 1) {
+      wx--;
+    }
+    if (side === 2) {
+      wy++;
+    }
+    if (side === 3) {
+      wy--;
+    }
+    if (side === 4) {
+      wz++;
+    }
+    if (side === 5) {
+      wz--;
     }
 
-    function getBlock(pos: THREE.Vector3): number {
-      const px = (pos.x / worldInfo.partitionDimensionsInBlocks.x) | 0;
-      const py = (pos.y / worldInfo.partitionDimensionsInBlocks.y) | 0;
-      const pz = (pos.z / worldInfo.partitionDimensionsInBlocks.z) | 0;
+    this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);
+  }
 
-      const partitionIndex = getPartitionIndex(px, py, pz);
-      const partition = partitions[partitionIndex];
+  getPartitionBoundaries(): any[] {
+    const partitionBoundaries = <any[]>[];
 
-      if (!partition.isInited()) return 0;
+    for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
+      for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
+        for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
+          const partitionIndex = this.worldInfo.pindex2(x, y, z);
 
-      const rx = pos.x - px * worldInfo.partitionDimensionsInBlocks.x;
-      const ry = pos.y - py * worldInfo.partitionDimensionsInBlocks.y;
-      const rz = pos.z - pz * worldInfo.partitionDimensionsInBlocks.z;
+          const boundaryPoints = <THREE.Vector3[]>[];
 
-      return partition.getBlock(new THREE.Vector3(rx, ry, rz))[0];
-    }
+          for (let bx = 0; bx < 2; bx++) {
+            for (let by = 0; by < 2; by++) {
+              for (let bz = 0; bz < 2; bz++) {
+                const x1 = this.worldInfo.partitionDimensionsInBlocks.x * (x + bx);
+                const y1 = this.worldInfo.partitionDimensionsInBlocks.y * (y + by);
+                const z1 = this.worldInfo.partitionDimensionsInBlocks.z * (z + bz);
 
-    function applyCommand(command: cmd.Command): void {
-      commands.push(command);
-
-      const indices = command.getAffectedPartitionIndices();
-      let partitionsToApply = partitions;
-
-      if (indices !== null) partitionsToApply = indices.map(i => partitions[i]);
-
-      partitionsToApply.filter(p => p.isInited()).forEach(command.redo, command);
-    }
-
-    function undo(): void {
-      if (commands.length === 0) return;
-
-      const command = commands.pop();
-
-      const indices = command.getAffectedPartitionIndices();
-      let partitionsToApply = partitions;
-
-      if (indices !== null) partitionsToApply = indices.map(i => partitions[i]);
-
-      partitionsToApply.filter(p => p.isInited()).forEach(command.undo, command);
-    }
-
-    function setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void {
-      const command = new cc.CuboidCommand(worldInfo, 0, {
-        start: start,
-        end: end,
-        type: type,
-        colour: colour
-      });
-
-      return applyCommand(command);
-    }
-
-    function addBlock(index: number, side: number, type: number): void {
-      const position = com.getWorldPositionFromIndex(worldInfo, index);
-
-      if (type === 0) {
-        return setBlocks(position, position, type, 0);
-      }
-
-      if (side === 0.0) {
-        position.x++;
-      }
-      if (side === 1.0) {
-        position.x--;
-      }
-      if (side === 2.0) {
-        position.y++;
-      }
-      if (side === 3.0) {
-        position.y--;
-      }
-      if (side === 4.0) {
-        position.z++;
-      }
-      if (side === 5.0) {
-        position.z--;
-      }
-
-      setBlocks(position, position, type, 0);
-    }
-
-    function getPartitionIndex(x: number, y: number, z: number): number {
-      return x + worldInfo.worldDimensionsInPartitions.x * (y + worldInfo.worldDimensionsInPartitions.y * z);
-    }
-
-    function getPartitionBoundaries(): any[] {
-      const partitionBoundaries = <any[]>[];
-
-      for (let z = 0; z < worldInfo.worldDimensionsInPartitions.z; z++) {
-        for (let y = 0; y < worldInfo.worldDimensionsInPartitions.y; y++) {
-          for (let x = 0; x < worldInfo.worldDimensionsInPartitions.x; x++) {
-            const partitionIndex = getPartitionIndex(x, y, z);
-
-            const boundaryPoints = <THREE.Vector3[]>[];
-
-            for (let bx = 0; bx < 2; bx++) {
-              for (let by = 0; by < 2; by++) {
-                for (let bz = 0; bz < 2; bz++) {
-                  const x1 = worldInfo.partitionDimensionsInBlocks.x * (x + bx);
-                  const y1 = worldInfo.partitionDimensionsInBlocks.y * (y + by);
-                  const z1 = worldInfo.partitionDimensionsInBlocks.z * (z + bz);
-
-                  boundaryPoints.push(new THREE.Vector3(x1, y1, z1));
-                }
+                boundaryPoints.push(new THREE.Vector3(x1, y1, z1));
               }
             }
-
-            partitionBoundaries.push({ partitionIndex: partitionIndex, points: boundaryPoints });
           }
+
+          partitionBoundaries.push({ partitionIndex: partitionIndex, points: boundaryPoints });
         }
       }
-
-      return partitionBoundaries;
     }
 
-    function getDirtyPartitions(): number[] {
-      const dirty = <number[]>[];
+    return partitionBoundaries;
+  }
 
-      for (let partitionIndex = 0; partitionIndex < capacity; partitionIndex++) {
-        const partition = partitions[partitionIndex];
+  getDirtyPartitions(): number[] {
+    const dirty = new Array<number>();
 
-        if (partition.isDirty()) {
-          dirty.push(partitionIndex);
+    for (let partitionIndex = 0 | 0; partitionIndex < this.capacity; partitionIndex++) {
+      const partition = this.partitions[partitionIndex];
+
+      if (!partition) console.log('no part', partitionIndex);
+
+      if (partition.isDirty()) {
+        dirty.push(partitionIndex);
+      }
+    }
+
+    return dirty;
+  }
+
+  // ========
+
+  getSurroundingBlocks(partition: Partition, rindex: number): number {
+    const { x, y, z } = this.worldInfo.rpos2(rindex);
+
+    // if (x === 0 || y === 0 || z === 0) return 0;
+    // if (x === this.worldInfo.partitionDimensionsInBlocks.x - 1 || y === this.worldInfo.partitionDimensionsInBlocks.y - 1 || z === this.worldInfo.partitionDimensionsInBlocks.z - 1) return 0;
+
+    let i = 0 | 0;
+    let sides = 0 | 0;
+
+    for (let sz = -1 | 0; sz <= (1 | 0); sz++) {
+      for (let sy = -1 | 0; sy <= (1 | 0); sy++) {
+        for (let sx = -1 | 0; sx <= (1 | 0); sx++) {
+          const rx = (x + sx) | 0;
+          const ry = (y + sy) | 0;
+          const rz = (z + sz) | 0;
+
+          let block = 0 | 0;
+
+          if (rx === (-1 | 0) || ry === (-1 | 0) || rz === (-1 | 0) || rx === this.worldInfo.partitionDimensionsInBlocks.x || ry === this.worldInfo.partitionDimensionsInBlocks.y || rz === this.worldInfo.partitionDimensionsInBlocks.z) {
+            // If outside partition boundaries, we need to check adjacent partitions...
+            block = this.getBlock((partition.offset.x + rx) | 0, (partition.offset.y + ry) | 0, (partition.offset.z + rz) | 0);
+          } else {
+            // otherwise, just read directly from partiton buffer (faster)
+            const rindex = this.worldInfo.rindex2(rx, ry, rz) | 0;
+            block = partition.blocks[VALUES_PER_BLOCK * rindex];
+          }
+
+          if (block !== (0 | 0)) sides |= (1 << i);
+
+          i++;
         }
       }
-
-      return dirty;
     }
 
-    return {
-      init: init,
-      undo: undo,
-      getBlock: getBlock,
-      setBlocks: setBlocks,
-      addBlock: addBlock,
-      getPartitionCapacity: getPartitionCapacity,
-      getPartitions: getPartitions,
-      getPartitionByIndex: getPartitionByIndex,
-      getBlockDimensions: getBlockDimensions,
-      getDirtyPartitions: getDirtyPartitions
-    };
+    return sides;
+  }
+
+  computeOcclusion(partition: Partition, rx: number, ry: number, rz: number) {
+    const pdib = this.worldInfo.partitionDimensionsInBlocks;
+
+    const pindex = rz * pdib.x + rx;
+
+    if (partition.heightMap[pindex] > ry) return 8;
+
+    let combinedHeight = 0;
+
+    for (let z = rz - 2; z <= rz + 2; z++) {
+      for (let x = rx - 2; x <= rx + 2; x++) {
+        let height = 0;
+
+        if (x < 0 || z < 0 || x > pdib.x - 1 || z > pdib.z - 1) {
+          const ppos = this.worldInfo.ppos2(partition.offset.x + x, 0, partition.offset.z + z);
+
+          if (this.worldInfo.vppos2(ppos.x, ppos.y, ppos.z)) {
+            const { x: rx2, y: ry2, z: rz2 } = this.worldInfo.rposw2(partition.offset.x + x, 0, partition.offset.z + z);
+            const pindex = this.worldInfo.pindex2(ppos.x, ppos.y, ppos.z);
+            const index = rz2 * pdib.x + rx2;
+
+            const adjacentPartition = this.getPartitionByIndex(pindex);
+
+            height = adjacentPartition.heightMap[index] - ry;
+          } else {
+            height = 0;
+          }
+        } else {
+          const index = z * pdib.x + x;
+
+          height = partition.heightMap[index] - ry;
+        }
+
+        const r = Math.sqrt(Math.pow(rx - x, 2) + Math.pow(rz - z, 2));
+
+        if (height > 0) combinedHeight += height / (r * r);
+      }
+    }
+
+    return Math.min(combinedHeight, 8);
+  }
+
+  getVisibleBlocks(partitionIndex: number): Int32Array {
+    console.time('getVisibleBlocks');
+
+    const partition = this.getPartitionByIndex(partitionIndex);
+
+    const touchingIndices = new Int32Array([4 | 0, 10 | 0, 12 | 0, 14 | 0, 16 | 0, 22 | 0]);
+
+    partition.updateHeightMap();
+
+    const visibleBlocks = new Int32Array(partition.occupied * VALUES_PER_VBLOCK);
+
+    let id = 0 | 0;
+
+    for (let rindex = 0; rindex < partition.capacity; rindex++) {
+      const offset = VALUES_PER_BLOCK * rindex | 0;
+      const voffset = VALUES_PER_VBLOCK * id | 0;
+
+      const type = partition.blocks[offset + 0];
+      const colour = partition.blocks[offset + 1];
+
+      if (type === (0 | 0)) continue;
+
+      const surroundingBlocks = this.getSurroundingBlocks(partition, rindex);
+
+      let sidesTouching = 0 | 0;
+
+      for (let i = 0; i < touchingIndices.length; i++) {
+        sidesTouching += (surroundingBlocks & (1 << touchingIndices[i])) ? 1 | 0 : 0 | 0;
+      }
+
+      if (sidesTouching === (6 | 0)) continue;
+
+      const { x: rx, y: ry, z: rz } = this.worldInfo.rpos2(rindex);
+
+      const shade = this.computeOcclusion(partition, rx, ry, rz) * 16;
+
+      const windex = this.worldInfo.windex2(partition.offset.x + rx, partition.offset.y + ry, partition.offset.z + rz);
+
+      visibleBlocks[voffset + 0 | 0] = id;
+      visibleBlocks[voffset + 1 | 0] = rindex;
+      visibleBlocks[voffset + 2 | 0] = windex;
+      visibleBlocks[voffset + 3 | 0] = type;
+      visibleBlocks[voffset + 4 | 0] = surroundingBlocks;
+      visibleBlocks[voffset + 5 | 0] = colour;
+      visibleBlocks[voffset + 6 | 0] = shade;
+
+      id += 1 | 0;
+    }
+
+    partition.dirty = false;
+
+    const ret = new Int32Array(id * VALUES_PER_VBLOCK);
+
+    for (let i = 0; i < id * VALUES_PER_VBLOCK; i++) {
+      ret[i] = visibleBlocks[i];
+    }
+
+    console.timeEnd('getVisibleBlocks');
+
+    return ret;
   }
 }
-
-export default World;

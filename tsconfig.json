@@ -1,5 +1,5 @@
 {
-    "version": "1.5.0-alpha",
+    "version": "1.5.3",
     "compileOnSave": false,
     "compilerOptions": {
         "target": "es5",
@@ -28,7 +28,12 @@
         "./app/tools/CuboidTool.ts",
         "./app/tools/ToolBase.ts",
         "./common/Common.ts",
+        "./profile.ts",
+        "./spec/World.spec.ts",
+        "./test.ts",
+        "./typings/chai/chai.d.ts",
         "./typings/es6-promise/es6-promise.d.ts",
+        "./typings/mocha/mocha.d.ts",
         "./typings/threejs/three.d.ts",
         "./typings/tsd.d.ts",
         "./typings/underscore/underscore.d.ts",
@@ -36,8 +41,6 @@
         "./worker/Commands/CuboidCommand.ts",
         "./worker/Commands/LandscapeCommand.ts",
         "./worker/Commands/UndoableCommand.ts",
-        "./worker/Common.ts",
-        "./worker/Cube.ts",
         "./worker/GeometryWorker.ts",
         "./worker/ImprovedNoise.ts",
         "./worker/Partition.ts",

@@ -1,45 +1,42 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import pg from './PartitionGeometry';
-import w from './World';
+import com from '../common/Common';
+import PartitionGeometry from './PartitionGeometry';
+import World from './World';
 
-module WorldGeometry {
-  export interface WorldGeometry {
-    getPartitionGeometry(partitionIndex: number): PartitionGeometryResult;
+export interface PartitionGeometryResult {
+  data: any;
+  offset: com.IntVector3;
+}
+
+export default class WorldGeometry {
+  worldInfo: com.WorldInfo;
+  world: World
+  partitionGeometries: PartitionGeometry[];
+
+  constructor(worldInfo: com.WorldInfo, world: World) {
+    this.worldInfo = worldInfo;
+    this.world = world;
+    this.partitionGeometries = <PartitionGeometry[]>new Array(world.getPartitionCapacity());
   }
 
-  export interface PartitionGeometryResult {
-    data: any;
-    offset: THREE.Vector3;
-  }
+  getPartitionGeometry(partitionIndex: number): PartitionGeometryResult {
+    let partitionGeometry = this.partitionGeometries[partitionIndex];
 
-  export function NewWorldGeometry(world: w.World): WorldGeometry {
-    let partitionGeometries = <pg.PartitionGeometry[]>new Array(world.getPartitionCapacity());
+    if (!partitionGeometry) {
+      const partition = this.world.getPartitionByIndex(partitionIndex);
 
-    function getPartitionGeometry(partitionIndex: number): PartitionGeometryResult {
-      let partitionGeometry = partitionGeometries[partitionIndex];
+      partitionGeometry = new PartitionGeometry(this.worldInfo, partition, this.world);
 
-      if (!partitionGeometry) {
-        let partition = world.getPartitionByIndex(partitionIndex);
-
-        partitionGeometry = pg.NewPartitionGeometry(partition);
-
-        partitionGeometries[partitionIndex] = partitionGeometry;
-      }
-
-      partitionGeometry.consumeChanges();
-
-      return {
-        data: partitionGeometry.getData(),
-        offset: partitionGeometry.getOffset()
-      };
+      this.partitionGeometries[partitionIndex] = partitionGeometry;
     }
 
+    partitionGeometry.generateGeometry();
+
     return {
-      getPartitionGeometry: getPartitionGeometry
+      data: partitionGeometry.getData(),
+      offset: partitionGeometry.getOffset()
     };
   }
 }
-
-export default WorldGeometry;

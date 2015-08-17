@@ -126,10 +126,10 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
 
     if (movement.z === 0) zDelta = 0;   // Full stop
 
-    lon += turn.x * correction;
-    lat += turn.y * correction;
+    lon += turn.x * correction * 2;
+    lat += turn.y * correction * 2;
 
-    lat = Math.max(-85, Math.min(85, lat));
+    lat = Math.max(-89.9, Math.min(89.9, lat));
 
     var phi = ( 90 - lat ) * Math.PI / 180;
     var theta = (lon * Math.PI / 180);

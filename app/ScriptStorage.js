@@ -123,3 +123,19 @@ var samples = [{
   modified: new Date(2015, 5, 7),
   code: fs.readFileSync('./samples/Palette.js')
 }];
+    
+/*function makeRain(x, z) {
+  var h = 30;
+  setInterval(function() {
+    if (h <= 0) return;
+
+    api.setBlocks(x, h, z, x, h + 2, z, 0);
+    api.setBlocks(x, h, z, x, h - 2, z, 3);
+
+    h = h - 1;
+  }, 100);
+}
+
+setInterval(function() {
+  makeRain(100 * Math.random(), 100 * Math.random());
+}, 300);*/

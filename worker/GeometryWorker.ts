@@ -6,14 +6,14 @@ win.importScripts('external.js');
 import _ = require('underscore');
 import THREE = require('three');
 
-import w from './World';
-import wg from './WorldGeometry';
 import com from '../common/Common';
+import World from './World';
+import WorldGeometry from './WorldGeometry';
 
 console.log('GeometryWorker: online');
 
-let world: w.World;
-let worldGeometry: wg.WorldGeometry;
+let world: World;
+let worldGeometry: WorldGeometry;
 
 interface Invocation {
   id: number;
@@ -22,19 +22,17 @@ interface Invocation {
 }
 
 function init(invocation: Invocation): void {
-  const worldInfo: com.WorldInfo = {
+  const worldInfo = new com.WorldInfo({
     worldDimensionsInPartitions: new THREE.Vector3(32, 1, 32),
-    partitionDimensionsInBlocks: new THREE.Vector3(16, 32, 16),
-    worldDimensionsInBlocks: null,
-    partitionBoundaries: null,
-    partitionCapacity: 0
-  };
+    partitionDimensionsInBlocks: new THREE.Vector3(32, 32, 32),
+    partitionBoundaries: null
+  });
 
-  world = w.NewWorld(worldInfo);
+  world = new World(worldInfo);
 
   world.init();
 
-  worldGeometry = wg.NewWorldGeometry(world);
+  worldGeometry = new WorldGeometry(worldInfo, world);
 
   return win.postMessage({
     id: invocation.id,
@@ -79,7 +77,7 @@ self.onmessage = function(e) {
   }
 
   if (invocation.action === 'getBlock') {
-    const type = world.getBlock(invocation.data.pos);
+    const type = world.getBlock(invocation.data.pos.x, invocation.data.pos.y, invocation.data.pos.z);
 
     win.postMessage({
       id: invocation.id,
@@ -91,10 +89,10 @@ self.onmessage = function(e) {
   }
 
   if (invocation.action === 'setBlocks') {
-    const start = new THREE.Vector3(invocation.data.start.x, invocation.data.start.y, invocation.data.start.z);
-    const end = new THREE.Vector3(invocation.data.end.x, invocation.data.end.y, invocation.data.end.z);
+    const start = invocation.data.start;
+    const end = invocation.data.end;
 
-    world.setBlocks(start, end, invocation.data.type, invocation.data.colour);
+    world.setBlocks.call(world, start.x, start.y, start.z, end.x, end.y, end.z, invocation.data.type, invocation.data.colour);
 
     if (invocation.data.update) checkForChangedPartitions();
   }

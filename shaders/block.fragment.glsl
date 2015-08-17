@@ -67,7 +67,7 @@ void main() {
   float fog = min(1.0, pow((gl_FragCoord.z / gl_FragCoord.w) / 96.0, 1.8));
 
   // Only top face has shade
-  if (side == 2.0) {
+  if (side == 3.0) {
     gl_FragColor = gl_FragColor * (1.0 - (shade / 255.0));
   }
 

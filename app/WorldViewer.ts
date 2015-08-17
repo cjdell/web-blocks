@@ -1,153 +1,138 @@
 import THREE = require('three');
 import _ = require('underscore');
 
-import wi from './WorkerInterface';
+import WorkerInterface from './WorkerInterface';
 import com from '../common/Common';
 
-module WorldViewer {
-  export interface WorldViewer {
-    exposeNewPartitions(changes: number[]): void
-  }
+interface PartitionCacheItem {
+  mesh: THREE.Mesh;
+  index: number;
+}
 
-  interface PartitionCacheItem {
-    mesh: THREE.Mesh;
-    index: number;
-  }
+export default class WorldViewer {
+  scene: THREE.Scene;
+  worldInfo: com.WorldInfo;
+  shaderMaterial: THREE.Material;
+  workerInterface: WorkerInterface;
 
-  export function NewWorldViewer(scene: THREE.Scene, worldInfo: com.WorldInfo, shaderMaterial: THREE.Material, workerInterface: wi.WorkerInterface): WorldViewer {
-    let partitionCaches: PartitionCacheItem[] = null;
+  partitionCaches: PartitionCacheItem[] = null;
 
-    init();
+  constructor(scene: THREE.Scene, worldInfo: com.WorldInfo, shaderMaterial: THREE.Material, workerInterface: WorkerInterface) {
+    this.scene = scene;
+    this.worldInfo = worldInfo;
+    this.shaderMaterial = shaderMaterial;
+    this.workerInterface = workerInterface;
 
-    workerInterface.addChangeListener(function(data: any) {
+    workerInterface.addChangeListener(data => {
       let changeIndices = <number[]>data.changes;
-      let visibleIndices = <number[]>getVisiblePartitionIndices();
+      let visibleIndices = <number[]>this.getVisiblePartitionIndices();
 
       let toUpdate = _.intersection(changeIndices, visibleIndices);
 
-      toUpdate.forEach(function(index) {
-        updatePartition(index);
-      });
+      toUpdate.forEach(index => this.updatePartition(index));
     });
 
-    function init() {
-      partitionCaches = new Array(worldInfo.partitionCapacity);
+    this.partitionCaches = new Array<PartitionCacheItem>(this.worldInfo.partitionCapacity);
 
-      addSky();
+    this.addSky();
+  }
+
+  getMesh(bufferGeometry: THREE.BufferGeometry, offset: THREE.Vector3): THREE.Mesh {
+    let mesh = new THREE.Mesh(bufferGeometry, this.shaderMaterial);
+
+    mesh.position.x += offset.x;
+    mesh.position.y += offset.y;
+    mesh.position.z += offset.z;
+
+    return mesh;
+  }
+
+  addPartition(partitionIndex: number): void {
+    let partitionCache = this.partitionCaches[partitionIndex];
+
+    if (!partitionCache) {
+      this.workerInterface.getPartition(partitionIndex).then(data => this.gotPartition(data));
+      return;
     }
 
-    function getMesh(bufferGeometry: THREE.BufferGeometry, offset: THREE.Vector3): THREE.Mesh {
-      let mesh = new THREE.Mesh(bufferGeometry, shaderMaterial);
+    this.scene.add(partitionCache.mesh);
+  }
 
-      mesh.position.x += offset.x + 8;
-      mesh.position.y += offset.y + 16;
-      mesh.position.z += offset.z + 8;
+  updatePartition(partitionIndex: number) {
+    this.workerInterface.getPartition(partitionIndex).then(data => this.gotPartition(data));
+  }
 
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-
-      return mesh;
-    }
-
-    function addPartition(partitionIndex: number): void {
-      let partitionCache = partitionCaches[partitionIndex];
-
-      if (!partitionCache) {
-        workerInterface.getPartition(partitionIndex).then(gotPartition);
-        return;
-      }
-
-      scene.add(partitionCache.mesh);
-    }
-
-    function updatePartition(partitionIndex: number) {
-      workerInterface.getPartition(partitionIndex).then(gotPartition);
-    }
-
-    function getVisiblePartitionIndices() {
-      return partitionCaches
+  getVisiblePartitionIndices() {
+    return this.partitionCaches
       .filter(function(partitionCache) {
         return partitionCache.mesh !== null;
       })
       .map(function(partitionCache) {
         return partitionCache.index;
       });
+  }
+
+  gotPartition(data: any) {
+    let geo = data.geo, partitionIndex = data.index;
+
+    let partitionCache = this.partitionCaches[partitionIndex];
+
+    if (partitionCache) {
+      this.scene.remove(partitionCache.mesh);
+
+      partitionCache.mesh = null;
     }
 
-    function gotPartition(data: any) {
-      let geo = data.geo, partitionIndex = data.index;
+    let bufferGeometry = new THREE.BufferGeometry();
 
-      let partitionCache = partitionCaches[partitionIndex];
+    bufferGeometry.addAttribute('position', new THREE.BufferAttribute(geo.data.position, 3));
+    bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(geo.data.normal, 3));
+    bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(geo.data.uv, 2));
+    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(geo.data.data, 4));
+    bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(geo.data.offset, 1));
 
-      if (partitionCache) {
-        scene.remove(partitionCache.mesh);
+    bufferGeometry.computeBoundingSphere();
+    bufferGeometry.computeBoundingBox();
 
-        partitionCache.mesh = null;
-      }
+    let mesh = this.getMesh(bufferGeometry, geo.offset);
 
-      let bufferGeometry = new THREE.BufferGeometry();
-
-      bufferGeometry.addAttribute('position', new THREE.BufferAttribute(geo.data.position, 3));
-      bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(geo.data.normal, 3));
-      bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(geo.data.uv, 2));
-      bufferGeometry.addAttribute('data', new THREE.BufferAttribute(geo.data.data, 4));
-      bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(geo.data.offset, 1));
-
-      bufferGeometry.computeBoundingSphere();
-      bufferGeometry.computeBoundingBox();
-
-      let mesh = getMesh(bufferGeometry, geo.offset);
-
-      partitionCache = {
-        index: partitionIndex,
-        mesh: mesh
-      };
-
-      partitionCaches[partitionIndex] = partitionCache;
-
-      scene.add(partitionCache.mesh);
-    }
-
-    function removePartition(partitionIndex: number) {
-      let partitionCache = partitionCaches[partitionIndex];
-
-      if (!partitionCache) return;
-
-      scene.remove(partitionCache.mesh);
-    }
-
-    function exposeNewPartitions(changes: any) {
-      changes.toBeAdded.forEach(function(partitionIndex: number) {
-        //console.log('toBeAdded', partitionIndex);
-        addPartition(partitionIndex);
-      });
-
-      changes.toBeRemoved.forEach(function(partitionIndex: number) {
-        removePartition(partitionIndex);
-      });
-    }
-
-    function addSky() {
-      let geometry = new THREE.PlaneBufferGeometry(1, 1);
-      let material = new THREE.MeshBasicMaterial({ color: 0xbbccff, side: THREE.DoubleSide });
-      let plane = new THREE.Mesh(geometry, material);
-
-      plane.position.x = worldInfo.worldDimensionsInBlocks.x / 2;
-      plane.position.y = 100;
-      plane.position.z = worldInfo.worldDimensionsInBlocks.z / 2;
-
-      plane.rotation.x = Math.PI / 2;
-
-      plane.scale.x = (worldInfo.worldDimensionsInBlocks.x * 100);
-      plane.scale.y = (worldInfo.worldDimensionsInBlocks.z * 100);
-
-      scene.add(plane);
-    }
-
-    return {
-      exposeNewPartitions: exposeNewPartitions
+    partitionCache = {
+      index: partitionIndex,
+      mesh: mesh
     };
+
+    this.partitionCaches[partitionIndex] = partitionCache;
+
+    this.scene.add(partitionCache.mesh);
+  }
+
+  removePartition(partitionIndex: number) {
+    let partitionCache = this.partitionCaches[partitionIndex];
+
+    if (!partitionCache) return;
+
+    this.scene.remove(partitionCache.mesh);
+  }
+
+  exposeNewPartitions(changes: any) {
+    changes.toBeAdded.forEach((partitionIndex: number) => this.addPartition(partitionIndex));
+    changes.toBeRemoved.forEach((partitionIndex: number) => this.removePartition(partitionIndex));
+  }
+
+  addSky() {
+    let geometry = new THREE.PlaneBufferGeometry(1, 1);
+    let material = new THREE.MeshBasicMaterial({ color: 0xbbccff, side: THREE.DoubleSide });
+    let plane = new THREE.Mesh(geometry, material);
+
+    plane.position.x = this.worldInfo.worldDimensionsInBlocks.x / 2;
+    plane.position.y = 100;
+    plane.position.z = this.worldInfo.worldDimensionsInBlocks.z / 2;
+
+    plane.rotation.x = Math.PI / 2;
+
+    plane.scale.x = (this.worldInfo.worldDimensionsInBlocks.x * 100);
+    plane.scale.y = (this.worldInfo.worldDimensionsInBlocks.z * 100);
+
+    this.scene.add(plane);
   }
 }
-
-export default WorldViewer;

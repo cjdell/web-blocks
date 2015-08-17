@@ -1,123 +1,185 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import c from './Cube';
-import part from './Partition';
+import com from '../common/Common';
+import Partition from './Partition';
+import World from './World';
 
-module PartitionGeometry {
-  export interface PartitionGeometry {
-    dimensions: THREE.Vector3;
-    consumeChanges(): void;
-    getBufferGeometry(): THREE.BufferGeometry;
-    getData(): any;
-    getOffset(): THREE.Vector3;
+const FACE_PER_CUBE = 6;
+const VERTICES_PER_FACE = 6;
+const VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
+
+const VALUES_PER_VBLOCK = 7;
+
+const FACES = [
+  new Float32Array([0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1]),   // Right
+  new Float32Array([0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0]),   // Left
+  new Float32Array([1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]),   // Bottom
+  new Float32Array([1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0]),   // Top
+  new Float32Array([1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0]),   // Front
+  new Float32Array([0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0])    // Back
+];
+
+const UV = new Float32Array([0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0]);
+
+const NORMALS = new Float32Array([1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1]);
+
+export default class PartitionGeometry {
+  worldInfo: com.WorldInfo;
+  partition: Partition;
+  world: World;
+
+  position: Float32Array;
+  normal: Float32Array;
+  uv: Float32Array;
+  data: Float32Array;
+  offset: Float32Array;
+
+  dimX: number;
+  dimY: number;
+  dimZ: number;
+  dimXY: number;
+
+  constructor(worldInfo: com.WorldInfo, partition: Partition, world: World) {
+    this.worldInfo = worldInfo;
+    this.partition = partition;
+    this.world = world;
   }
 
-  export function NewPartitionGeometry(partition: part.Partition): PartitionGeometry {
-    let FACE_PER_CUBE = 6;
-    let VERTICES_PER_FACE = 6;
-    let VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
+  ensureBufferSize(faceCount: number): void {
+    const vertexCount = faceCount * VERTICES_PER_FACE;
 
-    let cubeCapacity = 0;
-    let reserveCubes = 0;//100;
+    this.position = new Float32Array(vertexCount * 3);
+    this.normal = new Float32Array(vertexCount * 3);
+    this.uv = new Float32Array(vertexCount * 2);
+    this.data = new Float32Array(vertexCount * 4);
+    this.offset = new Uint32Array(vertexCount);
+  }
 
-    let bufferGeometry = new THREE.BufferGeometry();
+  generateGeometry(): void {
+    const blocks = this.world.getVisibleBlocks(this.partition.index);
 
-    let dimX = partition.dimensions.x, dimY = partition.dimensions.y, dimZ = partition.dimensions.z;
-    let dimXY = (dimX * dimY);
+    let faceCount = 0;
 
-    function ensureBufferSize(cubesNeeded: number): void {
-      //if (cubesNeeded <= cubeCapacity) return;
+    // Count the faces
+    for (let i = 0; i < blocks.length / VALUES_PER_VBLOCK; i++) {
+      const o = i * VALUES_PER_VBLOCK;
 
-      cubeCapacity = cubesNeeded + reserveCubes;
+      const touchingBlocks = blocks[o + 4];
 
-      let vertexCount = cubeCapacity * VERTICES_PER_CUBE;
+      const xd = !(touchingBlocks & (1 << 12));
+      const xu = !(touchingBlocks & (1 << 14));
 
-      bufferGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
-      bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
-      bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(vertexCount * 2), 2));
-      bufferGeometry.addAttribute('data', new THREE.BufferAttribute(new Float32Array(vertexCount * 4), 4));
-      bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(new Float32Array(vertexCount), 1));
+      const yd = !(touchingBlocks & (1 << 10));
+      const yu = !(touchingBlocks & (1 << 16));
+
+      const zd = !(touchingBlocks & (1 << 4));
+      const zu = !(touchingBlocks & (1 << 22));
+
+      faceCount += (xd ? 1 : 0) + (xu ? 1 : 0) + (yd ? 1 : 0) + (yu ? 1 : 0) + (zd ? 1 : 0) + (zu ? 1 : 0);
     }
 
-    function consumeChanges(): void {
-      let changes = partition.getVisibleBlocks();
+    this.ensureBufferSize(faceCount);
 
-      ensureBufferSize(changes.maxId + 1);
+    if (blocks.length === 0) return;
 
-      if (changes.blocks.length === 0) return;
+    let v = 0;
 
-      let blocks = changes.blocks;
+    for (let i = 0; i < blocks.length / VALUES_PER_VBLOCK; i++) {
+      const o = i * VALUES_PER_VBLOCK;
 
-      for (let i = 0; i <= changes.maxId; i++) {
-        let o = i * 6;
+      const id = blocks[o + 0];
+      const index = blocks[o + 1];
+      const indexInWorld = blocks[o + 2];
+      const type = blocks[o + 3];
+      const touchingBlocks = blocks[o + 4];
+      const colour = blocks[o + 5];
+      const shade = blocks[o + 6];
 
-        let id = blocks[o + 0];
-        let index = blocks[o + 1];
-        let indexInWorld = blocks[o + 2];
-        let type = blocks[o + 3];
-        let shade = blocks[o + 4];
-        let colour = blocks[o + 5];
+      const { x, y, z } = this.worldInfo.rpos2(index);
 
-        let position = getPositionFromIndex(index);
+      const vertexCount = VALUES_PER_VBLOCK * blocks.length;
 
-        let x = position.x, y = position.y, z = position.z;
+      const xd = !(touchingBlocks & (1 << 12));
+      const xu = !(touchingBlocks & (1 << 14));
 
-        let cube = c.NewCube(bufferGeometry, id);
+      const yd = !(touchingBlocks & (1 << 10));
+      const yu = !(touchingBlocks & (1 << 16));
 
-        cube.init();
+      const zd = !(touchingBlocks & (1 << 4));
+      const zu = !(touchingBlocks & (1 << 22));
 
-        if (type !== 0) {
-          cube.translate(x - dimX / 2, y - dimY / 2, z - dimZ / 2);
-          cube.setOffset(indexInWorld);
-          cube.setData(type, shade, colour);
-        } else {
-          cube.remove();
-        }
+      if (xd) {
+        this.getTriangle(v, x, y, z, type, 0, colour, shade, indexInWorld);
+        v += 6;
+      }
+
+      if (xu) {
+        this.getTriangle(v, x + 1, y, z, type, 1, colour, shade, indexInWorld);
+        v += 6;
+      }
+
+      if (yd) {
+        this.getTriangle(v, x, y, z, type, 2, colour, shade, indexInWorld);
+        v += 6;
+      }
+
+      if (yu) {
+        this.getTriangle(v, x, y + 1, z, type, 3, colour, shade, indexInWorld);
+        v += 6;
+      }
+
+      if (zd) {
+        this.getTriangle(v, x, y, z, type, 4, colour, shade, indexInWorld);
+        v += 6;
+      }
+
+      if (zu) {
+        this.getTriangle(v, x, y, z + 1, type, 5, colour, shade, indexInWorld);
+        v += 6;
       }
     }
+  }
 
-    function getPositionFromIndex(index: number): THREE.Vector3 {
-      let z = (index / dimXY) | 0;
-      let y = ((index - z * dimXY) / dimX) | 0;
-      let x = index - dimX * (y + dimY * z);
+  getTriangle(v: number, x: number, y: number, z: number, type: number, side: number, colour: number, shade: number, indexInWorld: number) {
+    const inverse = [1, 4].indexOf(side) !== -1;
 
-      return new THREE.Vector3(x, y, z);
+    for (let i = 0; i < 6; i += 1) {
+      this.position[(v + i) * 3 + 0] = FACES[side][i * 3 + 0] + x;
+      this.position[(v + i) * 3 + 1] = FACES[side][i * 3 + 1] + y;
+      this.position[(v + i) * 3 + 2] = FACES[side][i * 3 + 2] + z;
+
+      this.normal[(v + i) * 3 + 0] = -NORMALS[side * 3 + 0];
+      this.normal[(v + i) * 3 + 1] = -NORMALS[side * 3 + 1];
+      this.normal[(v + i) * 3 + 2] = -NORMALS[side * 3 + 2];
+
+      this.uv[(v + i) * 2 + 0] = UV[i * 2 + 0];
+      this.uv[(v + i) * 2 + 1] = UV[i * 2 + 1];
+
+      this.data[(v + i) * 4 + 0] = type;
+      this.data[(v + i) * 4 + 1] = side;
+      this.data[(v + i) * 4 + 2] = shade;
+      this.data[(v + i) * 4 + 3] = colour;
+
+      this.offset[v + i] = indexInWorld;
     }
+  }
 
-    function getBufferGeometry(): THREE.BufferGeometry {
-      return bufferGeometry;
-    }
-
-    function getData(): any {
-      let attrs = <any>bufferGeometry.attributes;
-
-      return {
-        position: attrs.position.array,
-        normal: attrs.normal.array,
-        uv: attrs.uv.array,
-        data: attrs.data.array,
-        offset: attrs.offset.array
-      };
-    }
-
-    function getOffset(): THREE.Vector3 {
-      return partition.offset;
-    }
-
-    function suspend(): void {
-      console.log('Partition(' + partition.index + ').suspend');
-    }
-
+  getData() {
     return {
-      dimensions: partition.dimensions,
-      consumeChanges: consumeChanges,
-      getBufferGeometry: getBufferGeometry,
-      getData: getData,
-      getOffset: getOffset,
-      suspend: suspend
+      position: this.position,
+      normal: this.normal,
+      uv: this.uv,
+      data: this.data,
+      offset: this.offset
     };
   }
-}
 
-export default PartitionGeometry;
+  getOffset(): com.IntVector3 {
+    return this.partition.offset;
+  }
+
+  suspend(): void {
+    console.log('Partition(' + this.partition.index + ').suspend');
+  }
+}

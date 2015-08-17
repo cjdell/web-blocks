@@ -46,13 +46,17 @@ void main() {
     if (side == 0.0 || side == 1.0 || side == 4.0 || side == 5.0) {
       isSide = 1.0;
     }
+    
+    vec2 uv2 = uv;
+    
+    uv2 = ((uv2 - 0.5) * (0.97)) + 0.5;
 
-    vUv.x = uv.x * (1.0 / sideCount) + isSide * (1.0 / sideCount);
-    vUv.y = uv.y * (1.0 / typeCount) + type * (1.0 / typeCount);
+    vUv.x = uv2.x * (1.0 / sideCount) + isSide * (1.0 / sideCount);
+    vUv.y = uv2.y * (1.0 / typeCount) + type * (1.0 / typeCount);
 
-    if (type == 3.0) {
+    /*if (type == 3.0) {
         vPos.y += sin(time / 3.0) / 4.0 - 0.5;
-    }
+    }*/
 
     if (type == 4.0) {
         // Webcam uses original coords
@@ -69,10 +73,14 @@ void main() {
 
     /*if (type == 1.0) {
         //vPos.x += sin((vPos.y + vPos.x) / 4.0 + time / 3.0) * 20.0;
-        vPos.x += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
-        vPos.y += cos((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
-        vPos.z += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 5.0;
+        vPos.x += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 1.0;
+        vPos.y += cos((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 1.0;
+        vPos.z += sin((vPos.z + vPos.x + vPos.y) / 4.0 + time / 3.0) * 1.0;
     }*/
+    
+    if (type == 1.0) {
+        //vPos.y += sin(vPos.x * vPos.z + time / 10.0);
+    }
 
     gl_Position = projectionMatrix * viewMatrix * vec4(vPos, 1.0);
   } else {

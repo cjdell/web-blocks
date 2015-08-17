@@ -13,6 +13,12 @@
     },
     "underscore/underscore.d.ts": {
       "commit": "52dc8fc39354569838b7bc09e24df690b852b4d9"
+    },
+    "chai/chai.d.ts": {
+      "commit": "e95958ac847d9a343bdc8d7cbc796a5f6da29f71"
+    },
+    "mocha/mocha.d.ts": {
+      "commit": "e95958ac847d9a343bdc8d7cbc796a5f6da29f71"
     }
   }
 }

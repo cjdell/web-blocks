@@ -1,13 +1,13 @@
 import THREE = require('three');
 
-import cu from './Culling';
-import btl from './BlockTypeList';
-import int from './Interaction';
-import wv from './WorldViewer';
-import wi from './WorkerInterface';
+import Culling from './Culling';
+import BlockTypeList from './BlockTypeList';
+import Interaction from './Interaction';
+import WorldViewer from './WorldViewer';
+import WorkerInterface from './WorkerInterface';
 import _api from './Api';
-import wc from './Webcam';
-import tr from './TextRenderer';
+import Webcam from './Webcam';
+import TextRenderer from './TextRenderer';
 import com from '../common/Common';
 
 module Game {
@@ -19,19 +19,19 @@ module Game {
     const win = <any>self;
     const log = false;
 
-    let workerInterface: wi.WorkerInterface = null;
+    let workerInterface: WorkerInterface = null;
     let renderer: any = null;
     let viewPort: any = null;
     let camera: THREE.Camera = null;
     let scene: THREE.Scene = null;
-    let blockTypeList: btl.BlockTypeList = null;
-    let worldViewer: wv.WorldViewer = null;
+    let blockTypeList: BlockTypeList = null;
+    let worldViewer: WorldViewer = null;
     let viewPoint: any = null;
     let culling: any = null;
-    let interaction: int.Interaction = null;
+    let interaction: Interaction = null;
     let api: _api.Api = null;
-    let webcam: wc.Webcam = null;
-    let textRenderer: tr.TextRenderer = null;
+    let webcam: Webcam = null;
+    let textRenderer: TextRenderer = null;
 
     let uniforms: any = null;
     let frame = 0;
@@ -40,7 +40,7 @@ module Game {
     let fragmentShader: string = null;
 
     function init(platform: any): Promise<void> {
-      workerInterface = wi.NewWorkerInterface();
+      workerInterface = new WorkerInterface();
 
       renderer = platform.getRenderer();
       viewPort = platform.getViewPort();
@@ -53,10 +53,10 @@ module Game {
 
       scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
 
-      blockTypeList = btl.NewBlockTypeList();
+      blockTypeList = new BlockTypeList();
 
       return Promise.all([workerInterface.init(), loadShaders()]).then(function(res) {
-        const worldInfo = <com.WorldInfo>res[0];
+        const worldInfo = new com.WorldInfo(<com.WorldInfo>res[0]);
 
         uniforms = {};
 
@@ -98,12 +98,12 @@ module Game {
         pointLight.position.set(5.0, 5.0, 5.0);
         scene.add(pointLight);
 
-        worldViewer = wv.NewWorldViewer(scene, worldInfo, blockMaterial, workerInterface);
+        worldViewer = new WorldViewer(scene, worldInfo, blockMaterial, workerInterface);
         viewPoint = new platform.ViewPoint(camera, pointLight, viewPort, renderer, worldInfo);
-        culling = cu.NewCulling(camera, worldInfo);
-        webcam = wc.NewWebcam(scene);
-        interaction = int.NewInteraction(viewPort, scene, camera, workerInterface, worldInfo, webcam);
-        textRenderer = tr.NewTextRenderer(workerInterface);
+        culling = new Culling(camera, worldInfo);
+        webcam = new Webcam();
+        interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo, webcam);
+        textRenderer = new TextRenderer(workerInterface);
 
         // Expose API as global for console access
         api = _api.NewApi(workerInterface, viewPoint);
@@ -148,7 +148,7 @@ module Game {
       return interaction.setType(blockTypeIndex);
     }
 
-    function loadShaders(): Object {
+    function loadShaders(): Promise<any> {
       return Promise.all([
         win.fetch('shaders/block.vertex.glsl'),
         win.fetch('shaders/block.fragment.glsl')

@@ -1,13 +1,13 @@
 import THREE = require('three');
 
-import wi from './WorkerInterface';
+import WorkerInterface from './WorkerInterface';
 
 module Api {
   export interface Api {
 
   }
 
-  export function NewApi(workerInterface: wi.WorkerInterface, viewPoint: any): Api {
+  export function NewApi(workerInterface: WorkerInterface, viewPoint: any): Api {
     const help = [
       'Here you can type JavaScript commands!',
       'Not sure what to type? Here\'s some you can try:',

@@ -1,175 +1,182 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import wi from './WorkerInterface';
-import tb from './tools/ToolBase';
-import ct from './tools/CuboidTool';
 import com from '../common/Common';
+import WorkerInterface from './WorkerInterface';
+import { Context, Tool } from './tools/ToolBase';
+import CuboidTool from './tools/CuboidTool';
+import Webcam from './Webcam';
 
-module Interaction {
-  export interface Interaction {
-    setType(type: number): void;
+export default class Interaction {
+  viewPort: HTMLElement;
+  scene: THREE.Scene;
+  camera: THREE.Camera;
+  workerInterface: WorkerInterface;
+  worldInfo: com.WorldInfo;
+  webcam: Webcam;
+
+  mouse = new THREE.Vector2();
+  raycaster = new THREE.Raycaster();
+
+  down = false;
+  type = 1;
+  tool: Tool = null;
+
+  isDesktop = true; // TODO: Detect mobile
+
+  constructor(viewPort: HTMLElement, scene: THREE.Scene, camera: THREE.Camera, workerInterface: WorkerInterface, worldInfo: com.WorldInfo, webcam: Webcam) {
+    this.viewPort = viewPort;
+    this.scene = scene;
+    this.camera = camera;
+    this.workerInterface = workerInterface;
+    this.worldInfo = worldInfo;
+    this.webcam = webcam;
+
+    if (this.isDesktop) {
+      viewPort.addEventListener('mousedown', (e) => this.mouseDown(e), false);
+      viewPort.addEventListener('mousemove', (e) => this.mouseMove(e), false);
+      viewPort.addEventListener('mouseup', (e) => this.mouseUp(e), false);
+
+      document.addEventListener('keypress', (e) => this.keyPress(e), false);
+    }
   }
 
-  export function NewInteraction(viewPort: HTMLElement, scene: THREE.Scene, camera: THREE.Camera, workerInterface: wi.WorkerInterface, worldInfo: any, webcam: any): Interaction {
-    const mouse = new THREE.Vector2();
-    const raycaster = new THREE.Raycaster();
+  keyPress(event: KeyboardEvent) {
+    // console.log('keyPress', event.keyCode, event.ctrlKey);
+    if (event.keyCode == 26 && event.ctrlKey) {
+      // console.log('undo');
+      this.workerInterface.undo();
+    }
+  }
 
-    let down = false;
-    let type = 1;
-    let tool: tb.Tool = null;
+  mouseDown(event: any) {
+    this.down = true;
+  }
 
-    let isDesktop = true; // TODO: Detect mobile
+  mouseMove(event: any) {
+    this.mouse.x = (event.clientX / this.viewPort.clientWidth) * 2 - 1;
+    this.mouse.y = -(event.clientY / this.viewPort.clientHeight) * 2 + 1;
 
-    if (isDesktop) {
-      viewPort.addEventListener('mousedown', mouseDown, false);
-      viewPort.addEventListener('mousemove', mouseMove, false);
-      viewPort.addEventListener('mouseup', mouseUp, false);
+    let pos = this.getBlockPositionOfMouse();
 
-      document.addEventListener('keypress', keyPress, false);
+    if (this.tool) this.tool.onMouseMove.call(this.tool, this.mouse, pos);
+  }
+
+  mouseUp(event: any) {
+    this.down = false;
+
+    const pos = this.getBlockPositionOfMouse();
+
+    if (!this.tool) {
+      const context: Context = {
+        scene: this.scene,
+        type: this.type,
+        workerInterface: this.workerInterface,
+        getPositionOfMouseAlongXZPlane: this.getPositionOfMouseAlongXZPlane.bind(this),
+        finished: this.finished.bind(this)
+      };
+
+      this.tool = new CuboidTool(context);
     }
 
-    function keyPress(event: KeyboardEvent) {
-      // console.log('keyPress', event.keyCode, event.ctrlKey);
-      if (event.keyCode == 26 && event.ctrlKey) {
-        // console.log('undo');
-        workerInterface.undo();
-      }
-    }
+    if (this.tool) this.tool.onMouseClick.call(this.tool, this.mouse, pos);
+  }
 
-    function mouseDown(event: any) {
-      down = true;
-    }
+  finished() {
+    this.tool = null;
+  }
 
-    function mouseMove(event: any) {
-      mouse.x = (event.clientX / viewPort.clientWidth) * 2 - 1;
-      mouse.y = -(event.clientY / viewPort.clientHeight) * 2 + 1;
+  getBlockPositionOfMouse(): com.IntVector3 {
+    this.raycaster.setFromCamera(this.mouse, this.camera);
 
-      let pos = getBlockPositionOfMouse();
+    const intersects = this.raycaster.intersectObjects(this.scene.children);
 
-      if (tool) tool.onMouseMove(mouse, pos);
-    }
+    if (intersects.length > 0) {
+      let hitBlock: THREE.Intersection = null;
 
-    function mouseUp(event: any) {
-      down = false;
+      let i = 0;
 
-      const pos = getBlockPositionOfMouse();
+      // Don't detect the selection cube
+      while (intersects[i].object.name === 'selection-cube') {
+        i++;
 
-      if (!tool) {
-        const context: tb.Context = {
-          scene: scene,
-          type: type,
-          workerInterface: workerInterface,
-          getPositionOfMouseAlongXZPlane: getPositionOfMouseAlongXZPlane,
-          finished: finished
-        };
-
-        tool = ct.NewCuboidTool(context);
-      }
-
-      if (tool) tool.onMouseClick(mouse, pos);
-    }
-
-    function finished() {
-      tool = null;
-    }
-
-    function getBlockPositionOfMouse() {
-      raycaster.setFromCamera(mouse, camera);
-
-      const intersects = raycaster.intersectObjects(scene.children);
-
-      if (intersects.length > 0) {
-        let hitBlock: THREE.Intersection = null;
-
-        let i = 0;
-
-        // Don't detect the selection cube
-        while (intersects[i].object.name === 'selection-cube') {
-          i++;
-
-          if (i >= intersects.length) return;
-        }
-
-        hitBlock = intersects[i];
-
-        const vertexIndex = hitBlock.face.a;
-
-        const offset = getOffset(<THREE.Mesh>hitBlock.object, vertexIndex);
-
-        if (!offset) return null;
-
-        const side = getSide(<THREE.Mesh>hitBlock.object, vertexIndex);
-
-        return com.getWorldPositionFromIndex(worldInfo, offset);
+        if (i >= intersects.length) return;
       }
 
-      return null;
+      hitBlock = intersects[i];
+
+      const vertexIndex = hitBlock.face.a;
+
+      const offset = this.getOffset(<THREE.Mesh>hitBlock.object, vertexIndex);
+
+      if (!offset) return null;
+
+      const side = this.getSide(<THREE.Mesh>hitBlock.object, vertexIndex);
+
+      // console.log('offset', offset);
+
+      return this.worldInfo.wpos2(offset);
     }
 
-    function getPositionOfMouseAlongXZPlane(xPlane: number, zPlane: number) {
-      const vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-      vector.unproject(camera);
+    return null;
+  }
 
-      //dot(vector);
+  getPositionOfMouseAlongXZPlane(xPlane: number, zPlane: number) {
+    const vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5);
+    vector.unproject(this.camera);
 
-      const dir = vector.sub(camera.position).normalize();
+    //dot(vector);
 
-      const distancez = (zPlane - camera.position.z) / dir.z;
-      const posz = camera.position.clone().add(dir.multiplyScalar(distancez));
+    const dir = vector.sub(this.camera.position).normalize();
 
-      posz.x = posz.x | 0;
-      posz.y = posz.y | 0;
+    const distancez = (zPlane - this.camera.position.z) / dir.z;
+    const posz = this.camera.position.clone().add(dir.multiplyScalar(distancez));
 
-      const distancex = (xPlane - camera.position.x) / dir.x;
-      const posx = camera.position.clone().add(dir.multiplyScalar(distancex));
+    posz.x = posz.x | 0;
+    posz.y = posz.y | 0;
 
-      posx.x = posx.x | 0;
-      posx.y = posx.y | 0;
+    const distancex = (xPlane - this.camera.position.x) / dir.x;
+    const posx = this.camera.position.clone().add(dir.multiplyScalar(distancex));
 
-      if (distancex > distancez) {
-        //dot(posx);
-        return posx;
-      } else {
-        //dot(posz);
-        return posz;
-      }
+    posx.x = posx.x | 0;
+    posx.y = posx.y | 0;
+
+    if (distancex > distancez) {
+      //dot(posx);
+      return posx;
+    } else {
+      //dot(posz);
+      return posz;
     }
+  }
 
-    function dot(pos: THREE.Vector3) {
-      console.log(pos);
+  dot(pos: THREE.Vector3) {
+    console.log(pos);
 
-      const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-      const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-      const cube = new THREE.Mesh(geometry, material);
-      cube.position.set(pos.x, pos.y, pos.z);
-      scene.add(cube);
-    }
+    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(cube);
+  }
 
-    function getOffset(mesh: THREE.Mesh, vertexIndex: number): number {
-      const geo: any = mesh.geometry;
+  getOffset(mesh: THREE.Mesh, vertexIndex: number): number {
+    const geo: any = mesh.geometry;
 
-      if (!geo.attributes || !geo.attributes.offset) return null;
+    if (!geo.attributes || !geo.attributes.offset) return null;
 
-      return geo.attributes.offset.array[vertexIndex];
-    }
+    return geo.attributes.offset.array[vertexIndex];
+  }
 
-    function getSide(mesh: THREE.Mesh, vertexIndex: number) {
-      const geo: any = mesh.geometry;
+  getSide(mesh: THREE.Mesh, vertexIndex: number) {
+    const geo: any = mesh.geometry;
 
-      return Math.floor(geo.attributes.data.array[vertexIndex] / 256.0);
-    }
+    return Math.floor(geo.attributes.data.array[vertexIndex] / 256.0);
+  }
 
-    function setType(_type: number) {
-      type = _type;
+  setType(_type: number) {
+    this.type = _type;
 
-      if (type === 4) webcam.init();
-    }
-
-    return {
-      setType: setType
-    };
+    if (this.type === 4) this.webcam.init();
   }
 }
-
-export default Interaction;

@@ -3,99 +3,96 @@ import THREE = require('three');
 
 import com from '../common/Common';
 
-module WorkerInterface {
-  export interface WorkerInterface {
-    init(): Promise<com.WorldInfo>;
-    undo(): Promise<Object>;
-    getBlock(pos: THREE.Vector3): Promise<number>;
-    setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number, update: boolean): Promise<Object>;
-    getPartition(index: number): Promise<Object>;
-    addChangeListener(listener: Function): void;
-  }
+export default class WorkerInterface {
+  geoWorker: Worker;
+  callbacks: { [id: number]: Function } = {};
 
-  export function NewWorkerInterface(): WorkerInterface {
-    let geoWorker = new Worker('build/worker.js');
+  changeListener: Function = null;
+  lastId = 0;
 
-    let callbacks: { [id: number]: Function } = {};
-    let changeListener: Function = null;
-    let lastId = 0;
+  constructor() {
+    this.geoWorker = new Worker('build/worker.js');
 
-    function invoke<ReturnType>(action: string, data: Object) {
-      return new Promise<ReturnType>(function(resolve, reject) {
-        let invocation = {
-          action: action,
-          id: lastId++,
-          data: data
-        };
-
-        callbacks[invocation.id] = resolve;
-
-        geoWorker.postMessage(invocation);
-      });
-    }
-
-    function init() {
-      return invoke<com.WorldInfo>('init', null);
-    }
-
-    function undo() {
-      return invoke<Object>('undo', null);
-    }
-
-    function getBlock(pos: THREE.Vector3) {
-      return invoke<Object>('getBlock', { pos: pos })
-        .then(function(result: any) {
-        return <number>result.type;
-      });
-    }
-
-    function setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number, update: boolean) {
-      return invoke<Object>('setBlocks', {
-        start: start,
-        end: end,
-        type: type,
-        colour: colour,
-        update: update
-      });
-    }
-
-    function addBlock(position: THREE.Vector3, side: number, type: number) {
-      geoWorker.postMessage({
-        action: 'addBlock',
-        position: position,
-        side: side,
-        type: type
-      });
-    }
-
-    function getPartition(index: number) {
-      return invoke<Object>('getPartition', { index: index });
-    }
-
-    geoWorker.onmessage = function(e) {
+    this.geoWorker.onmessage = e => {
       if (typeof e.data.id === 'number') {
-        return callbacks[e.data.id](e.data.data);
+        return this.callbacks[e.data.id](e.data.data);
       }
 
       if (e.data.action === 'update') {
-        if (changeListener) changeListener(e.data);
+        if (this.changeListener) this.changeListener(e.data);
       }
     };
+  }
 
-    function addChangeListener(listener: Function) {
-      changeListener = listener;
-    }
+  invoke<ReturnType>(action: string, data: Object) {
+    return new Promise<ReturnType>((resolve, reject) => {
+      const invocation = {
+        action: action,
+        id: this.lastId++,
+        data: data
+      };
 
-    return {
-      init: init,
-      undo: undo,
-      getBlock: getBlock,
-      setBlocks: setBlocks,
-      addBlock: addBlock,
-      getPartition: getPartition,
-      addChangeListener: addChangeListener
+      this.callbacks[invocation.id] = resolve;
+
+      this.geoWorker.postMessage(invocation);
+    });
+  }
+
+  invokeCallback<ReturnType>(action: string, data: Object, callback: (r: ReturnType) => void) {
+    const invocation = {
+      action: action,
+      id: this.lastId++,
+      data: data
     };
+
+    this.callbacks[invocation.id] = callback;
+
+    this.geoWorker.postMessage(invocation);
+  }
+
+  init() {
+    return this.invoke<com.WorldInfo>('init', null);
+  }
+
+  undo() {
+    return this.invoke<Object>('undo', null);
+  }
+
+  getBlock(pos: THREE.Vector3) {
+    return this.invoke<Object>('getBlock', { pos: pos })
+      .then(function(result: any) {
+        return <number>result.type;
+      });
+  }
+
+  setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean) {
+    return this.invoke<Object>('setBlocks', {
+      start: start,
+      end: end,
+      type: type,
+      colour: colour,
+      update: update
+    });
+  }
+
+  addBlock(position: com.IntVector3, side: number, type: number) {
+    this.geoWorker.postMessage({
+      action: 'addBlock',
+      position: position,
+      side: side,
+      type: type
+    });
+  }
+
+  getPartition(index: number) {
+    return this.invoke<Object>('getPartition', { index: index });
+  }
+
+  registerChangeHandler(changeHandlerOptions: com.ChangeHandlerOptions, callback: (Change: any) => void) {
+    return this.invokeCallback<Object>('registerChangeHandler', changeHandlerOptions, callback);
+  }
+
+  addChangeListener(listener: (data: any) => void) {
+    this.changeListener = listener;
   }
 }
-
-export default WorkerInterface;
