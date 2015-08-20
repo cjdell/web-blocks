@@ -28,10 +28,10 @@ Building
 
 Requires NodeJS. Once installed, run these commands.
 
-  - npm -g install gulp http-server
+  - npm -g install gulp http-server tsd
   - npm install
+  - tsd reinstall
   - gulp build
   - http-server
-  
-Then point your browser at: http://localhost:8080/
 
+Then point your browser at: http://localhost:8080/

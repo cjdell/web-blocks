@@ -3,8 +3,8 @@ import THREE = require('three');
 
 module Common {
   export class WorldInfoInterface {
-    partitionDimensionsInBlocks: THREE.Vector3;
-    worldDimensionsInPartitions: THREE.Vector3;
+    partitionDimensionsInBlocks: IntVector3;
+    worldDimensionsInPartitions: IntVector3;
     partitionBoundaries: Array<any>;
   }
 

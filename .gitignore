@@ -6,3 +6,4 @@ upload.sh
 typings
 tmp
 *.js
+*.log

@@ -23,8 +23,8 @@ interface Invocation {
 
 function init(invocation: Invocation): void {
   const worldInfo = new com.WorldInfo({
-    worldDimensionsInPartitions: new THREE.Vector3(32, 1, 32),
-    partitionDimensionsInBlocks: new THREE.Vector3(32, 32, 32),
+    worldDimensionsInPartitions: new com.IntVector3(32, 1, 32),
+    partitionDimensionsInBlocks: new com.IntVector3(32, 32, 32),
     partitionBoundaries: null
   });
 
