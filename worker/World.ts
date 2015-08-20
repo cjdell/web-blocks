@@ -7,6 +7,8 @@ import Partition from './Partition';
 import Command from './Commands/Command';
 import { CuboidCommand } from './Commands/CuboidCommand';
 import { LandscapeCommand } from './Commands/LandscapeCommand';
+import { CuboidOperation } from './Operations/CuboidOperation';
+import { OperationCommand } from './Commands/OperationCommand';
 
 export interface ChangeHandler {
   callback(change: com.Change): void;
@@ -114,7 +116,7 @@ export default class World {
   }
 
   getBlock(wx: number, wy: number, wz: number): number {
-    const ppos = this.worldInfo.ppos2(wx, wy, wz);
+    const ppos = this.worldInfo.pposw2(wx, wy, wz);
 
     if (!this.worldInfo.vppos2(ppos.x, ppos.y, ppos.z)) return 0 | 0;
 
@@ -156,12 +158,21 @@ export default class World {
   }
 
   setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {
-    const command = new CuboidCommand(this.worldInfo, 0 | 0, {
+    const operation = new CuboidOperation(this.worldInfo, {
       start: new com.IntVector3(wx1, wy1, wz1),
       end: new com.IntVector3(wx2, wy2, wz2),
       type: type,
       colour: colour
     });
+
+    const command = new OperationCommand(this.worldInfo, this.commands.length, operation);
+
+    // const command = new CuboidCommand(this.worldInfo, this.commands.length, {
+    //   start: new com.IntVector3(wx1, wy1, wz1),
+    //   end: new com.IntVector3(wx2, wy2, wz2),
+    //   type: type,
+    //   colour: colour
+    // });
 
     return this.applyCommand(command);
   }
@@ -294,7 +305,7 @@ export default class World {
         let height = 0;
 
         if (x < 0 || z < 0 || x > pdib.x - 1 || z > pdib.z - 1) {
-          const ppos = this.worldInfo.ppos2(partition.offset.x + x, 0, partition.offset.z + z);
+          const ppos = this.worldInfo.pposw2(partition.offset.x + x, 0, partition.offset.z + z);
 
           if (this.worldInfo.vppos2(ppos.x, ppos.y, ppos.z)) {
             const { x: rx2, y: ry2, z: rz2 } = this.worldInfo.rposw2(partition.offset.x + x, 0, partition.offset.z + z);

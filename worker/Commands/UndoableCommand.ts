@@ -37,27 +37,31 @@ export default class UndoableCommand extends Command {
 
     const { x: rx, y: ry, z: rz } = this.worldInfo.rposw2(position.x, position.y, position.z);
 
-    const blockIndex = this.worldInfo.rindex2(rx, ry, rz);
-    const blockData = partition.getBlock(rx, ry, rz);
+    const rindex = this.worldInfo.rindex2(rx, ry, rz);
 
-    snapshot.indices[blockNumber] = blockIndex;
+    const blockData = partition.getBlockWithIndex(rindex);
+
+    // if (blockNumber >= snapshot.indices.length) throw new Error('Out of range: ' + snapshot.indices.length + '/' + blockNumber);
+
+    snapshot.indices[blockNumber] = rindex;
     snapshot.blockData[blockNumber * 2 + 0] = blockData[0];
     snapshot.blockData[blockNumber * 2 + 1] = blockData[1];
 
-    partition.setBlock(rx, ry, rz, type, colour);
+    partition.setBlockWithIndex(rindex, type, colour);
   }
 
   undo(partition: Partition): void {
+    // console.log('undo', partition.index);
+
     const snapshot = this.snapshots[partition.index];
 
     for (let i = 0; i < snapshot.indices.length; i++) {
-      const index = snapshot.indices[i];
-      const { x: px, y: py, z: pz } = this.worldInfo.rpos2(index);
+      const rindex = snapshot.indices[i];
 
       const type = snapshot.blockData[i * 2 + 0];
       const colour = snapshot.blockData[i * 2 + 1];
 
-      partition.setBlock(px, py, pz, type, colour);
+      partition.setBlockWithIndex(rindex, type, colour);
     }
   }
 }

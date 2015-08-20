@@ -2,10 +2,6 @@
 import THREE = require('three');
 
 module Common {
-  const WPX = 5, WPY = 0, WPZ = 5;  // World partition dimensions
-  const PBX = 4, PBY = 5, PBZ = 4;  // Partition block dimensions
-  const WBX = WPX + PBX, WBY = WPY + PBY, WBZ = WPZ + PBZ;  // World block dimensions
-
   export class WorldInfoInterface {
     partitionDimensionsInBlocks: THREE.Vector3;
     worldDimensionsInPartitions: THREE.Vector3;
@@ -35,6 +31,10 @@ module Common {
       return new IntVector3(this.x - v.x, this.y - v.y, this.z - v.z);
     }
 
+    mul(v: IntVector3): IntVector3 {
+      return new IntVector3(this.x * v.x, this.y * v.y, this.z * v.z);
+    }
+
     clamp(min: IntVector3, max: IntVector3): IntVector3 {
       let x = this.x, y = this.y, z = this.z;
 
@@ -61,9 +61,9 @@ module Common {
   }
 
   export class WorldInfo {
-    partitionDimensionsInBlocks: THREE.Vector3;
-    worldDimensionsInPartitions: THREE.Vector3;
-    worldDimensionsInBlocks: THREE.Vector3;
+    partitionDimensionsInBlocks: IntVector3;
+    worldDimensionsInPartitions: IntVector3;
+    worldDimensionsInBlocks: IntVector3;
     partitionBoundaries: Array<any>;
     partitionCapacity: number;
     worldCapacity: number;
@@ -77,13 +77,13 @@ module Common {
       const wdip = vars.worldDimensionsInPartitions;
       const pdib = vars.partitionDimensionsInBlocks;
 
-      this.worldDimensionsInPartitions = new THREE.Vector3(wdip.x | 0, wdip.y | 0, wdip.z | 0);
-      this.partitionDimensionsInBlocks = new THREE.Vector3(pdib.x | 0, pdib.y | 0, pdib.z | 0);
+      this.worldDimensionsInPartitions = new IntVector3(wdip.x | 0, wdip.y | 0, wdip.z | 0);
+      this.partitionDimensionsInBlocks = new IntVector3(pdib.x | 0, pdib.y | 0, pdib.z | 0);
       this.partitionBoundaries = vars.partitionBoundaries;
 
       this.WPX = this.log2(wdip.x);
       this.WPY = this.log2(wdip.y);
-      this.WPY = this.log2(wdip.z);
+      this.WPZ = this.log2(wdip.z);
 
       this.PBX = this.log2(pdib.x);
       this.PBY = this.log2(pdib.y);
@@ -91,7 +91,7 @@ module Common {
 
       this.WBX = this.WPX + this.PBX; this.WBY = this.WPY + this.PBY; this.WBZ = this.WPZ + this.PBZ;  // World block dimensions
 
-      this.worldDimensionsInBlocks = this.partitionDimensionsInBlocks.clone().multiply(this.worldDimensionsInPartitions);
+      this.worldDimensionsInBlocks = this.partitionDimensionsInBlocks.mul(this.worldDimensionsInPartitions);
       this.partitionCapacity = this.partitionDimensionsInBlocks.x * this.partitionDimensionsInBlocks.y * this.partitionDimensionsInBlocks.z;
       this.worldCapacity = this.worldDimensionsInBlocks.x * this.worldDimensionsInBlocks.y * this.worldDimensionsInBlocks.z;
       this.worldPartitionCapacity = this.worldDimensionsInPartitions.x * this.worldDimensionsInPartitions.y * this.worldDimensionsInPartitions.z;
@@ -101,39 +101,25 @@ module Common {
       return Math.round(Math.log(num) / Math.log(2)) | 0;
     }
 
-    // pindex([px, py, pz]: number[]): number {
-    //   return (px + (pz << this.WPX))| 0;
-    // }
-
     pindex2(px: number, py: number, pz: number): number {
       return (px + (pz << this.WPX)) | 0;
     }
 
-    // ppos([wx, wy, wz]: number[]): number[] {
-    //   const px = (wx >> this.PBX) | 0;
-    //   const py = (wy >> this.PBY) | 0;
-    //   const pz = (wz >> this.PBZ) | 0;
-    //
-    //   return [px, py, pz];
-    // }
+    ppos2(pindex: number): IntVector3 {
+      const z = (pindex >> (this.WPX + this.WPY)) | 0;
+      const y = ((pindex - (z << (this.WPX + this.WPY))) >> this.WPX) | 0;
+      const x = (pindex - ((y + (z << this.WPY)) << this.WPX)) | 0;
 
-    ppos2(wx: number, wy: number, wz: number): IntVector3 {
+      return new IntVector3(x, y, z);
+    }
+
+    pposw2(wx: number, wy: number, wz: number): IntVector3 {
       const px = (wx >> this.PBX) | 0;
       const py = (wy >> this.PBY) | 0;
       const pz = (wz >> this.PBZ) | 0;
 
       return new IntVector3(px, py, pz);
     }
-
-    // rposw([wx, wy, wz]: number[]): number[] {
-    //   const [px, py, pz] = this.ppos([wx, wy, wz]);
-    //
-    //   const rx = (wx - (px << this.PBX)) | 0;
-    //   const ry = (wy - (py << this.PBY)) | 0;
-    //   const rz = (wz - (pz << this.PBZ)) | 0;
-    //
-    //   return [rx, ry, rz];
-    // }
 
     rposw2(wx: number, wy: number, wz: number): IntVector3 {
       const mx = (wx >> this.PBX) << this.PBX;
@@ -147,21 +133,9 @@ module Common {
       return new IntVector3(rx, ry, rz);
     }
 
-    // rindex([rx, ry, rz]: number[]): number {
-    //   return (rx + ((ry + (rz << this.PBY)) << this.PBX)) | 0;
-    // }
-
     rindex2(rx: number, ry: number, rz: number): number {
       return (rx + ((ry + (rz << this.PBY)) << this.PBX)) | 0;
     }
-
-    // rpos(rindex: number): number[] {
-    //   const z = (rindex >> (this.PBX + this.PBY)) | 0;
-    //   const y = ((rindex - (z << (this.PBX + this.PBY))) >> this.PBX) | 0;
-    //   const x = (rindex - ((y + (z << this.PBY)) << this.PBX)) | 0;
-    //
-    //   return [x, y, z];
-    // }
 
     rpos2(rindex: number): IntVector3 {
       const z = (rindex >> (this.PBX + this.PBY)) | 0;
@@ -171,14 +145,6 @@ module Common {
       return new IntVector3(x, y, z);
     }
 
-    // wpos(windex: number): number[] {
-    //   const z = (windex >> (this.WBX + this.WBY)) | 0;
-    //   const y = ((windex - (z << (this.WBX + this.WBY))) >> this.WBX) | 0;
-    //   const x = (windex - ((y + (z << this.WBY)) << this.WBX)) | 0;
-    //
-    //   return [x, y, z];
-    // }
-
     wpos2(windex: number): IntVector3 {
       const z = (windex >> (this.WBX + this.WBY)) | 0;
       const y = ((windex - (z << (this.WBX + this.WBY))) >> this.WBX) | 0;
@@ -187,23 +153,9 @@ module Common {
       return new IntVector3(x, y, z);
     }
 
-    // windex([wx, wy, wz]: number[]): number {
-    //   return (wx + ((wy + (wz << this.WBY)) << this.WBX)) | 0;
-    // }
-
     windex2(wx: number, wy: number, wz: number): number {
       return (wx + ((wy + (wz << this.WBY)) << this.WBX)) | 0;
     }
-
-    // vppos([px, py, pz]: number[]): boolean {
-    //   if (px < 0 || py < 0 || pz < 0) return false;
-    //
-    //   if (px >= this.worldDimensionsInPartitions.x) return false;
-    //   if (py >= this.worldDimensionsInPartitions.y) return false;
-    //   if (pz >= this.worldDimensionsInPartitions.z) return false;
-    //
-    //   return true;
-    // }
 
     vppos2(px: number, py: number, pz: number): boolean {
       if (px < 0 || py < 0 || pz < 0) return false;

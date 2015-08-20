@@ -36,8 +36,8 @@ export class CuboidCommand extends UndoableCommand {
   }
 
   getAffectedPartitionIndices(): number[] {
-    const { x: px1, y: py1, z: pz1 } = this.worldInfo.ppos2(this.options.start.x, this.options.start.y, this.options.start.z);
-    const { x: px2, y: py2, z: pz2 } = this.worldInfo.ppos2(this.options.end.x, this.options.end.y, this.options.end.z);
+    const { x: px1, y: py1, z: pz1 } = this.worldInfo.pposw2(this.options.start.x, this.options.start.y, this.options.start.z);
+    const { x: px2, y: py2, z: pz2 } = this.worldInfo.pposw2(this.options.end.x, this.options.end.y, this.options.end.z);
 
     const indices = new Array<number>();
 
@@ -54,16 +54,15 @@ export class CuboidCommand extends UndoableCommand {
   }
 
   redo(partition: Partition): void {
-    // These are the partition bounaaries
+    // console.log('redo', this.version, partition.index);
+
+    // These are the partition boundaries
     const pstart = partition.offset;
     const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new com.IntVector3(1, 1, 1));
 
-    let start = this.options.start;
-    let end = this.options.end;
-
     // We only want the start and end that exists within the boundaries of this partition
-    start = start.clamp(pstart, pend);
-    end = end.clamp(pstart, pend);
+    let start = this.options.start.clamp(pstart, pend);
+    let end = this.options.end.clamp(pstart, pend);
 
     // console.log(start, end);
 
@@ -76,14 +75,14 @@ export class CuboidCommand extends UndoableCommand {
 
     let blockNumber = 0;
 
-    for (let z = start.z; z <= end.z; z++) {
-      for (let y = start.y; y <= end.y; y++) {
-        for (let x = start.x; x <= end.x; x++) {
-          blockNumber++
-
-          const wpos = new com.IntVector3(x, y, z);
+    for (let wz = start.z; wz <= end.z; wz++) {
+      for (let wy = start.y; wy <= end.y; wy++) {
+        for (let wx = start.x; wx <= end.x; wx++) {
+          const wpos = new com.IntVector3(wx, wy, wz);
 
           this.setBlock(partition, blockNumber, wpos, this.options.type, this.options.colour);
+
+          blockNumber++
         }
       }
     }

@@ -38,10 +38,10 @@ export default class CuboidTool {
       this.relMouseHeight = 0;
       this.state = 'select-height';
     } else if (this.state === 'select-height') {
+      this.context.finished();
       this.heightPos.y = this.endPos.y + this.relMouseHeight;
       this.context.workerInterface.setBlocks(this.startPos, this.heightPos, this.context.type, 0, true);
       this.removeCube(this.cube);
-      this.context.finished();
     }
   }
 

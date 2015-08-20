@@ -36,6 +36,10 @@ export default class Partition {
     this.blocks = new Uint8Array(this.capacity * VALUES_PER_BLOCK);
   }
 
+  getBlockWithIndex(rindex: number): Uint8Array {
+    return new Uint8Array([this.blocks[VALUES_PER_BLOCK * rindex]]);
+  }
+
   getBlock(rx: number, ry: number, rz: number): Uint8Array {
     const index = this.worldInfo.rindex2(rx, ry, rz);
 
@@ -61,8 +65,8 @@ export default class Partition {
   }
 
   setBlock(px: number, py: number, pz: number, type: number, colour: number): void {
-    if (px < 0 || py < 0 || pz < 0) return;
-    if (px >= this.worldInfo.partitionDimensionsInBlocks.x || py >= this.worldInfo.partitionDimensionsInBlocks.y || pz >= this.worldInfo.partitionDimensionsInBlocks.z) return;
+    if (px < 0 || py < 0 || pz < 0) throw new Error('Out of range');
+    if (px >= this.worldInfo.partitionDimensionsInBlocks.x || py >= this.worldInfo.partitionDimensionsInBlocks.y || pz >= this.worldInfo.partitionDimensionsInBlocks.z) throw new Error('Out of range');
 
     this.setBlockWithIndex(this.worldInfo.rindex2(px, py, pz), type, colour);
   }

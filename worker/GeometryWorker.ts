@@ -92,7 +92,7 @@ self.onmessage = function(e) {
     const start = invocation.data.start;
     const end = invocation.data.end;
 
-    world.setBlocks.call(world, start.x, start.y, start.z, end.x, end.y, end.z, invocation.data.type, invocation.data.colour);
+    world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, invocation.data.type, invocation.data.colour);
 
     if (invocation.data.update) checkForChangedPartitions();
   }
