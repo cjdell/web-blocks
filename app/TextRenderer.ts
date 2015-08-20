@@ -34,7 +34,7 @@ export default class TextRenderer {
       const y = (pix / canvas.width) | 0;
 
       const col = data[i + 1];
-      const on = col > 240 ? 1 : 0;
+      const on = col > 192 ? 1 : 0;
 
       const pos = new com.IntVector3(offset.x + x, offset.y + canvas.height - y, offset.z);
 

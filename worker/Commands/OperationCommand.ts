@@ -37,6 +37,8 @@ export class OperationCommand extends UndoableCommand {
   }
 
   redo(partition: Partition): void {
+    // console.time('redo');
+
     const result = this.operation.getBlocks(partition.index);
 
     this.allocateSnapshot(partition, result.ids.length);
@@ -49,9 +51,11 @@ export class OperationCommand extends UndoableCommand {
 
       const rpos = this.worldInfo.rpos2(rindex);
 
-      const wpos = new com.IntVector3(partition.offset.x + rpos.x, partition.offset.y + rpos.y, partition.offset.z + rpos.z)
+      const wpos = partition.offset.add(rpos);
 
       this.setBlock(partition, blockNumber, wpos, type, colour);
     }
+
+    // console.timeEnd('redo');
   }
 }

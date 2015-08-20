@@ -36,8 +36,8 @@ export default class Partition {
     this.blocks = new Uint8Array(this.capacity * VALUES_PER_BLOCK);
   }
 
-  getBlockWithIndex(rindex: number): Uint8Array {
-    return new Uint8Array([this.blocks[VALUES_PER_BLOCK * rindex]]);
+  getBlockWithIndex(rindex: number): number {
+    return this.blocks[VALUES_PER_BLOCK * rindex + 0];
   }
 
   getBlock(rx: number, ry: number, rz: number): Uint8Array {

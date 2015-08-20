@@ -6,7 +6,7 @@ function DesktopViewPoint(camera, light, viewPort, renderer, worldInfo) {
   var lookMode = false;
 
   camera.position.x = 100;
-  camera.position.y = 16;
+  camera.position.y = 24;
   camera.position.z = 120;
 
   var movement = { x: 0, y: 0, z: 0 };

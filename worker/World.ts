@@ -5,9 +5,8 @@ import _ = require('underscore');
 import com from '../common/Common';
 import Partition from './Partition';
 import Command from './Commands/Command';
-import { CuboidCommand } from './Commands/CuboidCommand';
-import { LandscapeCommand } from './Commands/LandscapeCommand';
 import { CuboidOperation } from './Operations/CuboidOperation';
+import { LandscapeOperation } from './Operations/LandscapeOperation';
 import { OperationCommand } from './Commands/OperationCommand';
 
 export interface ChangeHandler {
@@ -76,9 +75,13 @@ export default class World {
 
     // Apply the default landscape
     const randomHeight = this.worldInfo.partitionDimensionsInBlocks.y >> 1;
-    const landscapeCommand = new LandscapeCommand(this.worldInfo, 0 | 0, { height: randomHeight });
+    const landscapeOperation = new LandscapeOperation(this.worldInfo, { height: randomHeight });
 
-    this.applyCommand(landscapeCommand);
+    const command = new OperationCommand(this.worldInfo, this.commands.length, landscapeOperation);
+
+// const command = new LandscapeCommand(this.worldInfo, 0, { height: randomHeight });
+
+    this.applyCommand(command);
   }
 
   getPartitionCapacity(): number {

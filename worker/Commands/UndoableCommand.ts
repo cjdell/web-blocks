@@ -44,8 +44,8 @@ export default class UndoableCommand extends Command {
     // if (blockNumber >= snapshot.indices.length) throw new Error('Out of range: ' + snapshot.indices.length + '/' + blockNumber);
 
     snapshot.indices[blockNumber] = rindex;
-    snapshot.blockData[blockNumber * 2 + 0] = blockData[0];
-    snapshot.blockData[blockNumber * 2 + 1] = blockData[1];
+    snapshot.blockData[blockNumber * 2 + 0] = blockData;
+    // snapshot.blockData[blockNumber * 2 + 1] = blockData[1];
 
     partition.setBlockWithIndex(rindex, type, colour);
   }

@@ -45,6 +45,7 @@
         "./worker/GeometryWorker.ts",
         "./worker/ImprovedNoise.ts",
         "./worker/Operations/CuboidOperation.ts",
+        "./worker/Operations/LandscapeOperation.ts",
         "./worker/Operations/Operation.ts",
         "./worker/Partition.ts",
         "./worker/PartitionGeometry.ts",

@@ -116,6 +116,8 @@ module Game {
 
         textRenderer.renderText(new THREE.Vector3(75, 5, 90), 'Welcome!');
 
+        // workerInterface.setBlocks(new com.IntVector3(80, 1, 80), new com.IntVector3(120, 31, 120), 0, 0, false);
+
         render(); // Kick off the render loop
       });
     }
