@@ -1,9 +1,11 @@
 /// <reference path="../../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../../common/Common';
+import com from '../../common/WorldInfo';
 import Command from './Command';
 import Partition from '../Partition';
+
+const rpos = new Int32Array(3);
 
 interface PartitionSnapshot {
   indices: Int32Array;
@@ -32,12 +34,12 @@ export default class UndoableCommand extends Command {
     this.snapshots[partition.index] = snapshot;
   }
 
-  protected setBlock(partition: Partition, blockNumber: number, position: com.IntVector3, type: number, colour: number): void {
+  protected setBlock(partition: Partition, blockNumber: number, wpos: Int32Array, type: number, colour: number): void {
     const snapshot = this.snapshots[partition.index];
 
-    const { x: rx, y: ry, z: rz } = this.worldInfo.rposw2(position.x, position.y, position.z);
+    this.worldInfo.rposw2(rpos, wpos);
 
-    const rindex = this.worldInfo.rindex2(rx, ry, rz);
+    const rindex = this.worldInfo.rindex(rpos[0], rpos[1], rpos[2]);
 
     const blockData = partition.getBlockWithIndex(rindex);
 

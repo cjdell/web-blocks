@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 
 const VALUES_PER_BLOCK = 3;
 
@@ -22,7 +22,7 @@ export default class Partition {
     this.worldInfo = worldInfo;
     this.partitionPosition = ppos;
 
-    this.index = this.worldInfo.pindex2(ppos.x, ppos.y, ppos.z);
+    this.index = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
     this.capacity = this.worldInfo.partitionCapacity;
     this.offset = new com.IntVector3(ppos.x * this.worldInfo.partitionDimensionsInBlocks.x, ppos.y * this.worldInfo.partitionDimensionsInBlocks.y, ppos.z * this.worldInfo.partitionDimensionsInBlocks.z);
 
@@ -41,7 +41,7 @@ export default class Partition {
   }
 
   getBlock(rx: number, ry: number, rz: number): Uint8Array {
-    const index = this.worldInfo.rindex2(rx, ry, rz);
+    const index = this.worldInfo.rindex(rx, ry, rz);
 
     return new Uint8Array([this.blocks[VALUES_PER_BLOCK * index]]);
   }
@@ -68,13 +68,13 @@ export default class Partition {
     if (px < 0 || py < 0 || pz < 0) throw new Error('Out of range');
     if (px >= this.worldInfo.partitionDimensionsInBlocks.x || py >= this.worldInfo.partitionDimensionsInBlocks.y || pz >= this.worldInfo.partitionDimensionsInBlocks.z) throw new Error('Out of range');
 
-    this.setBlockWithIndex(this.worldInfo.rindex2(px, py, pz), type, colour);
+    this.setBlockWithIndex(this.worldInfo.rindex(px, py, pz), type, colour);
   }
 
   setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void {
     for (let z = start.z; z <= end.z; z++) {
       for (let y = start.y; y <= end.y; y++) {
-        let index = this.worldInfo.rindex2(start.x, y, z);
+        let index = this.worldInfo.rindex(start.x, y, z);
         for (let x = start.x; x <= end.x; x++ , index++) {
           this.setBlockWithIndex(index, type, 0);
         }
@@ -98,7 +98,7 @@ export default class Partition {
 
   getHighestPoint(x: number, z: number) {
     for (let y = this.worldInfo.partitionDimensionsInBlocks.y - 1; y >= 0; y--) {
-      const index = this.worldInfo.rindex2(x, y, z);
+      const index = this.worldInfo.rindex(x, y, z);
 
       if (this.blocks[VALUES_PER_BLOCK * index] !== 0) return y;
     }

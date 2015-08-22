@@ -2,7 +2,7 @@
 import THREE = require('three');
 import _ = require('underscore');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 import Partition from './Partition';
 import Command from './Commands/Command';
 import { CuboidOperation } from './Operations/CuboidOperation';
@@ -66,7 +66,7 @@ export default class World {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
         for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
           const ppos = new com.IntVector3(x, y, z);
-          const pindex = this.worldInfo.pindex2(x, y, z);
+          const pindex = this.worldInfo.pindex(x, y, z);
 
           this.partitions[pindex] = new Partition(this.worldInfo, ppos);
         }
@@ -79,7 +79,7 @@ export default class World {
 
     const command = new OperationCommand(this.worldInfo, this.commands.length, landscapeOperation);
 
-// const command = new LandscapeCommand(this.worldInfo, 0, { height: randomHeight });
+    // const command = new LandscapeCommand(this.worldInfo, 0, { height: randomHeight });
 
     this.applyCommand(command);
   }
@@ -119,14 +119,14 @@ export default class World {
   }
 
   getBlock(wx: number, wy: number, wz: number): number {
-    const ppos = this.worldInfo.pposw2(wx, wy, wz);
+    const ppos = this.worldInfo.pposw(wx, wy, wz);
 
-    if (!this.worldInfo.vppos2(ppos.x, ppos.y, ppos.z)) return 0 | 0;
+    if (!this.worldInfo.vppos(ppos.x, ppos.y, ppos.z)) return 0 | 0;
 
-    const rpos = this.worldInfo.rposw2(wx, wy, wz);
-    const rindex = this.worldInfo.rindex2(rpos.x, rpos.y, rpos.z);
+    const rpos = this.worldInfo.rposw(wx, wy, wz);
+    const rindex = this.worldInfo.rindex(rpos.x, rpos.y, rpos.z);
 
-    const pindex = this.worldInfo.pindex2(ppos.x, ppos.y, ppos.z);
+    const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
     const partition = this.getPartitionByIndex(pindex);
 
     return partition.blocks[rindex * VALUES_PER_BLOCK];
@@ -170,18 +170,11 @@ export default class World {
 
     const command = new OperationCommand(this.worldInfo, this.commands.length, operation);
 
-    // const command = new CuboidCommand(this.worldInfo, this.commands.length, {
-    //   start: new com.IntVector3(wx1, wy1, wz1),
-    //   end: new com.IntVector3(wx2, wy2, wz2),
-    //   type: type,
-    //   colour: colour
-    // });
-
     return this.applyCommand(command);
   }
 
   addBlock(windex: number, side: number, type: number): void {
-    let { x: wx, y: wy, z: wz } = this.worldInfo.wpos2(windex);
+    let { x: wx, y: wy, z: wz } = this.worldInfo.wpos(windex);
 
     if (type === 0) {
       return this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);
@@ -215,7 +208,7 @@ export default class World {
     for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
         for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
-          const partitionIndex = this.worldInfo.pindex2(x, y, z);
+          const partitionIndex = this.worldInfo.pindex(x, y, z);
 
           const boundaryPoints = <THREE.Vector3[]>[];
 
@@ -258,7 +251,7 @@ export default class World {
   // ========
 
   getSurroundingBlocks(partition: Partition, rindex: number): number {
-    const { x, y, z } = this.worldInfo.rpos2(rindex);
+    const rpos = this.worldInfo.rpos(rindex);
 
     // if (x === 0 || y === 0 || z === 0) return 0;
     // if (x === this.worldInfo.partitionDimensionsInBlocks.x - 1 || y === this.worldInfo.partitionDimensionsInBlocks.y - 1 || z === this.worldInfo.partitionDimensionsInBlocks.z - 1) return 0;
@@ -269,9 +262,9 @@ export default class World {
     for (let sz = -1 | 0; sz <= (1 | 0); sz++) {
       for (let sy = -1 | 0; sy <= (1 | 0); sy++) {
         for (let sx = -1 | 0; sx <= (1 | 0); sx++) {
-          const rx = (x + sx) | 0;
-          const ry = (y + sy) | 0;
-          const rz = (z + sz) | 0;
+          const rx = (rpos.x + sx) | 0;
+          const ry = (rpos.y + sy) | 0;
+          const rz = (rpos.z + sz) | 0;
 
           let block = 0 | 0;
 
@@ -280,7 +273,7 @@ export default class World {
             block = this.getBlock((partition.offset.x + rx) | 0, (partition.offset.y + ry) | 0, (partition.offset.z + rz) | 0);
           } else {
             // otherwise, just read directly from partiton buffer (faster)
-            const rindex = this.worldInfo.rindex2(rx, ry, rz) | 0;
+            const rindex = this.worldInfo.rindex(rx, ry, rz) | 0;
             block = partition.blocks[VALUES_PER_BLOCK * rindex];
           }
 
@@ -308,11 +301,11 @@ export default class World {
         let height = 0;
 
         if (x < 0 || z < 0 || x > pdib.x - 1 || z > pdib.z - 1) {
-          const ppos = this.worldInfo.pposw2(partition.offset.x + x, 0, partition.offset.z + z);
+          const ppos = this.worldInfo.pposw(partition.offset.x + x, 0, partition.offset.z + z);
 
-          if (this.worldInfo.vppos2(ppos.x, ppos.y, ppos.z)) {
-            const { x: rx2, y: ry2, z: rz2 } = this.worldInfo.rposw2(partition.offset.x + x, 0, partition.offset.z + z);
-            const pindex = this.worldInfo.pindex2(ppos.x, ppos.y, ppos.z);
+          if (this.worldInfo.vppos(ppos.x, ppos.y, ppos.z)) {
+            const { x: rx2, y: ry2, z: rz2 } = this.worldInfo.rposw(partition.offset.x + x, 0, partition.offset.z + z);
+            const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
             const index = rz2 * pdib.x + rx2;
 
             const adjacentPartition = this.getPartitionByIndex(pindex);
@@ -337,7 +330,7 @@ export default class World {
   }
 
   getVisibleBlocks(partitionIndex: number): Int32Array {
-    // console.time('getVisibleBlocks');
+    console.time('getVisibleBlocks');
 
     const partition = this.getPartitionByIndex(partitionIndex);
 
@@ -368,11 +361,11 @@ export default class World {
 
       if (sidesTouching === (6 | 0)) continue;
 
-      const { x: rx, y: ry, z: rz } = this.worldInfo.rpos2(rindex);
+      const { x: rx, y: ry, z: rz } = this.worldInfo.rpos(rindex);
 
       const shade = this.computeOcclusion(partition, rx, ry, rz) * 16;
 
-      const windex = this.worldInfo.windex2(partition.offset.x + rx, partition.offset.y + ry, partition.offset.z + rz);
+      const windex = this.worldInfo.windex(partition.offset.x + rx, partition.offset.y + ry, partition.offset.z + rz);
 
       visibleBlocks[voffset + 0 | 0] = id;
       visibleBlocks[voffset + 1 | 0] = rindex;
@@ -393,7 +386,7 @@ export default class World {
       ret[i] = visibleBlocks[i];
     }
 
-    // console.timeEnd('getVisibleBlocks');
+    console.timeEnd('getVisibleBlocks');
 
     return ret;
   }

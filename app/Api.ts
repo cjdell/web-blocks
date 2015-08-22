@@ -1,5 +1,6 @@
 import THREE = require('three');
 
+import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
 
 module Api {
@@ -22,11 +23,11 @@ module Api {
     const intervalRefs = <number[]>[];
 
     function setBlock(x: number, y: number, z: number, type: number, colour: number): void {
-      workerInterface.setBlocks(new THREE.Vector3(x | 0, y | 0, z | 0), new THREE.Vector3(x | 0, y | 0, z | 0), type, colour, true);
+      workerInterface.setBlocks(new com.IntVector3(x | 0, y | 0, z | 0), new com.IntVector3(x | 0, y | 0, z | 0), type, colour, true);
     }
 
     function setBlocks(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, type: number, colour: number): void {
-      workerInterface.setBlocks(new THREE.Vector3(x1 | 0, y1 | 0, z1 | 0), new THREE.Vector3(x2 | 0, y2 | 0, z2 | 0), type, colour, true);
+      workerInterface.setBlocks(new com.IntVector3(x1 | 0, y1 | 0, z1 | 0), new com.IntVector3(x2 | 0, y2 | 0, z2 | 0), type, colour, true);
     }
 
     function getBlock(x: number, y: number, z: number): Promise<number> {

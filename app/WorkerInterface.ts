@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 
 export default class WorkerInterface {
   geoWorker: Worker;
@@ -18,7 +18,7 @@ export default class WorkerInterface {
         const callback = this.callbacks[e.data.id];
 
         delete this.callbacks[e.data.id];
-        
+
         return callback(e.data.data);
       }
 

@@ -101,11 +101,11 @@ module Common {
       return Math.round(Math.log(num) / Math.log(2)) | 0;
     }
 
-    pindex2(px: number, py: number, pz: number): number {
+    pindex(px: number, py: number, pz: number): number {
       return (px + (pz << this.WPX)) | 0;
     }
 
-    ppos2(pindex: number): IntVector3 {
+    ppos(pindex: number): IntVector3 {
       const z = (pindex >> (this.WPX + this.WPY)) | 0;
       const y = ((pindex - (z << (this.WPX + this.WPY))) >> this.WPX) | 0;
       const x = (pindex - ((y + (z << this.WPY)) << this.WPX)) | 0;
@@ -113,7 +113,17 @@ module Common {
       return new IntVector3(x, y, z);
     }
 
-    pposw2(wx: number, wy: number, wz: number): IntVector3 {
+    ppos2(ppos: Int32Array, pindex: number) {
+      const z = (pindex >> (this.WPX + this.WPY)) | 0;
+      const y = ((pindex - (z << (this.WPX + this.WPY))) >> this.WPX) | 0;
+      const x = (pindex - ((y + (z << this.WPY)) << this.WPX)) | 0;
+
+      ppos[0] = x;
+      ppos[1] = y;
+      ppos[2] = z;
+    }
+
+    pposw(wx: number, wy: number, wz: number): IntVector3 {
       const px = (wx >> this.PBX) | 0;
       const py = (wy >> this.PBY) | 0;
       const pz = (wz >> this.PBZ) | 0;
@@ -121,7 +131,17 @@ module Common {
       return new IntVector3(px, py, pz);
     }
 
-    rposw2(wx: number, wy: number, wz: number): IntVector3 {
+    pposw2(ppos: Int32Array, wpos: Int32Array) {
+      const px = (wpos[0] >> this.PBX) | 0;
+      const py = (wpos[1] >> this.PBY) | 0;
+      const pz = (wpos[2] >> this.PBZ) | 0;
+
+      ppos[0] = px;
+      ppos[1] = py;
+      ppos[2] = pz;
+    }
+
+    rposw(wx: number, wy: number, wz: number): IntVector3 {
       const mx = (wx >> this.PBX) << this.PBX;
       const my = (wy >> this.PBY) << this.PBY;
       const mz = (wz >> this.PBZ) << this.PBZ;
@@ -133,11 +153,25 @@ module Common {
       return new IntVector3(rx, ry, rz);
     }
 
-    rindex2(rx: number, ry: number, rz: number): number {
+    rposw2(rpos: Int32Array, wpos: Int32Array) {
+      const mx = (wpos[0] >> this.PBX) << this.PBX;
+      const my = (wpos[1] >> this.PBY) << this.PBY;
+      const mz = (wpos[2] >> this.PBZ) << this.PBZ;
+
+      const rx = (wpos[0] - mx) | 0;
+      const ry = (wpos[1] - my) | 0;
+      const rz = (wpos[2] - mz) | 0;
+
+      rpos[0] = rx;
+      rpos[1] = ry;
+      rpos[2] = rz;
+    }
+
+    rindex(rx: number, ry: number, rz: number): number {
       return (rx + ((ry + (rz << this.PBY)) << this.PBX)) | 0;
     }
 
-    rpos2(rindex: number): IntVector3 {
+    rpos(rindex: number): IntVector3 {
       const z = (rindex >> (this.PBX + this.PBY)) | 0;
       const y = ((rindex - (z << (this.PBX + this.PBY))) >> this.PBX) | 0;
       const x = (rindex - ((y + (z << this.PBY)) << this.PBX)) | 0;
@@ -145,7 +179,17 @@ module Common {
       return new IntVector3(x, y, z);
     }
 
-    wpos2(windex: number): IntVector3 {
+    rpos2(rpos: Int32Array, rindex: number) {
+      const z = (rindex >> (this.PBX + this.PBY)) | 0;
+      const y = ((rindex - (z << (this.PBX + this.PBY))) >> this.PBX) | 0;
+      const x = (rindex - ((y + (z << this.PBY)) << this.PBX)) | 0;
+
+      rpos[0] = x;
+      rpos[1] = y;
+      rpos[2] = z;
+    }
+
+    wpos(windex: number): IntVector3 {
       const z = (windex >> (this.WBX + this.WBY)) | 0;
       const y = ((windex - (z << (this.WBX + this.WBY))) >> this.WBX) | 0;
       const x = (windex - ((y + (z << this.WBY)) << this.WBX)) | 0;
@@ -153,11 +197,21 @@ module Common {
       return new IntVector3(x, y, z);
     }
 
-    windex2(wx: number, wy: number, wz: number): number {
+    wpos2(wpos: Int32Array, windex: number) {
+      const z = (windex >> (this.WBX + this.WBY)) | 0;
+      const y = ((windex - (z << (this.WBX + this.WBY))) >> this.WBX) | 0;
+      const x = (windex - ((y + (z << this.WBY)) << this.WBX)) | 0;
+
+      wpos[0] = x;
+      wpos[1] = y;
+      wpos[2] = z;
+    }
+
+    windex(wx: number, wy: number, wz: number): number {
       return (wx + ((wy + (wz << this.WBY)) << this.WBX)) | 0;
     }
 
-    vppos2(px: number, py: number, pz: number): boolean {
+    vppos(px: number, py: number, pz: number): boolean {
       if (px < 0 || py < 0 || pz < 0) return false;
 
       if (px >= this.worldDimensionsInPartitions.x) return false;

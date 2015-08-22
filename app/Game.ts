@@ -8,7 +8,7 @@ import WorkerInterface from './WorkerInterface';
 import _api from './Api';
 import Webcam from './Webcam';
 import TextRenderer from './TextRenderer';
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 
 module Game {
   export interface Game {

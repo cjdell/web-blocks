@@ -2,7 +2,7 @@ import THREE = require('three');
 import _ = require('underscore');
 
 import WorkerInterface from './WorkerInterface';
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 
 interface PartitionCacheItem {
   mesh: THREE.Mesh;

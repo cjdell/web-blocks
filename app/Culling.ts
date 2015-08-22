@@ -2,7 +2,7 @@
 import _ = require('underscore');
 import THREE = require('three');
 
-import com from '../Common/common';
+import com from '../common/WorldInfo';
 
 export default class Culling {
   active = new Array<number>();

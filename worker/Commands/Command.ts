@@ -2,7 +2,7 @@
 import THREE = require('three');
 
 import Partition from '../Partition';
-import com from '../../common/Common';
+import com from '../../common/WorldInfo';
 
 export default class Command {
   worldInfo: com.WorldInfo

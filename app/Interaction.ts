@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
 import { Context, Tool } from './tools/ToolBase';
 import CuboidTool from './tools/CuboidTool';
@@ -115,7 +115,7 @@ export default class Interaction {
 
       // console.log('offset', offset);
 
-      return this.worldInfo.wpos2(offset);
+      return this.worldInfo.wpos(offset);
     }
 
     return null;

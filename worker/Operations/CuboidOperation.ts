@@ -1,7 +1,7 @@
 /// <reference path="../../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../../common/Common';
+import com from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 
 export interface CuboidOptions {
@@ -23,15 +23,15 @@ export class CuboidOperation extends Operation {
   }
 
   getAffectedPartitionIndices(): number[] {
-    const { x: px1, y: py1, z: pz1 } = this.worldInfo.pposw2(this.options.start.x, this.options.start.y, this.options.start.z);
-    const { x: px2, y: py2, z: pz2 } = this.worldInfo.pposw2(this.options.end.x, this.options.end.y, this.options.end.z);
+    const { x: px1, y: py1, z: pz1 } = this.worldInfo.pposw(this.options.start.x, this.options.start.y, this.options.start.z);
+    const { x: px2, y: py2, z: pz2 } = this.worldInfo.pposw(this.options.end.x, this.options.end.y, this.options.end.z);
 
     const indices = new Array<number>();
 
     for (let px = px1; px <= px2; px++) {
       for (let py = py1; py <= py2; py++) {
         for (let pz = pz1; pz <= pz2; pz++) {
-          const partitionIndex = this.worldInfo.pindex2(px, py, pz);
+          const partitionIndex = this.worldInfo.pindex(px, py, pz);
           indices.push(partitionIndex);
         }
       }
@@ -41,7 +41,7 @@ export class CuboidOperation extends Operation {
   }
 
   getBlocks(pindex: number): OperationResult {
-    const ppos = this.worldInfo.ppos2(pindex);
+    const ppos = this.worldInfo.ppos(pindex);
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
@@ -64,8 +64,8 @@ export class CuboidOperation extends Operation {
     for (let wz = start.z; wz <= end.z; wz++) {
       for (let wy = start.y; wy <= end.y; wy++) {
         for (let wx = start.x; wx <= end.x; wx++) {
-          const rpos = this.worldInfo.rposw2(wx, wy, wz);
-          const rindex = this.worldInfo.rindex2(rpos.x, rpos.y, rpos.z);
+          const rpos = this.worldInfo.rposw(wx, wy, wz);
+          const rindex = this.worldInfo.rindex(rpos.x, rpos.y, rpos.z);
 
           buffer[blockNumber * 2 + 0] = this.options.type;
           buffer[blockNumber * 2 + 1] = this.options.colour;

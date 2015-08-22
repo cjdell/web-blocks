@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 import PartitionGeometry from './PartitionGeometry';
 import World from './World';
 

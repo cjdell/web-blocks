@@ -3,7 +3,7 @@
 import chai = require('chai');
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 import World from '../worker/World';
 
 const expect = chai.expect;
@@ -11,8 +11,8 @@ const expect = chai.expect;
 describe('World', () => {
   it('can create an empty world', () => {
     const worldInfo = new com.WorldInfo({
-      worldDimensionsInPartitions: new THREE.Vector3(4, 1, 4),
-      partitionDimensionsInBlocks: new THREE.Vector3(256, 32, 256),
+      worldDimensionsInPartitions: new com.IntVector3(4, 1, 4),
+      partitionDimensionsInBlocks: new com.IntVector3(256, 32, 256),
       partitionBoundaries: null
     });
 
@@ -42,6 +42,16 @@ describe('World', () => {
     const result = world.getVisibleBlocks(5);
     console.timeEnd('getVisibleBlocks');
 
+    console.time('getBlock');
+    for (let z = 0; z < worldInfo.partitionDimensionsInBlocks.z; z += 1) {
+      for (let y = 0; y < worldInfo.partitionDimensionsInBlocks.y; y += 1) {
+        for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1) {
+          const type = world.getBlock(x, y, z);
+        }
+      }
+    }
+    console.timeEnd('getBlock');
+
     expect(world.partitions.length).to.be.equal(16);
 
     // console.log(partition.occupied);
@@ -49,8 +59,8 @@ describe('World', () => {
 
   it('can convert from pos to index quickly', () => {
     const worldInfo = new com.WorldInfo({
-      worldDimensionsInPartitions: new THREE.Vector3(128, 1, 128),
-      partitionDimensionsInBlocks: new THREE.Vector3(256, 256, 256),
+      worldDimensionsInPartitions: new com.IntVector3(128, 1, 128),
+      partitionDimensionsInBlocks: new com.IntVector3(256, 256, 256),
       partitionBoundaries: null
     });
 
@@ -60,7 +70,7 @@ describe('World', () => {
     for (let z = 0; z < worldInfo.partitionDimensionsInBlocks.z; z += 1) {
       for (let y = 0; y < worldInfo.partitionDimensionsInBlocks.y; y += 1) {
         for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1, i += 1) {
-          let index = worldInfo.rindex2(x, y, z);
+          let index = worldInfo.rindex(x, y, z);
 
           if (index !== i) errors += 1;
         }
@@ -72,8 +82,8 @@ describe('World', () => {
 
   it('can rposw', () => {
     const worldInfo = new com.WorldInfo({
-      worldDimensionsInPartitions: new THREE.Vector3(128, 1, 128),
-      partitionDimensionsInBlocks: new THREE.Vector3(128, 128, 128),
+      worldDimensionsInPartitions: new com.IntVector3(128, 1, 128),
+      partitionDimensionsInBlocks: new com.IntVector3(256, 256, 256),
       partitionBoundaries: null
     });
 
@@ -84,7 +94,7 @@ describe('World', () => {
         for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1) {
           const ox = 1024, oz = 1024;
 
-          const rpos = worldInfo.rposw2(ox + x, 0, oz + z);
+          const rpos = worldInfo.rposw(ox + x, 0, oz + z);
 
           if (rpos.x !== x) errors += 1;
           if (rpos.z !== z) errors += 1;

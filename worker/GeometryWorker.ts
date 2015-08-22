@@ -6,7 +6,7 @@ win.importScripts('external.js');
 import _ = require('underscore');
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 import World from './World';
 import WorldGeometry from './WorldGeometry';
 

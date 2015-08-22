@@ -1,7 +1,7 @@
 /// <reference path="../../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../../common/Common';
+import com from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 import ImprovedNoise from '../ImprovedNoise';
 
@@ -25,7 +25,7 @@ export class LandscapeOperation extends Operation {
   getBlocks(pindex: number): OperationResult {
     // console.time('LandscapeOperation');
 
-    const ppos = this.worldInfo.ppos2(pindex);
+    const ppos = this.worldInfo.ppos(pindex);
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
@@ -72,14 +72,14 @@ export class LandscapeOperation extends Operation {
 
         if (y2 >= 3) {
           for (let y = 0; y <= Math.min(this.worldInfo.partitionDimensionsInBlocks.y - 1, y2); y++) {
-            const rindex = this.worldInfo.rindex2(x, y, z);
+            const rindex = this.worldInfo.rindex(x, y, z);
 
             if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');
 
             buffer[rindex * 2 + 0] = 2;
           }
         } else {
-          const rindex = this.worldInfo.rindex2(x, 2, z);
+          const rindex = this.worldInfo.rindex(x, 2, z);
 
           // if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');
 

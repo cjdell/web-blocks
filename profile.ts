@@ -2,7 +2,7 @@
 
 import THREE = require('three');
 
-import com from './common/Common';
+import com from './common/WorldInfo';
 import World from './worker/World';
 
 const worldInfo = new com.WorldInfo({

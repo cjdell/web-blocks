@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-import com from '../common/Common';
+import com from '../common/WorldInfo';
 import Partition from './Partition';
 import World from './World';
 
@@ -96,7 +96,7 @@ export default class PartitionGeometry {
       const colour = blocks[o + 5];
       const shade = blocks[o + 6];
 
-      const { x, y, z } = this.worldInfo.rpos2(index);
+      const { x, y, z } = this.worldInfo.rpos(index);
 
       const vertexCount = VALUES_PER_VBLOCK * blocks.length;
 
