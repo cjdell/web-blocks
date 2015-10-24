@@ -5,7 +5,6 @@
 
     <link href="build/app.css" rel="stylesheet" type="text/css" />
 
-    <script src="build/external.js"></script>
     <script src="build/app.js"></script>
 
     <script>
@@ -14,7 +13,7 @@
         window.blockMovement = false;
 
         window.addEventListener('load', function() {
-            bootstrap(document.body);
+            bootstrap(document.querySelector("#body"));
         });
 
         function bootstrap(container) {
@@ -25,7 +24,6 @@
     </script>
 </head>
 <body>
-
-
+    <div id="body"></div>
 </body>
 </html>

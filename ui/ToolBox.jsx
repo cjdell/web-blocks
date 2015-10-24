@@ -1,6 +1,6 @@
 var React = require('react');
 
-var ScriptStorage = require('../app/ScriptStorage');
+var ScriptStorage = require('../app/ScriptStorage').default;
 
 var CodeEditor = require('./CodeEditor.jsx');
 
@@ -44,7 +44,7 @@ var ToolBox = React.createClass({
             title={blockType.name}
             onClick={this.blockTypeClick.bind(this, index)}
             className={index === this.state.blockTypeIndex ? 'selected' : ''}
-            style={ blockType.textures.side ? { 'background-image': "url('" + blockType.textures.side + "')" } : {} }>
+            style={ blockType.textures.side ? { 'backgroundImage': "url('" + blockType.textures.side + "')" } : {} }>
         </li>
         );
       }, this);

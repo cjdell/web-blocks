@@ -5,6 +5,10 @@ import com from '../common/WorldInfo';
 import Partition from './Partition';
 import World from './World';
 
+import { Geometry } from './Geometry/Geometry';
+import { FenceGeometry } from './Geometry/FenceGeometry';
+import { Loader } from './Geometry/Loader';
+
 const FACE_PER_CUBE = 6;
 const VERTICES_PER_FACE = 6;
 const VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
@@ -46,9 +50,7 @@ export default class PartitionGeometry {
     this.world = world;
   }
 
-  ensureBufferSize(faceCount: number): void {
-    const vertexCount = faceCount * VERTICES_PER_FACE;
-
+  ensureBufferSize(vertexCount: number): void {
     this.position = new Float32Array(vertexCount * 3);
     this.normal = new Float32Array(vertexCount * 3);
     this.uv = new Float32Array(vertexCount * 2);
@@ -59,13 +61,24 @@ export default class PartitionGeometry {
   generateGeometry(): void {
     const blocks = this.world.getVisibleBlocks(this.partition.index);
 
-    let faceCount = 0;
+    if (blocks.length === 0) return;
+
+    let faceCount = 0, otherVertices = 0;
 
     // Count the faces
     for (let i = 0; i < blocks.length / VALUES_PER_VBLOCK; i++) {
       const o = i * VALUES_PER_VBLOCK;
 
+      const type = blocks[o + 3];
       const touchingBlocks = blocks[o + 4];
+
+      if (Loader.Instance.getTypes().indexOf(type) !== -1) {
+        const geometry = Loader.Instance.getGeometry(type);
+
+        otherVertices += geometry.getVertexCount();
+
+        continue;
+      }
 
       const xd = !(touchingBlocks & (1 << 12));
       const xu = !(touchingBlocks & (1 << 14));
@@ -79,9 +92,7 @@ export default class PartitionGeometry {
       faceCount += (xd ? 1 : 0) + (xu ? 1 : 0) + (yd ? 1 : 0) + (yu ? 1 : 0) + (zd ? 1 : 0) + (zu ? 1 : 0);
     }
 
-    this.ensureBufferSize(faceCount);
-
-    if (blocks.length === 0) return;
+    this.ensureBufferSize(faceCount * VERTICES_PER_FACE + otherVertices);
 
     let v = 0;
 
@@ -97,6 +108,16 @@ export default class PartitionGeometry {
       const shade = blocks[o + 6];
 
       const { x, y, z } = this.worldInfo.rpos(index);
+
+      if (Loader.Instance.getTypes().indexOf(type) !== -1) {
+        const geometry = Loader.Instance.getGeometry(type);
+
+        geometry.generateGeometry(this.position, this.normal, this.uv, this.data, v, index, type, colour);
+
+        v += geometry.getVertexCount();
+
+        continue;
+      }
 
       const vertexCount = VALUES_PER_VBLOCK * blocks.length;
 

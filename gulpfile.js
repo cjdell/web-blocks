@@ -3,6 +3,7 @@ var gulp = require('gulp');
 var sourcemaps = require('gulp-sourcemaps');
 var util = require('gulp-util');
 var less = require('gulp-less');
+var webserver = require('gulp-webserver');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var source = require('vinyl-source-stream');
@@ -12,62 +13,56 @@ var brfs = require('brfs');
 var tsify = require('tsify');
 
 var config = {
-  external: ['underscore', 'whatwg-fetch', 'buffer', 'three', 'es6-promise'],
   watch: false,
   sourceMaps: true
 };
 
-gulp.task('build-external', function() {
-  return externalBrowserify();
-});
-
-gulp.task('build-app', function() {
+gulp.task('build-app', function () {
   return appBrowserify('./app/App.js', 'app.js');
 });
 
-gulp.task('build-worker', function() {
+gulp.task('build-worker', function () {
   return appBrowserify('./worker/GeometryWorker.ts', 'worker.js');
 });
 
-gulp.task('build-css', function() {
+gulp.task('build-css', function () {
   return gulp.src('./css/app.less')
-  .pipe(less())
-  .pipe(gulp.dest('./build'));
+    .pipe(less())
+    .pipe(gulp.dest('./build'));
 });
 
-gulp.task('build', ['build-external', 'build-app', 'build-worker', 'build-css']);
+gulp.task('build', ['build-app', 'build-worker', 'build-css']);
 
-gulp.task('set-watch', function() {
+gulp.task('set-watch', function () {
   config.watch = true;
 });
 
-gulp.task('watch', ['set-watch', 'build'], function() {
+gulp.task('watch', ['set-watch', 'build'], function () {
   gulp.watch(['css/*.less'], ['build-css']);
 });
 
-gulp.task('default', ['watch']);
+gulp.task('serve', function () {
+  gulp.src('.')
+    .pipe(webserver({
+      livereload: {
+        enable: true, // need this set to true to enable livereload 
+        filter: function(fileName) {
+          console.log('fileName', fileName);
+          return fileName.indexOf('build') !== -1;
+        }
+      },
+      open: true
+    }));
+});
 
-function externalBrowserify() {
-  var opts = {
-    require: config.external
-  };
-
-  var b = browserify(opts);
-
-  return b.bundle()
-  .on('error', util.log.bind(util, 'Browserify Error'))
-  .pipe(source('external.js'))
-  .pipe(gulp.dest('./build'));
-}
+gulp.task('default', ['watch', 'serve']);
 
 function appBrowserify(src, dest) {
   var customOpts = {
     debug: config.sourceMaps,
-    external: config.external,
     list: true,
     entries: [src],
-    bundleExternal: false,
-    require: 'react'
+    bundleExternal: true
   };
 
   var opts = _.extend({}, watchify.args, customOpts);
@@ -90,9 +85,9 @@ function appBrowserify(src, dest) {
 
   function bundle() {
     var stream = b.bundle()
-    .on('error', util.log.bind(util, 'Browserify Error'))
-    .pipe(source(dest))
-    .pipe(buffer());
+      .on('error', util.log.bind(util, 'Browserify Error'))
+      .pipe(source(dest))
+      .pipe(buffer());
 
     if (config.uglify) {
       stream = stream.pipe(uglify());

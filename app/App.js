@@ -1,9 +1,9 @@
 require('whatwg-fetch');
 require('es6-promise').polyfill();
 
-var DesktopPlatform = require('./DesktopPlatform');
+var DesktopPlatform = require('./DesktopPlatform').default;
 var CardboardPlatform = require('./CardboardPlatform');
-var Game = require('./Game').default.NewGame;
+var Game = require('./Game').default;
 
 function App() {
   var platform = null;
@@ -13,14 +13,12 @@ function App() {
     if (detectmob()) {
       platform = new CardboardPlatform();
     } else {
-      platform = new DesktopPlatform();
+      platform = new DesktopPlatform(container);
     }
 
-    platform.init(container);
+    // platform.init(container);
 
-    game = new Game();
-
-    game.init(platform);
+    game = new Game(platform);
 
     var ui = platform.getUserInterface();
 

@@ -76,12 +76,23 @@ export default class World {
     // Apply the default landscape
     const randomHeight = this.worldInfo.partitionDimensionsInBlocks.y >> 1;
     const landscapeOperation = new LandscapeOperation(this.worldInfo, { height: randomHeight });
+    const landscapeCommand = new OperationCommand(this.worldInfo, this.commands.length, landscapeOperation);
 
-    const command = new OperationCommand(this.worldInfo, this.commands.length, landscapeOperation);
+    this.applyCommand(landscapeCommand);
 
-    // const command = new LandscapeCommand(this.worldInfo, 0, { height: randomHeight });
+    const options = {
+      start: new com.IntVector3(0, 10, 0),
+      end: new com.IntVector3(this.worldInfo.worldDimensionsInBlocks.x - 1, 10, this.worldInfo.worldDimensionsInBlocks.z - 1),
+      type: 6,
+      colour: 0
+    };
 
-    this.applyCommand(command);
+    // const testOperation = new CuboidOperation(this.worldInfo, options);
+    // const testCommand = new OperationCommand(this.worldInfo, this.commands.length, testOperation);
+    //
+    // this.applyCommand(testCommand);
+
+    // this.setBlocks(97, 10, 97, 100, 10, 100, 6, 0);
   }
 
   getPartitionCapacity(): number {
@@ -330,7 +341,7 @@ export default class World {
   }
 
   getVisibleBlocks(partitionIndex: number): Int32Array {
-    console.time('getVisibleBlocks');
+    // console.time('getVisibleBlocks');
 
     const partition = this.getPartitionByIndex(partitionIndex);
 

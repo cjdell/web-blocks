@@ -8,6 +8,7 @@ export default class WorkerInterface {
   callbacks: { [id: number]: Function } = {};
 
   changeListener: Function = null;
+  playerPositionListener: ((position: THREE.Vector3) => void);
   lastId = 0;
 
   constructor() {
@@ -24,6 +25,10 @@ export default class WorkerInterface {
 
       if (e.data.action === 'update') {
         if (this.changeListener) this.changeListener(e.data);
+      }
+
+      if (e.data.action === 'updatePlayerPosition') {
+        if (this.playerPositionListener) this.playerPositionListener(e.data.data);
       }
     };
   }
@@ -58,15 +63,23 @@ export default class WorkerInterface {
     return this.invoke<com.WorldInfo>('init', null);
   }
 
+  setPlayerPosition(position: THREE.Vector3, target: THREE.Vector3) {
+    return this.invoke<void>('setPlayerPosition', { position, target });
+  }
+
+  runScript(code: string, expr: boolean) {
+    return this.invoke<{ result: any }>('runScript', { code, expr });
+  }
+
   undo() {
-    return this.invoke<Object>('undo', null);
+    return this.invoke<void>('undo', null);
   }
 
   getBlock(pos: THREE.Vector3) {
     return this.invoke<Object>('getBlock', { pos: pos })
       .then(function(result: any) {
-        return <number>result.type;
-      });
+      return <number>result.type;
+    });
   }
 
   setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean) {

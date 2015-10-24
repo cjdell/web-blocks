@@ -1,179 +1,221 @@
 import THREE = require('three');
 
+import com from '../common/WorldInfo';
 import Culling from './Culling';
-import BlockTypeList from './BlockTypeList';
+import { BlockTypeList, BlockType } from '../common/BlockTypeList';
 import Interaction from './Interaction';
 import WorldViewer from './WorldViewer';
 import WorkerInterface from './WorkerInterface';
-import _api from './Api';
+// import Api from './Api';
 import Webcam from './Webcam';
 import TextRenderer from './TextRenderer';
-import com from '../common/WorldInfo';
+import DesktopPlatform from './DesktopPlatform';
+import DesktopViewPoint from './DesktopViewPoint';
 
-module Game {
-  export interface Game {
-    init(platform: any): Promise<void>;
+const win = <any>self;
+
+export default class Game {
+  platform: DesktopPlatform;
+
+  log = false;
+
+  workerInterface: WorkerInterface = null;
+  renderer: any = null;
+  effect: any = null;
+  viewPort: HTMLDivElement = null;
+  camera: THREE.Camera = null;
+  scene: THREE.Scene = null;
+  blockTypeList: BlockTypeList = null;
+  worldViewer: WorldViewer = null;
+  viewPoint: DesktopViewPoint = null;
+  culling: any = null;
+  interaction: Interaction = null;
+  // api: Api = null;
+  webcam: Webcam = null;
+  textRenderer: TextRenderer = null;
+
+  uniforms: any = null;
+  frame = 0;
+
+  vertexShader: string = null;
+  fragmentShader: string = null;
+
+  constructor(platform: DesktopPlatform) {
+    this.platform = platform;
+
+    this.workerInterface = new WorkerInterface();
+
+    this.renderer = platform.getRenderer();
+    this.effect = platform.getEffect();
+    this.viewPort = platform.getViewPort();
+
+    this.renderer.setClearColor(0xffffff, 1);
+
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    this.scene = new THREE.Scene();
+
+    this.scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
+
+    this.blockTypeList = new BlockTypeList();
+
+    Promise.all([this.workerInterface.init(), this.loadShaders()]).then(res => {
+      const worldInfo = new com.WorldInfo(<com.WorldInfo>res[0]);
+
+      this.uniforms = {};
+
+      this.uniforms.textures = { type: 't', value: null };
+      this.uniforms.webcam = { type: 't', value: null };
+      this.uniforms.color = { type: 'f', value: 1.0 };
+      this.uniforms.time = { type: 'f', value: 0.0 };
+
+      this.uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['lights'], this.uniforms]);
+      this.uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], this.uniforms]);
+
+      const attributes: any = {
+        data: { type: 'v4', value: null },
+        offset: { type: 'f', value: null }
+      };
+
+      const blockMaterial = new THREE.ShaderMaterial({
+        attributes: attributes,
+        uniforms: this.uniforms,
+        vertexShader: this.vertexShader,
+        fragmentShader: this.fragmentShader,
+        vertexColors: THREE.VertexColors,
+        transparent: false,
+        lights: true,
+        fog: true
+      });
+
+      //let blockMaterial = new THREE.MeshLambertMaterial({ color: 0xbbccff });
+
+      const blockTypes = this.blockTypeList.getBlockTypes();
+
+      this.getBlockTexture(blockTypes).then((texture: THREE.Texture) => {
+        blockMaterial.uniforms.textures.value = texture;
+      });
+
+      const ambientLight = new THREE.AmbientLight(0x777777);
+      this.scene.add(ambientLight);
+
+      // Create light
+      const pointLight = new THREE.PointLight(0xffffff, 1.0);
+      pointLight.position.set(5.0, 5.0, 5.0);
+      this.scene.add(pointLight);
+
+      this.worldViewer = new WorldViewer(this.scene, worldInfo, blockMaterial, this.workerInterface);
+      this.viewPoint = this.platform.getViewPoint(this.camera, pointLight, this.viewPort, this.effect, worldInfo, this.workerInterface);
+      this.culling = new Culling(this.camera, worldInfo);
+      this.webcam = new Webcam();
+      this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo, this.webcam);
+      this.textRenderer = new TextRenderer(this.workerInterface);
+
+      // Expose API as global for console access
+      // this.api = new Api(this.workerInterface, this.viewPoint);
+
+      win.workerInterface = this.workerInterface;
+
+      blockMaterial.uniforms.webcam.value = this.webcam.getTexture();
+
+      this.textRenderer.renderText(new THREE.Vector3(75, 5, 90), 'Welcome!');
+
+      // workerInterface.setBlocks(new com.IntVector3(80, 1, 80), new com.IntVector3(120, 31, 120), 0, 0, false);
+
+      this.render(); // Kick off the render loop
+    });
   }
 
-  export function NewGame() {
-    const win = <any>self;
-    const log = false;
+  render() {
+    requestAnimationFrame(() => this.render());
 
-    let workerInterface: WorkerInterface = null;
-    let renderer: any = null;
-    let effect: any = null;
-    let viewPort: any = null;
-    let camera: THREE.Camera = null;
-    let scene: THREE.Scene = null;
-    let blockTypeList: BlockTypeList = null;
-    let worldViewer: WorldViewer = null;
-    let viewPoint: any = null;
-    let culling: any = null;
-    let interaction: Interaction = null;
-    let api: _api.Api = null;
-    let webcam: Webcam = null;
-    let textRenderer: TextRenderer = null;
+    this.webcam.render();
 
-    let uniforms: any = null;
-    let frame = 0;
+    this.uniforms.time.value += 0.1;
 
-    let vertexShader: string = null;
-    let fragmentShader: string = null;
+    this.viewPoint.tick();
 
-    function init(platform: any): Promise<void> {
-      workerInterface = new WorkerInterface();
+    this.frame += 1;
 
-      renderer = platform.getRenderer();
-      effect = platform.getEffect();
-      viewPort = platform.getViewPort();
+    if (this.frame % 10 === 0) {
+      const changes = this.culling.getNewlyVisiblePartitions();
 
-      renderer.setClearColor(0xffffff, 1);
-
-      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-      scene = new THREE.Scene();
-
-      scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
-
-      blockTypeList = new BlockTypeList();
-
-      return Promise.all([workerInterface.init(), loadShaders()]).then(function(res) {
-        const worldInfo = new com.WorldInfo(<com.WorldInfo>res[0]);
-
-        uniforms = {};
-
-        uniforms.textures = { type: 't', value: null };
-        uniforms.webcam = { type: 't', value: null };
-        uniforms.color = { type: 'f', value: 1.0 };
-        uniforms.time = { type: 'f', value: 0.0 };
-
-        uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['lights'], uniforms]);
-        uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], uniforms]);
-
-        const attributes: any = {
-          data: { type: 'v4', value: null },
-          offset: { type: 'f', value: null }
-        };
-
-        const blockMaterial = new THREE.ShaderMaterial({
-          attributes: attributes,
-          uniforms: uniforms,
-          vertexShader: vertexShader,
-          fragmentShader: fragmentShader,
-          vertexColors: THREE.VertexColors,
-          transparent: false,
-          lights: true,
-          fog: true
-        });
-
-        //let blockMaterial = new THREE.MeshLambertMaterial({ color: 0xbbccff });
-
-        blockTypeList.getBlockTexture().then(function(texture) {
-          blockMaterial.uniforms.textures.value = texture;
-        });
-
-        const ambientLight = new THREE.AmbientLight(0x777777);
-        scene.add(ambientLight);
-
-        // Create light
-        const pointLight = new THREE.PointLight(0xffffff, 1.0);
-        pointLight.position.set(5.0, 5.0, 5.0);
-        scene.add(pointLight);
-
-        worldViewer = new WorldViewer(scene, worldInfo, blockMaterial, workerInterface);
-        viewPoint = new platform.ViewPoint(camera, pointLight, viewPort, effect, worldInfo);
-        culling = new Culling(camera, worldInfo);
-        webcam = new Webcam();
-        interaction = new Interaction(viewPort, scene, camera, workerInterface, worldInfo, webcam);
-        textRenderer = new TextRenderer(workerInterface);
-
-        // Expose API as global for console access
-        api = _api.NewApi(workerInterface, viewPoint);
-
-        win.api = api;
-
-        blockMaterial.uniforms.webcam.value = webcam.getTexture();
-
-        textRenderer.renderText(new THREE.Vector3(75, 5, 90), 'Welcome!');
-
-        // workerInterface.setBlocks(new com.IntVector3(80, 1, 80), new com.IntVector3(120, 31, 120), 0, 0, false);
-
-        render(); // Kick off the render loop
-      });
+      this.worldViewer.exposeNewPartitions(changes);
     }
 
-    function render() {
-      requestAnimationFrame(render);
+    this.effect.render(this.scene, this.camera);
 
-      webcam.render();
+    if (this.log) console.timeEnd('frame');
+  }
 
-      uniforms.time.value += 0.1;
+  getBlockTypes() {
+    return this.blockTypeList.getBlockTypes();
+  }
 
-      viewPoint.tick();
+  setBlockType(blockTypeIndex: number) {
+    return this.interaction.setType(blockTypeIndex);
+  }
 
-      frame += 1;
-
-      if (frame % 10 === 0) {
-        const changes = culling.getNewlyVisiblePartitions();
-
-        worldViewer.exposeNewPartitions(changes);
-      }
-
-      effect.render(scene, camera);
-
-      if (log) console.timeEnd('frame');
-    }
-
-    function getBlockTypes() {
-      return blockTypeList.getBlockTypes();
-    }
-
-    function setBlockType(blockTypeIndex: number) {
-      return interaction.setType(blockTypeIndex);
-    }
-
-    function loadShaders(): Promise<any> {
-      return Promise.all([
-        win.fetch('shaders/block.vertex.glsl'),
-        win.fetch('shaders/block.fragment.glsl')
-      ])
-        .then(function(res) {
-        return Promise.all([res[0].text(), res[1].text()]);
-      })
-        .then(function(data) {
-        vertexShader = data[0];
-        fragmentShader = data[1];
-      });
+  loadShaders(): Promise<Object> {
+    return Promise.all([
+      win.fetch('shaders/block.vertex.glsl'),
+      win.fetch('shaders/block.fragment.glsl')
+    ])
+      .then(res => {
+      return Promise.all([res[0].text(), res[1].text()]);
+    })
+      .then(data => {
+      this.vertexShader = data[0];
+      this.fragmentShader = data[1];
 
       return null;
-    }
+    });
+  }
 
-    return {
-      init: init,
-      getBlockTypes: getBlockTypes,
-      setBlockType: setBlockType
-    };
+  getBlockTexture(blockTypes: Array<BlockType>) {
+    const canvas = document.createElement('canvas');
+
+    const typeCount = 8;
+
+    canvas.width = typeCount * 16;
+    canvas.height = typeCount * 16;
+
+    const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
+
+    const blockTypePromises = blockTypes.map((blockType, index) => {
+      if (blockType.textures.top === null) return null;
+
+      const top = this.getImage(blockType.textures.top);
+      const side = this.getImage(blockType.textures.side);
+
+      return Promise.all([top, side]).then((results) => {
+        const top = results[0], side = results[1];
+
+        ctx.drawImage(top, 0, (typeCount - index - 1) * 16, 16, 16);
+        ctx.drawImage(side, 16, (typeCount - index - 1) * 16, 16, 16);
+      });
+    });
+
+    return Promise.all(blockTypePromises).then(() => {
+      const texture = new THREE.Texture(canvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter);
+      texture.needsUpdate = true;
+      return texture;
+    });
+  }
+
+  getImage(src: string) {
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+
+      image.onload = () => {
+        return resolve(image);
+      };
+
+      image.onerror = () => {
+        return reject();
+      };
+
+      image.src = src;
+    });
   }
 }
-
-export default Game;

@@ -1,4 +1,13 @@
 var React = require('react');
+var mui = require('material-ui');
+
+var Dialog = mui.Dialog;
+var FlatButton = mui.FlatButton;
+var RaisedButton = mui.RaisedButton;
+var Toolbar = mui.Toolbar;
+var ToolbarGroup = mui.ToolbarGroup;
+var Tabs = mui.Tabs;
+var Tab = mui.Tab;
 
 var ScriptPicker = require('./ScriptPicker.jsx');
 
@@ -6,14 +15,14 @@ var introMessage = 'Hello there, here you can write JavaScript! For more info ty
 
 var lineBack = 0;
 
-var codeRunner = new CodeRunner();
+// var codeRunner = new CodeRunner();
 
 var CodeEditor = React.createClass({
   getInitialState: function() {
     return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }], commands: [], scriptName: 'Scratch Pad' };
   },
   keyPress: function(e) {
-    var consoleTextarea = this.refs.code.getDOMNode();
+    var consoleTextarea = this.refs.code;
 
     if (e.which === 13) {
       var cmd = consoleTextarea.value;
@@ -34,7 +43,7 @@ var CodeEditor = React.createClass({
     }
   },
   keyUp: function(e) {
-    var consoleTextarea = this.refs.code.getDOMNode();
+    var consoleTextarea = this.refs.code;
 
     if (e.which === 38 || e.which === 40) {
       if (e.which === 38) dir = 1;
@@ -53,35 +62,38 @@ var CodeEditor = React.createClass({
   },
   addLine: function(line, type) {
     var lines = this.state.lines;
-    lines.push({ line: line, type: type });
+    lines.push({ line: line, type: type, index: this.state.lines.length });
     this.setState({ lines: lines });
   },
   runCmd: function(cmd) {
     var that = this;
 
-    var res = codeRunner.run(cmd, true);
+    // var res = codeRunner.run(cmd, true);
+    var res = window.workerInterface.runScript(cmd, true);
 
     if (res instanceof Promise) {
       return res.then(function(res) {
-        that.addLine(res, 'answer');
+        that.addLine(res.result, 'answer');
       });
     }
 
-    this.addLine(res, 'answer');
+    this.addLine(res.result, 'answer');
   },
   runClicked: function() {
-    var scriptTextarea = this.refs.script.getDOMNode();
+    var scriptTextarea = this.refs.script;
     var scriptCode = scriptTextarea.value;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptCode);
 
-    codeRunner.run(scriptCode, false);
+    // codeRunner.run(scriptCode, false);
+    window.workerInterface.runScript(scriptCode, false);
   },
   loadClicked: function() {
-    this.setState({ scriptPickerVisible: true });
+    // this.setState({ scriptPickerVisible: true });
+    this.refs.scriptPickerDialog.show();
   },
   saveClicked: function() {
-    var scriptTextarea = this.refs.script.getDOMNode();
+    var scriptTextarea = this.refs.script;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
   },
@@ -89,19 +101,19 @@ var CodeEditor = React.createClass({
     this.setState({ mode: mode });
   },
   linesClick: function(e) {
-    var consoleTextarea = this.refs.code.getDOMNode();
+    var consoleTextarea = this.refs.code;
     consoleTextarea.focus();
     e.preventDefault();
   },
   componentDidMount: function() {
-    var scriptTextarea = this.refs.script.getDOMNode();
+    var scriptTextarea = this.refs.script;
 
     scriptTextarea.value = this.props.scriptStorage.getScript(this.state.scriptName);
   },
   componentDidUpdate: function() {
-    var consoleTextarea = this.refs.code.getDOMNode();
-    var scriptTextarea = this.refs.script.getDOMNode();
-    var ul = this.refs.lines.getDOMNode();
+    var consoleTextarea = this.refs.code;
+    var scriptTextarea = this.refs.script;
+    var ul = this.refs.lines;
 
     if (this.state.mode === 'console') consoleTextarea.focus();
     if (this.state.mode === 'script') scriptTextarea.focus();
@@ -109,90 +121,77 @@ var CodeEditor = React.createClass({
     ul.scrollTop = ul.scrollHeight;
   },
   scriptChosen: function(name) {
-    var scriptTextarea = this.refs.script.getDOMNode();
+    var scriptTextarea = this.refs.script;
+
+    console.log('name', name);
 
     this.setState({ scriptPickerVisible: false, scriptName: name });
+    
+    var script = this.props.scriptStorage.getScript(name);
+    
+    console.log('script', script);
 
-    scriptTextarea.value = this.props.scriptStorage.getScript(name);
+    scriptTextarea.value = script;
+
+    this.refs.scriptPickerDialog.dismiss();
   },
   render: function() {
-    var items = this.state.lines.map(function(line, index) {
-      return <li key={index} className={line.type}>{line.line}</li>;
+    var items = this.state.lines.map(function(line) {
+      return <li key={line.index} className={line.type}>{line.line}</li>;
     });
+    
+    var customActions = [
+      <FlatButton
+        key="cancel"
+        label="Cancel"
+        secondary={true}
+        onTouchTap={(function() { this.refs.scriptPickerDialog.dismiss(); }).bind(this)} />
+    ];
 
     return (
     <div className={'codeEditor ' + (this.props.visible ? 'show' : 'hide')}>
-      <div className="tabs">
-        <div className="tab">
-          <a onClick={this.tabClick.bind(this, 'console')}>Console</a>
-        </div>
-        <div className="tab">
-          <a onClick={this.tabClick.bind(this, 'script')}>Script</a>
-        </div>
-      </div>
-      <div className={'codeView console ' + (this.state.mode === 'console' ? 'show' : 'hide')}>
-        <ul ref="lines" onClick={this.linesClick}>
-          {items}
-          <li><textarea ref="code" onKeyPress={this.keyPress} onKeyUp={this.keyUp}></textarea></li>
-        </ul>
-      </div>
-      <div className={'codeView script ' + (this.state.mode === 'script' ? 'show' : 'hide')}>
-        <h3>{this.state.scriptName}</h3>
 
-        <textarea ref="script"></textarea>
+      <Tabs>
+        <Tab label="Console">
+          <div className="codeView console">
+            <ul ref="lines" onClick={this.linesClick}>
+              {items}
+              <li><textarea ref="code" onKeyPress={this.keyPress} onKeyUp={this.keyUp}></textarea></li>
+            </ul>
+          </div>
+        </Tab>
+        <Tab label="Script">
+          <Toolbar>
+            <ToolbarGroup>
+              <RaisedButton primary={true} onTouchTap={this.loadClicked}>Load</RaisedButton>
+              <RaisedButton secondary={true} onTouchTap={this.runClicked}>Run</RaisedButton>
+              <RaisedButton onTouchTap={this.saveClicked}>Save</RaisedButton>
+            </ToolbarGroup>
+          </Toolbar>
 
-        <div className="buttons">
-          <button onClick={this.loadClicked}>Load</button>
-          <button onClick={this.runClicked}>Run</button>
-          <button onClick={this.saveClicked}>Save</button>
-        </div>
-      </div>
-      <ScriptPicker
-      visible={this.state.scriptPickerVisible}
-      scriptStorage={this.props.scriptStorage}
-      onScriptChosen={this.scriptChosen}/>
+          <div className="codeView script">
+            <h3>{this.state.scriptName}</h3>
+
+            <textarea ref="script"></textarea>
+          </div>
+        </Tab>
+      </Tabs>
+
+      <Dialog
+        title="Choose a script..."
+        actions={customActions}
+        ref="scriptPickerDialog"
+        modal={false}
+        autoDetectWindowHeight={true}
+        autoScrollBodyContent={true}>
+        <ScriptPicker
+          visible={true}
+          scriptStorage={this.props.scriptStorage}
+          onScriptChosen={this.scriptChosen}/>
+      </Dialog>
     </div>
     );
   }
 });
-
-function CodeRunner() {
-  function run(code, expr) {
-    var toRun = '';
-
-    Object.keys(window.api).forEach(function(key) {
-      toRun += 'var ' + key + ' = window.api.' + key + ';\n';
-    });
-
-    if (expr) {
-      toRun += 'return (' + code + ');';
-    } else {
-      toRun += code;
-    }
-
-    window.api.clearIntervals();
-
-    try {
-      var func = new Function('context', toRun);
-
-      var res = func(window.api);
-
-      if (typeof res !== 'undefined') {
-        if (res instanceof Promise) return res;
-
-        if (typeof res === 'object') return JSON.stringify(res);
-
-        return res.toString();
-      }
-    } catch (err) {
-      alert(err);
-      console.error('parse error', err);
-    }
-  }
-
-  return {
-    run: run
-  };
-}
 
 module.exports = CodeEditor;

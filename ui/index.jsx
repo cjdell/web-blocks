@@ -1,20 +1,33 @@
 var React = require('react');
+var ReactDOM = require('react-dom');
+var mui = require('material-ui');
+var ThemeManager = require('material-ui/lib/styles/theme-manager');
+const LightRawTheme = require('material-ui/lib/styles/raw-themes/light-raw-theme');
+
+var Colors = mui.Styles.Colors;
+var injectTapEventPlugin = require('react-tap-event-plugin');
+
+// ThemeManager.setTheme(ThemeManager.types.LIGHT);
+
+injectTapEventPlugin();
 
 var ToolBox = require('./ToolBox.jsx');
 
 function UserInterface() {
-  var app = null;
+  var container;
+  var app;
 
-  function init(container) {
-    app = React.render(<App />, container);
+  function init(_container) {
+    container = _container;
+    app = ReactDOM.render(<App />, container);
   }
 
   function getViewPort() {
-    return app.refs.viewPort.getDOMNode();
+    return ReactDOM.findDOMNode(app.refs.viewPort);
   }
 
   function setGame(game) {
-    app.setGame(game);
+    app = ReactDOM.render(<App game={game} />, container);
   }
 
   return {
@@ -30,15 +43,29 @@ var App = React.createClass({
   getInitialState: function() {
     return {};
   },
-  setGame: function(game) {
-    this.setProps({ game: game });
+
+  childContextTypes: {
+    muiTheme: React.PropTypes.object
   },
+
+  getChildContext() {
+    return {
+      muiTheme: ThemeManager.getMuiTheme(LightRawTheme)
+    };
+  },
+
+  componentWillMount() {
+    //ThemeManager.setPalette({
+    //  accent1Color: Colors.deepOrange500
+    //});
+  },
+  
   render: function() {
     return (
-    <div className="app">
-      <ViewPort ref="viewPort"></ViewPort>
-      <ToolBox game={this.props.game}></ToolBox>
-    </div>
+      <div className="app">
+        <ViewPort ref="viewPort"></ViewPort>
+        <ToolBox game={this.props.game}></ToolBox>
+      </div>
     );
   }
 });
@@ -49,10 +76,9 @@ var ViewPort = React.createClass({
   },
   render: function() {
     return (
-    <div className="viewPort">
-      <div className="helpBar">Keys: [W] = Forwards, [S] = Backwards, [A] = Move Left, [D] = Move Right, Arrow Keys = Look around, [ESCAPE] = Toggle Code Editor</div>
-    </div>
+      <div className="viewPort">
+        <div className="helpBar">Keys: [W] = Forwards, [S] = Backwards, [A] = Move Left, [D] = Move Right, Arrow Keys = Look around, [ESCAPE] = Toggle Code Editor</div>
+      </div>
     );
   }
 });
-

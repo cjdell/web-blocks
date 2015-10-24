@@ -115,44 +115,14 @@ body {
   color: #fff;
   border-radius: 4px;
   overflow: hidden;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: column;
-  flex-direction: column;
-  min-height: min-content;
 
-  .tabs {
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-    height: 40px;
-    min-height: 40px;
-
-    .tab {
-      width: 100px;
-      height: 40px;
-      line-height: 40px;
-      text-align: center;
-      background: rgba(127, 127, 127, 0.5);
-      border-radius: 4px 4px 0 0;
-      border: solid 2px #777;
-      border-bottom: none;
-      margin-right: 8px;
-
-      a {
-        cursor: pointer;
-        display: block;
-        color: #fff;
-        text-shadow: 1px 1px 1px #000;
-      }
-    }
-  }
+  // * {
+  //   max-height: 100% !important;
+  //   overflow: hidden !important;
+  // }
 
   .codeView {
     background: rgba(0, 0, 0, 0.5);
-    -webkit-flex: 1;
-    flex: 1;
     padding: 20px;
     line-height: 30px;
     font-family: Consolas, Menlo, Monaco, monospace;
@@ -160,16 +130,12 @@ body {
     word-wrap: break-word;
 
     &.console {
-      display: -webkit-flex;
-      display: flex;
-
       ul {
         margin: 0;
         list-style: none;
         padding: 0;
         overflow: scroll;
-        -webkit-flex: 1;
-        flex: 1;
+        height: 70vh;
 
         li {
           white-space: pre;
@@ -189,11 +155,6 @@ body {
     }
 
     &.script {
-      display: -webkit-flex;
-      display: flex;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-
       h3 {
         font-size: 20px;
         line-height: 30px;
@@ -203,31 +164,8 @@ body {
       }
 
       textarea {
-        -webkit-flex: 1;
-        flex: 1;
         resize: none;
-      }
-
-      .buttons {
-        display: -webkit-flex;
-        display: flex;
-        padding: 4px;
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 4px;
-
-        button {
-          -webkit-flex: 1;
-          flex: 1;
-          height: 40px;
-          background: rgba(0, 0, 0, 0.5);
-          color: #fff;
-          border: none;
-          font-size: 20px;
-          cursor: pointer;
-          border-radius: 4px;
-          margin: 4px;
-          text-shadow: 1px 1px 1px #000;
-        }
+        height: 55vh;
       }
     }
 
@@ -257,33 +195,33 @@ body {
 }
 
 .scriptPicker {
-  position: fixed;
-  left: 20%;
-  top: 60px;
-  right: 20%;
-  bottom: 60px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 4px;
-  color: #000;
-  overflow: auto;
+  // position: fixed;
+  // left: 20%;
+  // top: 60px;
+  // right: 20%;
+  // bottom: 60px;
+  // background: rgba(255, 255, 255, 0.8);
+  // border-radius: 4px;
+  // color: #000;
+  // overflow: auto;
 
-  ul {
-    margin: 0;
-    list-style: none;
-    padding: 20px;
-
-    li {
-      line-height: 30px;
-      font-family: Consolas, Menlo, Monaco, monospace;
-      font-size: 20px;
-      padding: 0 10px;
-      cursor: pointer;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.5);
-      }
-    }
-  }
+  // ul {
+  //   margin: 0;
+  //   list-style: none;
+  //   padding: 0;
+  //
+  //   li {
+  //     line-height: 30px;
+  //     font-family: Consolas, Menlo, Monaco, monospace;
+  //     font-size: 20px;
+  //     padding: 0;
+  //     cursor: pointer;
+  //
+  //     &:hover {
+  //       background: rgba(255, 255, 255, 0.5);
+  //     }
+  //   }
+  // }
 }
 
 @-webkit-keyframes pulsate {
