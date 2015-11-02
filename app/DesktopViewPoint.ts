@@ -6,20 +6,18 @@ import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
 
 export default class DesktopViewPoint {
-  camera: THREE.Camera;
-  realCamera: THREE.PerspectiveCamera;
+  camera: THREE.PerspectiveCamera;
   light: THREE.Light;
   viewPort: HTMLDivElement;
   renderer: THREE.Renderer;
   worldInfo: com.WorldInfo;
   workerInterface: WorkerInterface;
 
+  position: THREE.Vector3;
   movement: THREE.Vector3;
   turn: THREE.Vector2;
-  mouse: THREE.Vector2;
 
   speed = 10;
-  lookMode = false;
 
   lon = 270;
   lat = -20;
@@ -27,21 +25,16 @@ export default class DesktopViewPoint {
   lastFrame = Date.now();
 
   constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
-    this.camera = new THREE.Camera();
-    this.realCamera = camera;
+    this.camera = camera;
     this.light = light;
     this.viewPort = viewPort;
     this.renderer = renderer;
     this.worldInfo = worldInfo;
     this.workerInterface = workerInterface;
 
+    this.position = new THREE.Vector3(100, 24, 120);
     this.movement = new THREE.Vector3();
     this.turn = new THREE.Vector2();
-    this.mouse = new THREE.Vector2();
-
-    this.camera.position.x = 100;
-    this.camera.position.y = 24;
-    this.camera.position.z = 120;
 
     window.addEventListener('resize', _.debounce(() => this.onWindowResize(), 500), false);
 
@@ -57,8 +50,8 @@ export default class DesktopViewPoint {
     console.log('onWindowResize', width, height);
 
     if (this.renderer) {
-      this.realCamera.aspect = width / height;
-      this.realCamera.updateProjectionMatrix();
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
 
       this.renderer.setSize(width, height);
     }
@@ -107,11 +100,6 @@ export default class DesktopViewPoint {
 
     this.lastFrame = now;
 
-    if (this.lookMode) {
-      // this.lon += this.mouse.x * 0.005;
-      // this.lat -= this.mouse.y * 0.005;
-    }
-
     this.zDelta += this.movement.z * 0.01;         // Creep speed up as user presses W
 
     if (this.movement.z === 0) this.zDelta = 0;   // Full stop
@@ -126,49 +114,46 @@ export default class DesktopViewPoint {
 
     //console.log(phi, theta);
 
-    this.camera.position.x += correction * ((this.zDelta * -0.5) * Math.cos(theta) - (this.movement.x * 0.5) * Math.sin(theta));
-    this.camera.position.z += correction * ((this.zDelta * -0.5) * Math.sin(theta) + (this.movement.x * 0.5) * Math.cos(theta));
-    this.camera.position.y += correction * ((this.zDelta * -0.5) * Math.cos(phi));
+    this.position.x += correction * ((this.zDelta * -0.5) * Math.cos(theta) - (this.movement.x * 0.5) * Math.sin(theta));
+    this.position.z += correction * ((this.zDelta * -0.5) * Math.sin(theta) + (this.movement.x * 0.5) * Math.cos(theta));
+    this.position.y += correction * ((this.zDelta * -0.5) * Math.cos(phi));
 
-    var xx = 100 * Math.sin(phi) * Math.cos(theta) + this.camera.position.x;
-    var yy = 100 * Math.cos(phi) + this.camera.position.y;
-    var zz = 100 * Math.sin(phi) * Math.sin(theta) + this.camera.position.z;
+    var targetX = 2.0 * Math.sin(phi) * Math.cos(theta) + this.position.x;
+    var targetY = 2.0 * Math.cos(phi) + this.position.y;
+    var targetZ = 2.0 * Math.sin(phi) * Math.sin(theta) + this.position.z;
 
-    var target = new THREE.Vector3(xx, yy, zz);
+    var target = new THREE.Vector3(targetX, targetY, targetZ);
 
-    this.workerInterface.setPlayerPosition(this.camera.position, target);
+    this.restrain(this.position);
 
-    this.camera.lookAt(target);
-    // this.realCamera.lookAt(target);
-
-    // Move the light
-
-    this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
-
-    this.restrain(this.camera);
+    this.workerInterface.setPlayerPosition(this.position, target);
   }
 
   onPlayerPositionChanged(player: { position: THREE.Vector3, target: THREE.Vector3 }) {
-    this.realCamera.position.set(player.position.x, player.position.y, player.position.z);
-    this.realCamera.lookAt(player.target);
+    this.position = player.position;
+
+    this.camera.position.set(player.position.x, player.position.y, player.position.z);
+    this.camera.lookAt(player.target);
+
+    this.light.position.set(player.position.x, player.position.y, player.position.z);
   }
 
-  restrain(camera: THREE.Camera) {
-    camera.position.x = Math.max(camera.position.x, 0);
-    camera.position.y = Math.max(camera.position.y, 0);
-    camera.position.z = Math.max(camera.position.z, 0);
+  restrain(position: THREE.Vector3) {
+    position.x = Math.max(position.x, 0);
+    position.y = Math.max(position.y, 0);
+    position.z = Math.max(position.z, 0);
 
-    camera.position.x = Math.min(camera.position.x, this.worldInfo.worldDimensionsInBlocks.x);
-    camera.position.y = Math.min(camera.position.y, this.worldInfo.worldDimensionsInBlocks.y * 2);
-    camera.position.z = Math.min(camera.position.z, this.worldInfo.worldDimensionsInBlocks.z);
+    position.x = Math.min(position.x, this.worldInfo.worldDimensionsInBlocks.x);
+    position.y = Math.min(position.y, this.worldInfo.worldDimensionsInBlocks.y * 2);
+    position.z = Math.min(position.z, this.worldInfo.worldDimensionsInBlocks.z);
   }
 
   getPosition() {
-    return this.camera.position;
+    return this.position;
   }
 
   setPosition(pos: THREE.Vector3) {
-    this.camera.position.set(pos.x, pos.y, pos.z);
+    this.position.set(pos.x, pos.y, pos.z);
   }
 
   getTarget() {

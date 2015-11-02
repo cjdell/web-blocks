@@ -1,6 +1,6 @@
 /// <reference path="../typings/tsd.d.ts" />
-'use strict';
-const win = <any>self;
+"use strict";
+const _self = <any>self;
 
 import _ = require('underscore');
 import THREE = require('three');
@@ -28,7 +28,16 @@ interface Invocation<DataType> {
   data: DataType;
 }
 
-function init(invocation: Invocation<void>): void {
+const checkForChangedPartitions = _.debounce(() => {
+  const dirty = world.getDirtyPartitions();
+
+  _self.postMessage({
+    action: 'update',
+    changes: dirty
+  });
+}, 20);
+
+const init = (invocation: Invocation<void>): void => {
   const worldInfo = new com.WorldInfo({
     worldDimensionsInPartitions: new com.IntVector3(32, 1, 32),
     partitionDimensionsInBlocks: new com.IntVector3(32, 32, 32),
@@ -39,6 +48,10 @@ function init(invocation: Invocation<void>): void {
 
   world.init();
 
+  world.onWorldChanged(world => {
+    checkForChangedPartitions();
+  });
+
   worldGeometry = new WorldGeometry(worldInfo, world);
 
   player = new Player();
@@ -48,7 +61,7 @@ function init(invocation: Invocation<void>): void {
   scriptRunner = new ScriptRunner(api);
 
   player.changeListener = (position: THREE.Vector3, target: THREE.Vector3) => {
-    win.postMessage({
+    _self.postMessage({
       action: 'updatePlayerPosition',
       data: {
         position: position,
@@ -60,45 +73,59 @@ function init(invocation: Invocation<void>): void {
   Loader.Instance = new Loader(worldInfo);
 
   Loader.Instance.init().then(() => {
-    return win.postMessage({
+    return _self.postMessage({
       id: invocation.id,
       data: worldInfo
     });
   });
 }
 
-function setPlayerPosition(invocation: Invocation<{ position: THREE.Vector3, target: THREE.Vector3 }>) {
-  player.update(invocation.data.position, invocation.data.target);
+const canMove = (position: THREE.Vector3, target: THREE.Vector3) => {
+  const x = Math.round(target.x);
+  const y = Math.round(target.y);
+  const z = Math.round(target.z);
+
+  const block = world.getBlock(x, y, z);
+
+  return block === 0;
+};
+
+const setPlayerPosition = (invocation: Invocation<{ position: THREE.Vector3, target: THREE.Vector3 }>) => {
+  let position = invocation.data.position;
+  let target = invocation.data.target;
+
+  if (!canMove(position, target)) {
+    position = player.getPosition();
+    target = player.getTarget();
+  }
+
+  player.update(position, target);
 }
 
-function runScript(invocation: Invocation<{ code: string, expr: boolean }>) {
+const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {
   const result = scriptRunner.run(invocation.data.code, invocation.data.expr);
 
-  win.postMessage({
+  _self.postMessage({
     id: invocation.id,
     data: {
       result: result
     }
   });
-
-  checkForChangedPartitions();
 }
 
-function undo(invocation: Invocation<void>) {
+const undo = (invocation: Invocation<void>) => {
   world.undo();
 
-  checkForChangedPartitions();
-
-  win.postMessage({
+  _self.postMessage({
     id: invocation.id,
     data: {}
   });
 }
 
-function getPartition(invocation: Invocation<{ index: number }>) {
+const getPartition = (invocation: Invocation<{ index: number }>) => {
   const geo = worldGeometry.getPartitionGeometry(invocation.data.index);
 
-  win.postMessage({
+  _self.postMessage({
     id: invocation.id,
     data: {
       index: invocation.data.index,
@@ -113,10 +140,10 @@ function getPartition(invocation: Invocation<{ index: number }>) {
     ]);
 }
 
-function getBlock(invocation: Invocation<{ pos: com.IntVector3 }>) {
+const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
   const type = world.getBlock(invocation.data.pos.x, invocation.data.pos.y, invocation.data.pos.z);
 
-  win.postMessage({
+  _self.postMessage({
     id: invocation.id,
     data: {
       pos: invocation.data.pos,
@@ -125,22 +152,18 @@ function getBlock(invocation: Invocation<{ pos: com.IntVector3 }>) {
   });
 }
 
-function setBlocks(invocation: Invocation<{ start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean }>) {
+const setBlocks = (invocation: Invocation<{ start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean }>) => {
   const start = invocation.data.start;
   const end = invocation.data.end;
 
   world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, invocation.data.type, invocation.data.colour);
-
-  if (invocation.data.update) checkForChangedPartitions();
 }
 
-function addBlock(invocation: Invocation<{ position: number, side: number, type: number }>) {
+const addBlock = (invocation: Invocation<{ position: number, side: number, type: number }>) => {
   world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
-
-  checkForChangedPartitions();
 }
 
-self.onmessage = function(e) {
+self.onmessage = (e) => {
   const invocation = <Invocation<void>>e.data;
 
   if (invocation.action === 'init') {
@@ -187,12 +210,3 @@ self.onmessage = function(e) {
     return addBlock(invocation);
   }
 };
-
-var checkForChangedPartitions = _.debounce(function() {
-  const dirty = world.getDirtyPartitions();
-
-  win.postMessage({
-    action: 'update',
-    changes: dirty
-  });
-}, 20);

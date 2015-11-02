@@ -9,9 +9,13 @@ import { CuboidOperation } from './Operations/CuboidOperation';
 import { LandscapeOperation } from './Operations/LandscapeOperation';
 import { OperationCommand } from './Commands/OperationCommand';
 
-export interface ChangeHandler {
-  callback(change: com.Change): void;
-  options: com.ChangeHandlerOptions;
+// export interface ChangeHandler {
+//   callback(change: com.Change): void;
+//   options: com.ChangeHandlerOptions;
+// }
+
+export interface WorldChangedHandler {
+  (world: World): void;
 }
 
 const VALUES_PER_BLOCK = 3 | 0;
@@ -24,8 +28,11 @@ export default class World {
   partitionCapacity: number;
 
   commands = new Array<Command>();
-  changeHandlers = Array<ChangeHandler>();
-  recentChanges = Array<com.Change>();
+
+  worldChangeHandlers = new Array<WorldChangedHandler>();
+
+  // changeHandlers = Array<ChangeHandler>();
+  // recentChanges = Array<com.Change>();
 
   partitions: Partition[];
 
@@ -40,24 +47,32 @@ export default class World {
     // setTimeout(() => this.saveCommands(), 2000);
   }
 
-  registerChangeHandler(handler: ChangeHandler) {
-    this.changeHandlers.push(handler);
+  onWorldChanged(handler: WorldChangedHandler) {
+    this.worldChangeHandlers.push(handler);
   }
 
-  flushChanges = _.debounce(() => {
-    this.recentChanges.forEach(change => {
-      this.changeHandlers.forEach(changeHandler => {
-        const start = changeHandler.options.start;
-        const end = changeHandler.options.end;
-        const pos = change.position;
+  worldChanged() {
+    this.worldChangeHandlers.forEach(handler => handler(this));
+  }
 
-        // Is it inside the boundary?
-        pos.clone().clamp(start, end).equals(pos);
+  // registerChangeHandler(handler: ChangeHandler) {
+  //   this.changeHandlers.push(handler);
+  // }
 
-        changeHandler.callback(change);
-      });
-    });
-  }, 200);
+  // flushChanges = _.debounce(() => {
+  //   this.recentChanges.forEach(change => {
+  //     this.changeHandlers.forEach(changeHandler => {
+  //       const start = changeHandler.options.start;
+  //       const end = changeHandler.options.end;
+  //       const pos = change.position;
+
+  //       // Is it inside the boundary?
+  //       pos.clone().clamp(start, end).equals(pos);
+
+  //       changeHandler.callback(change);
+  //     });
+  //   });
+  // }, 200);
 
   init(): void {
     this.partitions = new Array<Partition>(this.capacity);
@@ -86,13 +101,6 @@ export default class World {
       type: 6,
       colour: 0
     };
-
-    // const testOperation = new CuboidOperation(this.worldInfo, options);
-    // const testCommand = new OperationCommand(this.worldInfo, this.commands.length, testOperation);
-    //
-    // this.applyCommand(testCommand);
-
-    // this.setBlocks(97, 10, 97, 100, 10, 100, 6, 0);
   }
 
   getPartitionCapacity(): number {
@@ -152,6 +160,8 @@ export default class World {
     if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
 
     partitionsToApply.filter(p => p.isInited()).forEach(command.redo, command);
+
+    this.worldChanged();
   }
 
   saveCommands(): void {
@@ -169,6 +179,8 @@ export default class World {
     if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
 
     partitionsToApply.filter(p => p.isInited()).forEach(command.undo, command);
+
+    this.worldChanged();
   }
 
   setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {

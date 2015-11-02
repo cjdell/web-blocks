@@ -126,9 +126,9 @@ var CodeEditor = React.createClass({
     console.log('name', name);
 
     this.setState({ scriptPickerVisible: false, scriptName: name });
-    
+
     var script = this.props.scriptStorage.getScript(name);
-    
+
     console.log('script', script);
 
     scriptTextarea.value = script;
@@ -136,10 +136,10 @@ var CodeEditor = React.createClass({
     this.refs.scriptPickerDialog.dismiss();
   },
   render: function() {
-    var items = this.state.lines.map(function(line) {
-      return <li key={line.index} className={line.type}>{line.line}</li>;
+    var items = this.state.lines.map(function(line, index) {
+      return <li key={index} className={line.type}>{line.line}</li>;
     });
-    
+
     var customActions = [
       <FlatButton
         key="cancel"
