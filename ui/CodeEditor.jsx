@@ -8,14 +8,13 @@ var Toolbar = mui.Toolbar;
 var ToolbarGroup = mui.ToolbarGroup;
 var Tabs = mui.Tabs;
 var Tab = mui.Tab;
+var FontIcon = mui.FontIcon;
 
 var ScriptPicker = require('./ScriptPicker.jsx');
 
 var introMessage = 'Hello there, here you can write JavaScript! For more info type: help';
 
 var lineBack = 0;
-
-// var codeRunner = new CodeRunner();
 
 var CodeEditor = React.createClass({
   getInitialState: function() {
@@ -68,7 +67,6 @@ var CodeEditor = React.createClass({
   runCmd: function(cmd) {
     var that = this;
 
-    // var res = codeRunner.run(cmd, true);
     var res = window.workerInterface.runScript(cmd, true);
 
     if (res instanceof Promise) {
@@ -85,11 +83,9 @@ var CodeEditor = React.createClass({
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptCode);
 
-    // codeRunner.run(scriptCode, false);
     window.workerInterface.runScript(scriptCode, false);
   },
   loadClicked: function() {
-    // this.setState({ scriptPickerVisible: true });
     this.refs.scriptPickerDialog.show();
   },
   saveClicked: function() {
@@ -123,13 +119,9 @@ var CodeEditor = React.createClass({
   scriptChosen: function(name) {
     var scriptTextarea = this.refs.script;
 
-    console.log('name', name);
-
     this.setState({ scriptPickerVisible: false, scriptName: name });
 
     var script = this.props.scriptStorage.getScript(name);
-
-    console.log('script', script);
 
     scriptTextarea.value = script;
 
@@ -163,15 +155,14 @@ var CodeEditor = React.createClass({
         <Tab label="Script">
           <Toolbar>
             <ToolbarGroup>
-              <RaisedButton primary={true} onTouchTap={this.loadClicked}>Load</RaisedButton>
-              <RaisedButton secondary={true} onTouchTap={this.runClicked}>Run</RaisedButton>
-              <RaisedButton onTouchTap={this.saveClicked}>Save</RaisedButton>
+              <RaisedButton primary={true} onTouchTap={this.loadClicked} label="Open" />
+              <RaisedButton secondary={true} onTouchTap={this.runClicked} label="Run" />
+              <RaisedButton onTouchTap={this.saveClicked} label="Save" />
             </ToolbarGroup>
           </Toolbar>
 
           <div className="codeView script">
             <h3>{this.state.scriptName}</h3>
-
             <textarea ref="script"></textarea>
           </div>
         </Tab>
@@ -189,6 +180,7 @@ var CodeEditor = React.createClass({
           scriptStorage={this.props.scriptStorage}
           onScriptChosen={this.scriptChosen}/>
       </Dialog>
+
     </div>
     );
   }

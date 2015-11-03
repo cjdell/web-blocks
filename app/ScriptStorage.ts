@@ -6,15 +6,16 @@ interface Script {
   name: string;
   sample: boolean;
   modified: Date;
-  code: string|Buffer;
+  code: string | Buffer;
 }
 
-const samples = [{
-  name: 'Cube',
-  sample: true,
-  modified: new Date(2015, 5, 1),
-  code: fs.readFileSync('./samples/Cube.js')
-}, {
+const samples = [
+  {
+    name: 'Cube',
+    sample: true,
+    modified: new Date(2015, 5, 1),
+    code: fs.readFileSync('./samples/Cube.js')
+  }, {
     name: 'Pyramid',
     sample: true,
     modified: new Date(2015, 5, 1),
@@ -49,7 +50,8 @@ const samples = [{
     sample: true,
     modified: new Date(2015, 5, 7),
     code: fs.readFileSync('./samples/Palette.js')
-  }];
+  }
+];
 
 export default class ScriptStorage {
   scripts = new Array<Script>();

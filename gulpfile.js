@@ -45,7 +45,7 @@ gulp.task('serve', function () {
   gulp.src('.')
     .pipe(webserver({
       livereload: {
-        enable: true, // need this set to true to enable livereload 
+        enable: false,
         filter: function(fileName) {
           console.log('fileName', fileName);
           return fileName.indexOf('build') !== -1;

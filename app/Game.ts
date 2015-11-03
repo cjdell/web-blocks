@@ -6,7 +6,6 @@ import { BlockTypeList, BlockType } from '../common/BlockTypeList';
 import Interaction from './Interaction';
 import WorldViewer from './WorldViewer';
 import WorkerInterface from './WorkerInterface';
-// import Api from './Api';
 import Webcam from './Webcam';
 import TextRenderer from './TextRenderer';
 import DesktopPlatform from './DesktopPlatform';
@@ -23,14 +22,13 @@ export default class Game {
   renderer: any = null;
   effect: any = null;
   viewPort: HTMLDivElement = null;
-  camera: THREE.Camera = null;
+  camera: THREE.PerspectiveCamera = null;
   scene: THREE.Scene = null;
   blockTypeList: BlockTypeList = null;
   worldViewer: WorldViewer = null;
   viewPoint: DesktopViewPoint = null;
   culling: any = null;
   interaction: Interaction = null;
-  // api: Api = null;
   webcam: Webcam = null;
   textRenderer: TextRenderer = null;
 
@@ -88,8 +86,6 @@ export default class Game {
         fog: true
       });
 
-      //let blockMaterial = new THREE.MeshLambertMaterial({ color: 0xbbccff });
-
       const blockTypes = this.blockTypeList.getBlockTypes();
 
       this.getBlockTexture(blockTypes).then((texture: THREE.Texture) => {
@@ -111,16 +107,11 @@ export default class Game {
       this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo, this.webcam);
       this.textRenderer = new TextRenderer(this.workerInterface);
 
-      // Expose API as global for console access
-      // this.api = new Api(this.workerInterface, this.viewPoint);
-
       win.workerInterface = this.workerInterface;
 
       blockMaterial.uniforms.webcam.value = this.webcam.getTexture();
 
       this.textRenderer.renderText(new THREE.Vector3(75, 5, 90), 'Welcome!');
-
-      // workerInterface.setBlocks(new com.IntVector3(80, 1, 80), new com.IntVector3(120, 31, 120), 0, 0, false);
 
       this.render(); // Kick off the render loop
     });
@@ -137,13 +128,15 @@ export default class Game {
 
     this.frame += 1;
 
-    if (this.frame % 10 === 0) {
+    if (this.frame % 20 === 0) {
       const changes = this.culling.getNewlyVisiblePartitions();
 
       this.worldViewer.exposeNewPartitions(changes);
     }
 
-    this.effect.render(this.scene, this.camera);
+    // if (this.frame % 3 === 0) {
+      this.effect.render(this.scene, this.camera);
+    // }
 
     if (this.log) console.timeEnd('frame');
   }

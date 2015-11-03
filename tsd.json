@@ -21,7 +21,10 @@
       "commit": "e95958ac847d9a343bdc8d7cbc796a5f6da29f71"
     },
     "node/node.d.ts": {
-      "commit": "e5de5c4daf8cdc33ed60704cd6e8021c99a89f92"
+      "commit": "0dd29bf8253536ae24e61c109524e924ea510046"
+    },
+    "ws/ws.d.ts": {
+      "commit": "0dd29bf8253536ae24e61c109524e924ea510046"
     }
   }
 }

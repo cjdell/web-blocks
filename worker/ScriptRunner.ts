@@ -7,7 +7,7 @@ export default class ScriptRunner {
     this.api = api;
   }
 
-  run(code: string, expr: boolean) {
+  run(code: string, expr: boolean): string {
     var toRun = '';
 
     Object.keys(Api.prototype).forEach(function(key) {
@@ -40,6 +40,7 @@ export default class ScriptRunner {
       }
     } catch (err) {
       console.error('parse error', err);
+      return err.message;
     }
 
     return '';

@@ -11,6 +11,7 @@ import WorldGeometry from './WorldGeometry';
 import Player from './Player';
 import Api from './Api';
 import ScriptRunner from './ScriptRunner';
+import CliServer from './Cli/CliServer';
 
 import { Loader } from './Geometry/Loader';
 
@@ -21,6 +22,7 @@ let worldGeometry: WorldGeometry;
 let player: Player;
 let api: Api;
 let scriptRunner: ScriptRunner;
+let cliServer: CliServer;
 
 interface Invocation<DataType> {
   id: number;
@@ -45,20 +47,17 @@ const init = (invocation: Invocation<void>): void => {
   });
 
   world = new World(worldInfo);
+  worldGeometry = new WorldGeometry(worldInfo, world);
+  player = new Player();
+  api = new Api(world, player);
+  scriptRunner = new ScriptRunner(api);
+  cliServer = new CliServer(scriptRunner);
 
   world.init();
 
   world.onWorldChanged(world => {
     checkForChangedPartitions();
   });
-
-  worldGeometry = new WorldGeometry(worldInfo, world);
-
-  player = new Player();
-
-  api = new Api(world, player);
-
-  scriptRunner = new ScriptRunner(api);
 
   player.changeListener = (position: THREE.Vector3, target: THREE.Vector3) => {
     _self.postMessage({
