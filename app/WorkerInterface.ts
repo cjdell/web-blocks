@@ -2,6 +2,7 @@
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
+import { Movement } from '../worker/Player';
 
 export default class WorkerInterface {
   geoWorker: Worker;
@@ -63,10 +64,6 @@ export default class WorkerInterface {
     return this.invoke<com.WorldInfo>('init', null);
   }
 
-  setPlayerPosition(position: THREE.Vector3, target: THREE.Vector3) {
-    return this.invoke<void>('setPlayerPosition', { position, target });
-  }
-
   runScript(code: string, expr: boolean) {
     return this.invoke<{ result: any }>('runScript', { code, expr });
   }
@@ -99,6 +96,14 @@ export default class WorkerInterface {
       side: side,
       type: type
     });
+  }
+
+  move(move: THREE.Vector3, turn: THREE.Vector2) {
+    return this.invoke<Object>('move', { move, turn });
+  }
+
+  jump() {
+    return this.invoke<Object>('action', { action: 'jump' });
   }
 
   getPartition(index: number) {

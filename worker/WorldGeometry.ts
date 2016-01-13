@@ -3,10 +3,11 @@ import THREE = require('three');
 
 import com from '../common/WorldInfo';
 import PartitionGeometry from './PartitionGeometry';
+import { VertexData } from './PartitionGeometry';
 import World from './World';
 
 export interface PartitionGeometryResult {
-  data: any;
+  data: VertexData;
   offset: com.IntVector3;
 }
 

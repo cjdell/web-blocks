@@ -28,6 +28,14 @@ const UV = new Float32Array([0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0]);
 
 const NORMALS = new Float32Array([1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1]);
 
+export interface VertexData {
+  position: Float32Array;
+  normal: Float32Array;
+  uv: Float32Array;
+  data: Float32Array;
+  offset: Float32Array;
+}
+
 export default class PartitionGeometry {
   worldInfo: com.WorldInfo;
   partition: Partition;
@@ -186,7 +194,7 @@ export default class PartitionGeometry {
     }
   }
 
-  getData() {
+  getData(): VertexData {
     return {
       position: this.position,
       normal: this.normal,

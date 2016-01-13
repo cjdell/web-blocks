@@ -7,6 +7,7 @@ import Partition from './Partition';
 import Command from './Commands/Command';
 import { CuboidOperation } from './Operations/CuboidOperation';
 import { LandscapeOperation } from './Operations/LandscapeOperation';
+import { TreeOperation } from './Operations/TreeOperation';
 import { OperationCommand } from './Commands/OperationCommand';
 
 // export interface ChangeHandler {
@@ -95,12 +96,15 @@ export default class World {
 
     this.applyCommand(landscapeCommand);
 
-    const options = {
-      start: new com.IntVector3(0, 10, 0),
-      end: new com.IntVector3(this.worldInfo.worldDimensionsInBlocks.x - 1, 10, this.worldInfo.worldDimensionsInBlocks.z - 1),
-      type: 6,
-      colour: 0
-    };
+    for (let i = 0; i < 1000; i++) {
+      const x = (Math.random() * this.worldInfo.worldDimensionsInBlocks.x * 0.5 + 10) | 0;
+      const z = (Math.random() * this.worldInfo.worldDimensionsInBlocks.z * 0.5 + 10) | 0;
+
+      const treeOperation = new TreeOperation(this.worldInfo, { pos: new com.IntVector3(x, 2, z) });
+      const treeCommand = new OperationCommand(this.worldInfo, this.commands.length, treeOperation);
+
+      this.applyCommand(treeCommand);
+    }
   }
 
   getPartitionCapacity(): number {
@@ -409,7 +413,7 @@ export default class World {
       ret[i] = visibleBlocks[i];
     }
 
-    console.timeEnd('getVisibleBlocks');
+    // console.timeEnd('getVisibleBlocks');
 
     return ret;
   }

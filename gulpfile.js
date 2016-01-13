@@ -44,6 +44,7 @@ gulp.task('watch', ['set-watch', 'build'], function () {
 gulp.task('serve', function () {
   gulp.src('.')
     .pipe(webserver({
+      host: '0.0.0.0',
       livereload: {
         enable: false,
         filter: function(fileName) {

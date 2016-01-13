@@ -17,6 +17,8 @@
     ],
     "files": [
         "app/Api.ts",
+        "app/CardboardPlatform.ts",
+        "app/CardboardViewPoint.ts",
         "app/Culling.ts",
         "app/DesktopPlatform.ts",
         "app/DesktopViewPoint.ts",

@@ -28,8 +28,8 @@ export default class DesktopPlatform {
     }, 1000);
   }
 
-  getViewPoint(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
-    return new DesktopViewPoint(camera, light, viewPort, renderer, worldInfo, workerInterface);
+  getViewPoint(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
+    return new DesktopViewPoint(camera, light, viewPort, renderer, scene, worldInfo, workerInterface);
   }
 
   getUserInterface() {

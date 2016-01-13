@@ -25,7 +25,7 @@ export default class Api {
       'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
     ].join('\n');
   }
-  
+
   get hi() {
     return 'Hi there!';
   }
@@ -50,12 +50,12 @@ export default class Api {
     this.player.setPosition(new THREE.Vector3(x, y, z));
   }
 
-  getTarget(): THREE.Vector3 {
-    return this.player.getTarget();
+  getDirection(): THREE.Vector2 {
+    return this.player.getDirection();
   }
 
-  setTarget(x: number, y: number, z: number): void {
-    this.player.setTarget(new THREE.Vector3(x, y, z));
+  setDirection(x: number, y: number): void {
+    this.player.setDirection(new THREE.Vector2(x, y));
   }
 
   setInterval(func: Function, interval: number): void {

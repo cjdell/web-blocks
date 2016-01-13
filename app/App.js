@@ -2,7 +2,7 @@ require('whatwg-fetch');
 require('es6-promise').polyfill();
 
 var DesktopPlatform = require('./DesktopPlatform').default;
-var CardboardPlatform = require('./CardboardPlatform');
+var CardboardPlatform = require('./CardboardPlatform').default;
 var Game = require('./Game').default;
 
 function App() {
@@ -11,12 +11,10 @@ function App() {
 
   function init(container) {
     if (detectmob()) {
-      platform = new CardboardPlatform();
+      platform = new CardboardPlatform(container);
     } else {
       platform = new DesktopPlatform(container);
     }
-
-    // platform.init(container);
 
     game = new Game(platform);
 

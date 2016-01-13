@@ -8,6 +8,7 @@ module Common {
     partitionBoundaries: Array<any>;
   }
 
+  // Immutable integer vector
   export class IntVector3 {
     x = 0 | 0;
     y = 0 | 0;

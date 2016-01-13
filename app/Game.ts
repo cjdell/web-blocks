@@ -101,7 +101,7 @@ export default class Game {
       this.scene.add(pointLight);
 
       this.worldViewer = new WorldViewer(this.scene, worldInfo, blockMaterial, this.workerInterface);
-      this.viewPoint = this.platform.getViewPoint(this.camera, pointLight, this.viewPort, this.effect, worldInfo, this.workerInterface);
+      this.viewPoint = this.platform.getViewPoint(this.camera, pointLight, this.viewPort, this.effect, this.scene, worldInfo, this.workerInterface);
       this.culling = new Culling(this.camera, worldInfo);
       this.webcam = new Webcam();
       this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo, this.webcam);

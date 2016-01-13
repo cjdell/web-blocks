@@ -15,6 +15,8 @@ import CliServer from './Cli/CliServer';
 
 import { Loader } from './Geometry/Loader';
 
+import { Movement } from './Player';
+
 console.log('GeometryWorker: online');
 
 let world: World;
@@ -48,7 +50,7 @@ const init = (invocation: Invocation<void>): void => {
 
   world = new World(worldInfo);
   worldGeometry = new WorldGeometry(worldInfo, world);
-  player = new Player();
+  player = new Player(world);
   api = new Api(world, player);
   scriptRunner = new ScriptRunner(api);
   cliServer = new CliServer(scriptRunner);
@@ -77,29 +79,11 @@ const init = (invocation: Invocation<void>): void => {
       data: worldInfo
     });
   });
-}
 
-const canMove = (position: THREE.Vector3, target: THREE.Vector3) => {
-  const x = Math.round(target.x);
-  const y = Math.round(target.y);
-  const z = Math.round(target.z);
-
-  const block = world.getBlock(x, y, z);
-
-  return block === 0;
+  setInterval(() => {
+    player.tick();
+  }, 10);
 };
-
-const setPlayerPosition = (invocation: Invocation<{ position: THREE.Vector3, target: THREE.Vector3 }>) => {
-  let position = invocation.data.position;
-  let target = invocation.data.target;
-
-  if (!canMove(position, target)) {
-    position = player.getPosition();
-    target = player.getTarget();
-  }
-
-  player.update(position, target);
-}
 
 const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {
   const result = scriptRunner.run(invocation.data.code, invocation.data.expr);
@@ -110,7 +94,7 @@ const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {
       result: result
     }
   });
-}
+};
 
 const undo = (invocation: Invocation<void>) => {
   world.undo();
@@ -119,25 +103,27 @@ const undo = (invocation: Invocation<void>) => {
     id: invocation.id,
     data: {}
   });
-}
+};
 
 const getPartition = (invocation: Invocation<{ index: number }>) => {
   const geo = worldGeometry.getPartitionGeometry(invocation.data.index);
 
-  _self.postMessage({
-    id: invocation.id,
-    data: {
-      index: invocation.data.index,
-      geo: geo
-    }
-  }, [
+  _self.postMessage(
+    {
+      id: invocation.id,
+      data: {
+        index: invocation.data.index,
+        geo: geo
+      }
+    }, [
       geo.data.position.buffer,
       geo.data.normal.buffer,
       geo.data.uv.buffer,
       geo.data.data.buffer,
       geo.data.offset.buffer
-    ]);
-}
+    ]
+  );
+};
 
 const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
   const type = world.getBlock(invocation.data.pos.x, invocation.data.pos.y, invocation.data.pos.z);
@@ -149,30 +135,32 @@ const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
       type: type
     }
   });
-}
+};
 
 const setBlocks = (invocation: Invocation<{ start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean }>) => {
   const start = invocation.data.start;
   const end = invocation.data.end;
 
   world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, invocation.data.type, invocation.data.colour);
-}
+};
 
 const addBlock = (invocation: Invocation<{ position: number, side: number, type: number }>) => {
   world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
-}
+};
+
+const move = (invocation: Invocation<Movement>) => {
+  player.move(invocation.data);
+};
+
+const action = (Invocation: Invocation<{ type: string }>) => {
+  player.jump();
+};
 
 self.onmessage = (e) => {
   const invocation = <Invocation<void>>e.data;
 
   if (invocation.action === 'init') {
     return init(invocation);
-  }
-
-  if (invocation.action === 'setPlayerPosition') {
-    const invocation = <Invocation<{ position: THREE.Vector3, target: THREE.Vector3 }>>e.data;
-
-    return setPlayerPosition(invocation);
   }
 
   if (invocation.action === 'runScript') {
@@ -207,5 +195,17 @@ self.onmessage = (e) => {
     const invocation = <Invocation<{ position: number, side: number, type: number }>>e.data;
 
     return addBlock(invocation);
+  }
+
+  if (invocation.action === 'move') {
+    const invocation = <Invocation<Movement>>e.data;
+
+    return move(invocation);
+  }
+
+  if (invocation.action === 'action') {
+    const invocation = <Invocation<{ type: string }>>e.data;
+
+    return action(invocation);
   }
 };

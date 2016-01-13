@@ -10,6 +10,7 @@ export default class DesktopViewPoint {
   light: THREE.Light;
   viewPort: HTMLDivElement;
   renderer: THREE.Renderer;
+  scene: THREE.Scene;
   worldInfo: com.WorldInfo;
   workerInterface: WorkerInterface;
 
@@ -17,18 +18,12 @@ export default class DesktopViewPoint {
   movement: THREE.Vector3;
   turn: THREE.Vector2;
 
-  speed = 10;
-
-  lon = 270;
-  lat = -20;
-  zDelta = 0;
-  lastFrame = Date.now();
-
-  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
+  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
     this.camera = camera;
     this.light = light;
     this.viewPort = viewPort;
     this.renderer = renderer;
+    this.scene = scene;
     this.worldInfo = worldInfo;
     this.workerInterface = workerInterface;
 
@@ -60,20 +55,22 @@ export default class DesktopViewPoint {
   keyDown(event: any) {
     if ((<any>window).blockMovement) return;
 
-    if (event.keyCode === 65) this.movement.x = -1;      // A (Left)
-    if (event.keyCode === 68) this.movement.x = 1;       // D (Right)
+    if (event.keyCode === 65) this.movement.x = 1;      // A (Left)
+    if (event.keyCode === 68) this.movement.x = -1;       // D (Right)
 
     //if (event.keyCode === 38) movement.y = 1;       // Up Arrow (Elevate)
     //if (event.keyCode === 40) movement.y = -1;      // Down Arrow (Decline)
 
-    if (event.keyCode === 87) this.movement.z = -1;      // W (Forwards)
-    if (event.keyCode === 83) this.movement.z = 1;       // S (Backwards)
+    if (event.keyCode === 87) this.movement.z = 1;      // W (Forwards)
+    if (event.keyCode === 83) this.movement.z = -1;       // S (Backwards)
 
-    if (event.keyCode === 38) this.turn.y = 1;       // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.turn.y = -1;      // Down Arrow (Turn Down)
+    if (event.keyCode === 38) this.turn.y = -1;       // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.turn.y = 1;      // Down Arrow (Turn Down)
 
-    if (event.keyCode === 37) this.turn.x = -1;      // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.turn.x = 1;       // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.turn.x = 1;      // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.turn.x = -1;       // Right Arrow (Turn Right)
+
+    this.workerInterface.move(this.movement, this.turn);
   }
 
   keyUp(event: any) {
@@ -91,62 +88,52 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 37) this.turn.x = 0;       // Left Arrow (Turn Left)
     if (event.keyCode === 39) this.turn.x = 0;       // Right Arrow (Turn Right)
+
+    if (event.keyCode === 32) this.workerInterface.jump();
+
+    this.workerInterface.move(this.movement, this.turn);
   }
 
   tick() {
-    var now = Date.now();
-
-    var correction = (now - this.lastFrame) / (1000 / 60);
-
-    this.lastFrame = now;
-
-    this.zDelta += this.movement.z * 0.01;         // Creep speed up as user presses W
-
-    if (this.movement.z === 0) this.zDelta = 0;   // Full stop
-
-    this.lon += this.turn.x * correction * 2;
-    this.lat += this.turn.y * correction * 2;
-
-    this.lat = Math.max(-89.9, Math.min(89.9, this.lat));
-
-    var phi = (90 - this.lat) * Math.PI / 180;
-    var theta = (this.lon * Math.PI / 180);
-
-    //console.log(phi, theta);
-
-    this.position.x += correction * ((this.zDelta * -0.5) * Math.cos(theta) - (this.movement.x * 0.5) * Math.sin(theta));
-    this.position.z += correction * ((this.zDelta * -0.5) * Math.sin(theta) + (this.movement.x * 0.5) * Math.cos(theta));
-    this.position.y += correction * ((this.zDelta * -0.5) * Math.cos(phi));
-
-    var targetX = 2.0 * Math.sin(phi) * Math.cos(theta) + this.position.x;
-    var targetY = 2.0 * Math.cos(phi) + this.position.y;
-    var targetZ = 2.0 * Math.sin(phi) * Math.sin(theta) + this.position.z;
-
-    var target = new THREE.Vector3(targetX, targetY, targetZ);
-
-    this.restrain(this.position);
-
-    this.workerInterface.setPlayerPosition(this.position, target);
+    //this.workerInterface.move(this.movement, this.turn);
   }
 
   onPlayerPositionChanged(player: { position: THREE.Vector3, target: THREE.Vector3 }) {
+    const PLAYER_HEIGHT = 1.0;
+
+    player.position.y += PLAYER_HEIGHT;
+    player.target.y += PLAYER_HEIGHT;
+
     this.position = player.position;
 
     this.camera.position.set(player.position.x, player.position.y, player.position.z);
     this.camera.lookAt(player.target);
 
     this.light.position.set(player.position.x, player.position.y, player.position.z);
+
+    // this.dot(player.position, 0x0000ff);
+    // this.dot(player.target, 0xff0000);
   }
 
-  restrain(position: THREE.Vector3) {
-    position.x = Math.max(position.x, 0);
-    position.y = Math.max(position.y, 0);
-    position.z = Math.max(position.z, 0);
+  dot(pos: THREE.Vector3, colour: number) {
+    // console.log(pos);
 
-    position.x = Math.min(position.x, this.worldInfo.worldDimensionsInBlocks.x);
-    position.y = Math.min(position.y, this.worldInfo.worldDimensionsInBlocks.y * 2);
-    position.z = Math.min(position.z, this.worldInfo.worldDimensionsInBlocks.z);
+    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const material = new THREE.MeshBasicMaterial({ color: colour });
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(cube);
   }
+
+  // restrain(position: THREE.Vector3) {
+  //   position.x = Math.max(position.x, 0);
+  //   position.y = Math.max(position.y, 0);
+  //   position.z = Math.max(position.z, 0);
+
+  //   position.x = Math.min(position.x, this.worldInfo.worldDimensionsInBlocks.x);
+  //   position.y = Math.min(position.y, this.worldInfo.worldDimensionsInBlocks.y * 2);
+  //   position.z = Math.min(position.z, this.worldInfo.worldDimensionsInBlocks.z);
+  // }
 
   getPosition() {
     return this.position;
@@ -154,14 +141,5 @@ export default class DesktopViewPoint {
 
   setPosition(pos: THREE.Vector3) {
     this.position.set(pos.x, pos.y, pos.z);
-  }
-
-  getTarget() {
-    return { lon: this.lon, lat: this.lat };
-  }
-
-  setTarget(target: any) {
-    this.lon = target.lon;
-    this.lat = target.lat;
   }
 }
