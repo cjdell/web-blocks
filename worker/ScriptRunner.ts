@@ -1,3 +1,4 @@
+"use strict";
 import Api from './Api';
 
 export default class ScriptRunner {

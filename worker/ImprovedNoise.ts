@@ -1,3 +1,4 @@
+"use strict";
 // http://mrl.nyu.edu/~perlin/noise/
 
 export default class ImprovedNoise {
