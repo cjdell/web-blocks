@@ -1,3 +1,4 @@
+"use strict";
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
@@ -9,12 +10,14 @@ import WorkerInterface from './WorkerInterface';
 import Webcam from './Webcam';
 import TextRenderer from './TextRenderer';
 import DesktopPlatform from './DesktopPlatform';
+import CardboardPlatform from './CardboardPlatform';
 import DesktopViewPoint from './DesktopViewPoint';
+import CardboardViewPoint from './CardboardViewPoint';
 
 const win = <any>self;
 
 export default class Game {
-  platform: DesktopPlatform;
+  platform: DesktopPlatform | CardboardPlatform;
 
   log = false;
 
@@ -26,7 +29,7 @@ export default class Game {
   scene: THREE.Scene = null;
   blockTypeList: BlockTypeList = null;
   worldViewer: WorldViewer = null;
-  viewPoint: DesktopViewPoint = null;
+  viewPoint: DesktopViewPoint | CardboardViewPoint = null;
   culling: any = null;
   interaction: Interaction = null;
   webcam: Webcam = null;
@@ -38,7 +41,7 @@ export default class Game {
   vertexShader: string = null;
   fragmentShader: string = null;
 
-  constructor(platform: DesktopPlatform) {
+  constructor(platform: DesktopPlatform | CardboardPlatform) {
     this.platform = platform;
 
     this.workerInterface = new WorkerInterface();
@@ -135,7 +138,7 @@ export default class Game {
     }
 
     // if (this.frame % 3 === 0) {
-      this.effect.render(this.scene, this.camera);
+    this.effect.render(this.scene, this.camera);
     // }
 
     if (this.log) console.timeEnd('frame');
@@ -155,14 +158,14 @@ export default class Game {
       win.fetch('shaders/block.fragment.glsl')
     ])
       .then(res => {
-      return Promise.all([res[0].text(), res[1].text()]);
-    })
+        return Promise.all([res[0].text(), res[1].text()]);
+      })
       .then(data => {
-      this.vertexShader = data[0];
-      this.fragmentShader = data[1];
+        this.vertexShader = data[0];
+        this.fragmentShader = data[1];
 
-      return null;
-    });
+        return null;
+      });
   }
 
   getBlockTexture(blockTypes: Array<BlockType>) {

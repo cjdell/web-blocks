@@ -1,3 +1,4 @@
+"use strict";
 import THREE = require('three');
 import _ = require('underscore');
 

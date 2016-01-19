@@ -18,7 +18,7 @@ var config = {
 };
 
 gulp.task('build-app', function () {
-  return appBrowserify('./app/App.js', 'app.js');
+  return appBrowserify('./app/App.ts', 'app.js');
 });
 
 gulp.task('build-worker', function () {
