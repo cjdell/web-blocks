@@ -70,6 +70,8 @@ function appBrowserify(src, dest) {
 
   var b = browserify(opts);
 
+  b.add('typings/tsd.d.ts');
+
   b.plugin('tsify', { noImplicitAny: true, target: 'ES5', module: 'commonjs' });
 
   b.transform(reactify);

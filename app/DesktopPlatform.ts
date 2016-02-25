@@ -1,7 +1,7 @@
 "use strict";
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
-import UserInterface = require('../ui/index.jsx');;
+import UserInterface from '../ui';
 
 import com from '../common/WorldInfo';
 import DesktopViewPoint from './DesktopViewPoint';

@@ -1,0 +1,2 @@
+#!/bin/bash
+grep -rl '//# sourceMappingURL=data:' --include '*.js' --exclude-dir 'node_modules' . | xargs rm

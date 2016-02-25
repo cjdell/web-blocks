@@ -30,12 +30,14 @@
     "gulp-less": "3.0.3",
     "gulp-sourcemaps": "1.6.0",
     "gulp-util": "3.0.7",
-    "gulp-webserver": "^0.9.1",
+    "gulp-webserver": "0.9.1",
     "reactify": "1.1.1",
-    "tsify": "0.12.2",
+    "tsify": "0.13.2",
+    "tslint": "3.5.0",
+    "typescript": "1.8.2",
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0",
     "watchify": "3.4.0",
-    "ws": "^0.8.0"
+    "ws": "0.8.0"
   }
 }

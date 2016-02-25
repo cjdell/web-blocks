@@ -25,6 +25,15 @@
     },
     "ws/ws.d.ts": {
       "commit": "0dd29bf8253536ae24e61c109524e924ea510046"
+    },
+    "react/react.d.ts": {
+      "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
+    },
+    "material-ui/material-ui.d.ts": {
+      "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
+    },
+    "react/react-dom.d.ts": {
+      "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
     }
   }
 }

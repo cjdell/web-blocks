@@ -1,43 +1,42 @@
-var React = require('react');
+import React = require('react');
+import ScriptStorage from '../app/ScriptStorage';
+import CodeEditor = require('./CodeEditor');
+import Game from '../app/Game';
 
-var ScriptStorage = require('../app/ScriptStorage').default;
+const scriptStorage = new ScriptStorage();
 
-var CodeEditor = require('./CodeEditor.jsx');
-
-var scriptStorage = new ScriptStorage();
-
-var ToolBox = React.createClass({
-  getInitialState: function() {
+const ToolBox = React.createClass<{ game: Game }, any>({
+  getInitialState() {
     return {
       blockTypeIndex: 1,
       codeEditorVisible: false
     };
   },
-  blockTypeClick: function(blockTypeIndex) {
+  blockTypeClick(blockTypeIndex: number) {
     this.setState({ blockTypeIndex: blockTypeIndex });
 
     this.props.game.setBlockType(blockTypeIndex);
   },
-  toggleCodeEditor: function() {
+  toggleCodeEditor() {
     this.setState({ codeEditorVisible: !this.state.codeEditorVisible });
   },
-  componentDidMount: function() {
-    document.addEventListener('keyup', function(event) {
+  componentDidMount() {
+    document.addEventListener('keyup', function(event: any) {
       // Toggle code editor on escape key
       if (event.keyCode === 27) this.toggleCodeEditor();
     }.bind(this), false);
   },
-  componentDidUpdate: function() {
-    window.blockMovement = this.state.codeEditorVisible;
+  componentDidUpdate() {
+    (window as any).blockMovement = this.state.codeEditorVisible;
   },
-  render: function() {
-    var lis = [];
+  render() {
+    let lis = [] as any[];
 
     if (this.props.game) {
-      var blockTypes = this.props.game.getBlockTypes();
+      const blockTypes = this.props.game.getBlockTypes();
 
-      lis = blockTypes.map(function(blockType, index) {
-        if (blockType.hideFromToolbox) return;
+      lis = blockTypes.map((blockType: any, index: number) => {
+        if (blockType.hideFromToolbox) return null;
 
         return (
         <li key={index}
@@ -47,12 +46,12 @@ var ToolBox = React.createClass({
             style={ blockType.textures.side ? { 'backgroundImage': "url('" + blockType.textures.side + "')" } : {} }>
         </li>
         );
-      }, this);
+      });
     }
 
     return (
     <div className="toolBox">
-      <CodeEditor key="codeEditor" visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
+      <CodeEditor visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
       <ul className="large">
         <li className="codeButton" onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
       </ul>
@@ -66,4 +65,4 @@ var ToolBox = React.createClass({
   }
 });
 
-module.exports = ToolBox;
+export = ToolBox;

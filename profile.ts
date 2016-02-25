@@ -7,8 +7,8 @@ import com from './common/WorldInfo';
 import World from './worker/World';
 
 const worldInfo = new com.WorldInfo({
-  worldDimensionsInPartitions: new THREE.Vector3(4, 1, 4),
-  partitionDimensionsInBlocks: new THREE.Vector3(256, 32, 256),
+  worldDimensionsInPartitions: new com.IntVector3(4, 1, 4),
+  partitionDimensionsInBlocks: new com.IntVector3(256, 32, 256),
   partitionBoundaries: null
 });
 
