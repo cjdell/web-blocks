@@ -126,7 +126,9 @@ const getPartition = (invocation: Invocation<{ index: number }>) => {
 };
 
 const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
-  const type = world.getBlock(invocation.data.pos.x, invocation.data.pos.y, invocation.data.pos.z);
+  const { x, y, z } = invocation.data.pos;
+
+  const type = world.getBlock(x, y, z);
 
   _self.postMessage({
     id: invocation.id,
@@ -138,13 +140,12 @@ const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
 };
 
 const setBlocks = (invocation: Invocation<{ start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean }>) => {
-  const start = invocation.data.start;
-  const end = invocation.data.end;
+  const { start, end, type, colour } = invocation.data;
 
-  world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, invocation.data.type, invocation.data.colour);
+  world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, type, colour);
 };
 
-const addBlock = (invocation: Invocation<{ position: number, side: number, type: number }>) => {
+const addBlock = (invocation: Invocation<{ position: com.IntVector3, side: number, type: number }>) => {
   world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
 };
 
@@ -152,8 +153,12 @@ const move = (invocation: Invocation<Movement>) => {
   player.move(invocation.data);
 };
 
-const action = (Invocation: Invocation<{ type: string }>) => {
+const action = (invocation: Invocation<{ type: string }>) => {
   player.jump();
+};
+
+const setGravity = (invocation: Invocation<{ gravity: number }>) => {
+  player.gravity = invocation.data.gravity;
 };
 
 self.onmessage = (e) => {
@@ -192,7 +197,7 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'addBlock') {
-    const invocation = <Invocation<{ position: number, side: number, type: number }>>e.data;
+    const invocation = <Invocation<{ position: com.IntVector3, side: number, type: number }>>e.data;
 
     return addBlock(invocation);
   }
@@ -207,5 +212,11 @@ self.onmessage = (e) => {
     const invocation = <Invocation<{ type: string }>>e.data;
 
     return action(invocation);
+  }
+
+  if (invocation.action === 'setGravity') {
+    const invocation = <Invocation<{ gravity: number }>>e.data;
+
+    return setGravity(invocation);
   }
 };

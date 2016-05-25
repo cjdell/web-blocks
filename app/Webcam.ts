@@ -44,7 +44,7 @@ export default class Webcam {
         camvideo.src = stream;
       }
 
-      camvideo.onerror = function(e) {
+      camvideo.onerror = function (e) {
         console.error('camvideo.onerror', e);
 
         stream.stop();
@@ -56,6 +56,8 @@ export default class Webcam {
     }
 
     function noStream(e: any) {
+      console.error('noStream', e);
+
       let msg = 'No camera available.';
 
       if (e.code == 1) {

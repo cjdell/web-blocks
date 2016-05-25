@@ -59,8 +59,10 @@ export default class Game {
     this.scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
 
     this.blockTypeList = new BlockTypeList();
+  }
 
-    Promise.all([this.workerInterface.init(), this.loadShaders()]).then(res => {
+  init() {
+    return Promise.all([this.workerInterface.init(), this.loadShaders()]).then(res => {
       const worldInfo = new com.WorldInfo(<com.WorldInfo>res[0]);
 
       this.uniforms = {};
@@ -150,6 +152,20 @@ export default class Game {
 
   setBlockType(blockTypeIndex: number) {
     return this.interaction.setType(blockTypeIndex);
+  }
+
+  getAvailableTools() {
+    if (!this.interaction) return [];
+
+    return this.interaction.getAvailableTools();
+  }
+
+  setTool(toolType: string) {
+    return this.interaction.setToolType(toolType);
+  }
+
+  setGravity(gravity: number) {
+    return this.workerInterface.setGravity(gravity);
   }
 
   loadShaders(): Promise<Object> {

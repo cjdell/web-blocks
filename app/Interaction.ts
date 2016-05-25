@@ -3,10 +3,12 @@
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
+import constants from '../common/Constants';
 import WorkerInterface from './WorkerInterface';
 import { Context, Tool } from './tools/ToolBase';
-import CuboidTool from './tools/CuboidTool';
 import Webcam from './Webcam';
+
+import Tools from './tools/Tools';
 
 export default class Interaction {
   viewPort: HTMLElement;
@@ -21,6 +23,7 @@ export default class Interaction {
 
   down = false;
   type = 1;
+  selectedTool: string = 'block';
   tool: Tool = null;
 
   isDesktop = true; // TODO: Detect mobile
@@ -42,52 +45,70 @@ export default class Interaction {
     }
   }
 
-  keyPress(event: KeyboardEvent) {
-    // console.log('keyPress', event.keyCode, event.ctrlKey);
+  private keyPress(event: KeyboardEvent) {
     if (event.keyCode == 26 && event.ctrlKey) {
-      // console.log('undo');
       this.workerInterface.undo();
     }
   }
 
-  mouseDown(event: any) {
+  private mouseDown(event: any) {
     this.down = true;
   }
 
-  mouseMove(event: any) {
+  private mouseMove(event: any) {
     this.mouse.x = (event.clientX / this.viewPort.clientWidth) * 2 - 1;
     this.mouse.y = -(event.clientY / this.viewPort.clientHeight) * 2 + 1;
 
     let pos = this.getBlockPositionOfMouse();
+    if (!pos) return;
 
-    if (this.tool) this.tool.onMouseMove.call(this.tool, this.mouse, pos);
+    if (this.tool) {
+      this.tool.onMouseMove(this.mouse, pos.pos, pos.side);
+    }
   }
 
-  mouseUp(event: any) {
+  private mouseUp(event: any) {
     this.down = false;
 
     const pos = this.getBlockPositionOfMouse();
+    if (!pos) return;
 
     if (!this.tool) {
-      const context: Context = {
-        scene: this.scene,
-        type: this.type,
-        workerInterface: this.workerInterface,
-        getPositionOfMouseAlongXZPlane: this.getPositionOfMouseAlongXZPlane.bind(this),
-        finished: this.finished.bind(this)
-      };
-
-      this.tool = new CuboidTool(context);
+      this.tool = this.getTool();
     }
 
-    if (this.tool) this.tool.onMouseClick.call(this.tool, this.mouse, pos);
+    if (this.tool) {
+      this.tool.onMouseClick(this.mouse, pos.pos, pos.side);
+    }
   }
 
-  finished() {
+  private getTool() {
+    const context: Context = this.getContext();
+
+    const tool = Tools.filter(tool => tool.type === this.selectedTool);
+
+    if (tool.length === 0) {
+      throw new Error(`Invalid tool type "${this.selectedTool}"`);
+    }
+
+    return new tool[0].class(context);
+  }
+
+  private getContext(): Context {
+    return {
+      scene: this.scene,
+      type: this.type,
+      workerInterface: this.workerInterface,
+      getPositionOfMouseAlongXZPlane: this.getPositionOfMouseAlongXZPlane.bind(this),
+      finished: this.finished.bind(this)
+    };
+  }
+
+  private finished() {
     this.tool = null;
   }
 
-  getBlockPositionOfMouse(): com.IntVector3 {
+  private getBlockPositionOfMouse(): { pos: com.IntVector3, side: number } {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     const intersects = this.raycaster.intersectObjects(this.scene.children);
@@ -114,15 +135,13 @@ export default class Interaction {
 
       const side = this.getSide(<THREE.Mesh>hitBlock.object, vertexIndex);
 
-      // console.log('offset', offset);
-
-      return this.worldInfo.wpos(offset);
+      return { pos: this.worldInfo.wpos(offset), side };
     }
 
     return null;
   }
 
-  getPositionOfMouseAlongXZPlane(xPlane: number, zPlane: number) {
+  private getPositionOfMouseAlongXZPlane(xPlane: number, zPlane: number) {
     const vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5);
     vector.unproject(this.camera);
 
@@ -151,7 +170,8 @@ export default class Interaction {
     }
   }
 
-  dot(pos: THREE.Vector3) {
+  // For debugging, this just adds a tiny cube so I can see where vectors are
+  private dot(pos: THREE.Vector3) {
     console.log(pos);
 
     const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
@@ -161,7 +181,7 @@ export default class Interaction {
     this.scene.add(cube);
   }
 
-  getOffset(mesh: THREE.Mesh, vertexIndex: number): number {
+  private getOffset(mesh: THREE.Mesh, vertexIndex: number): number {
     const geo: any = mesh.geometry;
 
     if (!geo.attributes || !geo.attributes.offset) return null;
@@ -169,15 +189,27 @@ export default class Interaction {
     return geo.attributes.offset.array[vertexIndex];
   }
 
-  getSide(mesh: THREE.Mesh, vertexIndex: number) {
+  private getSide(mesh: THREE.Mesh, vertexIndex: number) {
     const geo: any = mesh.geometry;
 
-    return Math.floor(geo.attributes.data.array[vertexIndex] / 256.0);
+    return Math.floor(geo.attributes.data.array[vertexIndex * 4 + constants.VERTEX_DATA_SIDE]);
+  }
+
+  getAvailableTools() {
+    return Tools.map(tool => ({
+      type: tool.type,
+      name: tool.name,
+      icon: tool.icon
+    }));
   }
 
   setType(_type: number) {
     this.type = _type;
 
     if (this.type === 4) this.webcam.init();
+  }
+
+  setToolType(toolType: string) {
+    this.selectedTool = toolType;
   }
 }

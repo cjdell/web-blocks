@@ -6,8 +6,8 @@ const blockTypes = [
   {
     "name": "Air",
     "textures": {
-      "top": null,
-      "side": null
+      "top": "textures/air.png",
+      "side": "textures/air.png"
     }
   },
   {
@@ -34,8 +34,8 @@ const blockTypes = [
   {
     "name": "Webcam",
     "textures": {
-      "top": null,
-      "side": null
+      "top": "textures/webcam.png",
+      "side": "textures/webcam.png"
     }
   },
   {
@@ -48,6 +48,7 @@ const blockTypes = [
   },
   {
     "name": "Fence",
+    "hideFromToolbox": true,    // WIP so disabling for now...
     "textures": {
       "top": null,
       "side": null

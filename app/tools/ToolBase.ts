@@ -14,8 +14,7 @@ export interface Context {
 }
 
 export interface Tool {
-  onBlockClick(pos: com.IntVector3): void;
-  onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3): void;
-  onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3): void;
+  onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3, side: number): void;
+  onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3, side: number): void;
   cancel(): void;
 }

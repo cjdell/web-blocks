@@ -23,10 +23,6 @@ describe('World', () => {
     world.init();
     console.timeEnd('init');
 
-    // console.time('getPartitionByIndex');
-    //const partition = world.getPartitionByIndex(0);
-    // console.timeEnd('getPartitionByIndex');
-
     world.getPartitionByIndex(0);
     world.getPartitionByIndex(1);
     world.getPartitionByIndex(2);
@@ -54,8 +50,6 @@ describe('World', () => {
     console.timeEnd('getBlock');
 
     expect(world.partitions.length).to.be.equal(16);
-
-    // console.log(partition.occupied);
   });
 
   it('can convert from pos to index quickly', () => {
@@ -78,7 +72,7 @@ describe('World', () => {
       }
     }
 
-    console.log('errors', errors);
+    expect(errors).to.equal(0);
   });
 
   it('can rposw', () => {
@@ -103,6 +97,6 @@ describe('World', () => {
       }
     }
 
-    console.log('errors', errors);
+    expect(errors).to.equal(0);
   });
 });

@@ -30,9 +30,11 @@ const App = () => {
 
     game = new Game(platform);
 
-    const ui = platform.getUserInterface();
+    return game.init().then(() => {
+      const ui = platform.getUserInterface();
 
-    if (ui) ui.setGame(game);
+      if (ui) ui.setGame(game);
+    });
   };
 
   return {

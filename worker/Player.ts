@@ -14,14 +14,15 @@ export default class Player {
   private position: THREE.Vector3;
   private velocity: THREE.Vector3;
 
-  lon = 180;
-  lat = 20;
-  zDelta = 0;
-  lastFrame = Date.now();
+  private lon = 180;
+  private lat = 20;
+  private zDelta = 0;
+  private lastFrame = Date.now();
 
+  gravity = 0.002;
   changeListener: ((position: THREE.Vector3, target: THREE.Vector3) => void);
 
-  lastMovement: Movement;
+  private lastMovement: Movement;
 
   constructor(world: World) {
     this.world = world;
@@ -40,10 +41,50 @@ export default class Player {
   }
 
   jump() {
-    this.velocity.y = 0.1;
+    if (this.gravity !== 0) this.velocity.y = 0.1;
   }
 
   tick() {
+    if (this.gravity !== 0) {
+      this.walk();
+    } else {
+      this.fly();
+    }
+  }
+
+  fly() {
+    var now = Date.now();
+    var correction = (now - this.lastFrame) / (1000 / 60);
+    this.lastFrame = now;
+
+    this.zDelta += this.lastMovement.move.z * 0.01;         // Creep speed up as user presses W
+
+    if (this.lastMovement.move.z === 0) this.zDelta = 0;   // Full stop
+
+    this.lon -= this.lastMovement.turn.x * correction * 2;
+    this.lat -= this.lastMovement.turn.y * correction * 2;
+
+    this.lat = Math.max(-89.9, Math.min(89.9, this.lat));
+
+    var phi = (90 - this.lat) * Math.PI / 180;
+    var theta = (this.lon * Math.PI / 180);
+
+    //console.log(phi, theta);
+
+    this.position.x += correction * ((this.zDelta * 0.5) * Math.cos(theta) + (this.lastMovement.move.x * 0.5) * Math.sin(theta));
+    this.position.z += correction * ((this.zDelta * 0.5) * Math.sin(theta) - (this.lastMovement.move.x * 0.5) * Math.cos(theta));
+    this.position.y += correction * ((this.zDelta * 0.5) * Math.cos(phi));
+
+    var targetX = 2.0 * Math.sin(phi) * Math.cos(theta) + this.position.x;
+    var targetY = 2.0 * Math.cos(phi) + this.position.y;
+    var targetZ = 2.0 * Math.sin(phi) * Math.sin(theta) + this.position.z;
+
+    var target = new THREE.Vector3(targetX, targetY, targetZ);
+
+    if (this.changeListener) this.changeListener(this.position, target);
+  }
+
+  walk() {
     const now = Date.now();
     const correction = (now - this.lastFrame) / (1000 / 60);
     this.lastFrame = now;
@@ -61,7 +102,7 @@ export default class Player {
     const phi = this.lat * Math.PI / 180;
     const theta = (this.lon * Math.PI / 180);
 
-    this.velocity.y -= 0.002;
+    this.velocity.y -= this.gravity;   // Gravity
 
     const moveStep = new THREE.Vector3(this.lastMovement.move.x * 0.05, 0, this.zDelta);
     moveStep.multiplyScalar(correction);
@@ -93,6 +134,7 @@ export default class Player {
   }
 
   rotateStep(step: THREE.Vector3, phi: number, theta: number) {
+    //if (this.gravity > 0) {
     const rotation = new THREE.Vector3(phi, theta, 0);
 
     var rotationZ = new THREE.Matrix4().makeRotationZ(0);
@@ -103,10 +145,17 @@ export default class Player {
     const shift = step.clone().applyMatrix4(rotationZ).applyMatrix4(rotationXY);
 
     return shift;
+    // } else {
+    //   const newPosition = new THREE.Vector3();
 
-    // newPosition.x = position.x + (step.z * Math.cos(theta) - step.x * Math.sin(theta));
-    // newPosition.y = position.y + (step.z * Math.cos(phi));
-    // newPosition.z = position.z + (step.z * Math.sin(theta) + step.x * Math.cos(theta));
+    //   ///////////////////
+
+    //   newPosition.x = this.position.x + (step.z * Math.cos(theta) - step.x * Math.sin(theta));
+    //   newPosition.y = this.position.y + (step.z * Math.cos(phi));
+    //   newPosition.z = this.position.z + (step.z * Math.sin(theta) + step.x * Math.cos(theta));
+
+    //   return newPosition;
+    // }
   }
 
   canMove(position: THREE.Vector3) {

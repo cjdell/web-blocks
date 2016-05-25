@@ -52,6 +52,12 @@ body {
         height: 36px;
         float: left;
         margin: 0 8px 8px 0;
+
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -o-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        -ms-interpolation-mode: nearest-neighbor;
+        image-rendering: pixelated;
       }
     }
 
@@ -83,10 +89,6 @@ body {
         -webkit-animation-duration: 2s;
         -webkit-animation-timing-function: ease-in-out;
         -webkit-animation-iteration-count: infinite
-      }
-
-      &:last-child {
-        margin-bottom: 0;
       }
 
       &.selected {

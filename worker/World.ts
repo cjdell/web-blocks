@@ -97,15 +97,17 @@ export default class World {
 
     this.applyCommand(landscapeCommand);
 
-    for (let i = 0; i < 1000; i++) {
-      const x = (Math.random() * this.worldInfo.worldDimensionsInBlocks.x * 0.5 + 10) | 0;
-      const z = (Math.random() * this.worldInfo.worldDimensionsInBlocks.z * 0.5 + 10) | 0;
+    // Tree are WIP so disabled them for now...
 
-      const treeOperation = new TreeOperation(this.worldInfo, { pos: new com.IntVector3(x, 2, z) });
-      const treeCommand = new OperationCommand(this.worldInfo, this.commands.length, treeOperation);
+    // for (let i = 0; i < 1000; i++) {
+    //   const x = (Math.random() * this.worldInfo.worldDimensionsInBlocks.x * 0.5 + 10) | 0;
+    //   const z = (Math.random() * this.worldInfo.worldDimensionsInBlocks.z * 0.5 + 10) | 0;
 
-      this.applyCommand(treeCommand);
-    }
+    //   const treeOperation = new TreeOperation(this.worldInfo, { pos: new com.IntVector3(x, 2, z) });
+    //   const treeCommand = new OperationCommand(this.worldInfo, this.commands.length, treeOperation);
+
+    //   this.applyCommand(treeCommand);
+    // }
   }
 
   getPartitionCapacity(): number {
@@ -201,30 +203,32 @@ export default class World {
     return this.applyCommand(command);
   }
 
-  addBlock(windex: number, side: number, type: number): void {
-    let { x: wx, y: wy, z: wz } = this.worldInfo.wpos(windex);
+  addBlock(wpos: com.IntVector3, side: number, type: number): void {
+    let { x: wx, y: wy, z: wz } = wpos;
 
     if (type === 0) {
+      // Air block we don't displace (works like delete)
       return this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);
     }
 
+    // Displace the block position by the side that was clicked
     if (side === 0) {
-      wx++;
+      wx -= 1;
     }
     if (side === 1) {
-      wx--;
+      wx += 1;
     }
     if (side === 2) {
-      wy++;
+      wy -= 1;
     }
     if (side === 3) {
-      wy--;
+      wy += 1;
     }
     if (side === 4) {
-      wz++;
+      wz -= 1;
     }
     if (side === 5) {
-      wz--;
+      wz += 1;
     }
 
     this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);

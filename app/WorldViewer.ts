@@ -65,10 +65,10 @@ export default class WorldViewer {
 
   getVisiblePartitionIndices() {
     return this.partitionCaches
-      .filter(function(partitionCache) {
+      .filter(function (partitionCache) {
         return partitionCache.mesh !== null;
       })
-      .map(function(partitionCache) {
+      .map(function (partitionCache) {
         return partitionCache.index;
       });
   }

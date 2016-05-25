@@ -75,27 +75,26 @@ export default class WorkerInterface {
 
   getBlock(pos: THREE.Vector3) {
     return this.invoke<Object>('getBlock', { pos: pos })
-      .then(function(result: any) {
-      return <number>result.type;
-    });
+      .then(function (result: any) {
+        return <number>result.type;
+      });
   }
 
   setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean) {
     return this.invoke<Object>('setBlocks', {
-      start: start,
-      end: end,
-      type: type,
-      colour: colour,
-      update: update
+      start,
+      end,
+      type,
+      colour,
+      update
     });
   }
 
   addBlock(position: com.IntVector3, side: number, type: number) {
-    this.geoWorker.postMessage({
-      action: 'addBlock',
-      position: position,
-      side: side,
-      type: type
+    return this.invoke<Object>('addBlock', {
+      position,
+      side,
+      type
     });
   }
 
@@ -105,6 +104,10 @@ export default class WorkerInterface {
 
   jump() {
     return this.invoke<Object>('action', { action: 'jump' });
+  }
+
+  setGravity(gravity: number) {
+    return this.invoke<Object>('setGravity', { gravity });
   }
 
   getPartition(index: number) {

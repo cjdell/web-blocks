@@ -20,10 +20,6 @@ export default class CuboidTool {
     this.context = context;
   }
 
-  onBlockClick(pos: com.IntVector3): void {
-
-  }
-
   onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3): void {
     if (this.state === 'select-start') {
       this.startPos = pos;
@@ -48,7 +44,6 @@ export default class CuboidTool {
 
   onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3): void {
     if (this.state === 'select-end') {
-      // console.log(pos);
       this.endPos = pos.clone();
       this.endPos.y = this.startPos.y;
       this.scaleCube(this.cube, this.startPos, this.endPos);

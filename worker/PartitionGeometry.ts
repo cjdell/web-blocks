@@ -3,6 +3,7 @@
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
+import constants from '../common/Constants';
 import Partition from './Partition';
 import World from './World';
 
@@ -186,10 +187,10 @@ export default class PartitionGeometry {
       this.uv[(v + i) * 2 + 0] = UV[i * 2 + 0];
       this.uv[(v + i) * 2 + 1] = UV[i * 2 + 1];
 
-      this.data[(v + i) * 4 + 0] = type;
-      this.data[(v + i) * 4 + 1] = side;
-      this.data[(v + i) * 4 + 2] = shade;
-      this.data[(v + i) * 4 + 3] = colour;
+      this.data[(v + i) * 4 + constants.VERTEX_DATA_TYPE] = type;
+      this.data[(v + i) * 4 + constants.VERTEX_DATA_SIDE] = side;
+      this.data[(v + i) * 4 + constants.VERTEX_DATA_SHADE] = shade;
+      this.data[(v + i) * 4 + constants.VERTEX_DATA_COLOUR] = colour;
 
       this.offset[v + i] = indexInWorld;
     }
