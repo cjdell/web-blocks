@@ -114,7 +114,7 @@ const ToolBox = React.createClass<{ game: Game }, any>({
         <CodeEditor visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
 
         <ul className="large">
-          <li className="codeButton" onClick={this.toggleCodeEditor}>&lt; Code&gt; </li>
+          <li className="codeButton" onClick={this.toggleCodeEditor}>&lt;Code&gt;</li>
         </ul>
 
         <ul className="small">{toolTypeLis}</ul>
