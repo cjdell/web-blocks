@@ -16,6 +16,7 @@ export default class Player {
 
   private lon = 180;
   private lat = 20;
+  private xDelta = 0;
   private zDelta = 0;
   private lastFrame = Date.now();
 
@@ -89,10 +90,15 @@ export default class Player {
     const correction = (now - this.lastFrame) / (1000 / 60);
     this.lastFrame = now;
 
-    this.zDelta += this.lastMovement.move.z * correction * 0.001;         // Creep speed up as user presses W
-    this.zDelta = Math.min(this.zDelta, 0.2);
+    this.zDelta += this.lastMovement.move.z * correction * 0.02;         // Creep speed up as user presses W/S
+    this.zDelta = this.lastMovement.move.z * Math.min(Math.abs(this.zDelta), 0.2);
+
+    this.xDelta += this.lastMovement.move.x * correction * 0.02;         // Creep speed up as user presses A/D
+    this.xDelta = this.lastMovement.move.x * Math.min(Math.abs(this.xDelta), 0.1);
 
     if (this.lastMovement.move.z === 0) this.zDelta = 0;   // Full stop
+    if (this.lastMovement.move.x === 0) this.xDelta = 0;   // Full stop
+
 
     this.lon += this.lastMovement.turn.x * correction * 2;
     this.lat += this.lastMovement.turn.y * correction * 2;
@@ -104,7 +110,7 @@ export default class Player {
 
     this.velocity.y -= this.gravity;   // Gravity
 
-    const moveStep = new THREE.Vector3(this.lastMovement.move.x * 0.05, 0, this.zDelta);
+    const moveStep = new THREE.Vector3(this.xDelta, 0, this.zDelta);
     moveStep.multiplyScalar(correction);
     const shift = this.rotateStep(moveStep, phi, theta);
     shift.y = this.velocity.y;
