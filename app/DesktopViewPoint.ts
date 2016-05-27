@@ -15,6 +15,10 @@ export default class DesktopViewPoint {
   worldInfo: com.WorldInfo;
   workerInterface: WorkerInterface;
 
+  lastMousePosition: THREE.Vector2;
+  mouseStop: boolean;
+  mouseMovesScreen: boolean;
+
   position: THREE.Vector3;
   movement: THREE.Vector3;
   turn: THREE.Vector2;
@@ -28,6 +32,10 @@ export default class DesktopViewPoint {
     this.worldInfo = worldInfo;
     this.workerInterface = workerInterface;
 
+    this.mouseStop = false;
+    this.lastMousePosition = new THREE.Vector2();
+    this.mouseMovesScreen = false;
+
     this.position = new THREE.Vector3(100, 24, 120);
     this.movement = new THREE.Vector3();
     this.turn = new THREE.Vector2();
@@ -36,6 +44,7 @@ export default class DesktopViewPoint {
 
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);
+    viewPort.addEventListener('mousemove', (e: any) => this.mouseMove(e), false);
 
     this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
   }
@@ -56,45 +65,90 @@ export default class DesktopViewPoint {
   keyDown(event: any) {
     if ((<any>window).blockMovement) return;
 
-    if (event.keyCode === 65) this.movement.x = 1;      // A (Left)
+    if (event.keyCode === 65) this.movement.x = 1;        // A (Left)
     if (event.keyCode === 68) this.movement.x = -1;       // D (Right)
 
-    //if (event.keyCode === 38) movement.y = 1;       // Up Arrow (Elevate)
-    //if (event.keyCode === 40) movement.y = -1;      // Down Arrow (Decline)
+    //if (event.keyCode === 38) movement.y = 1;           // Up Arrow (Elevate)
+    //if (event.keyCode === 40) movement.y = -1;          // Down Arrow (Decline)
 
-    if (event.keyCode === 87) this.movement.z = 1;      // W (Forwards)
+    if (event.keyCode === 87) this.movement.z = 1;        // W (Forwards)
     if (event.keyCode === 83) this.movement.z = -1;       // S (Backwards)
 
-    if (event.keyCode === 38) this.turn.y = -1;       // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.turn.y = 1;      // Down Arrow (Turn Down)
+    if (event.keyCode === 38) this.turn.y = -1;           // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.turn.y = 1;            // Down Arrow (Turn Down)
 
-    if (event.keyCode === 37) this.turn.x = 1;      // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.turn.x = -1;       // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.turn.x = 1;            // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.turn.x = -1;           // Right Arrow (Turn Right)
 
     if (event.keyCode === 32 && !this.workerInterface.jumping) this.workerInterface.jump();
+
+    if (event.shiftKey) this.mouseMovesScreen = true;
 
     this.workerInterface.move(this.movement, this.turn);
   }
 
   keyUp(event: any) {
-    if (event.keyCode === 65) this.movement.x = 0;       // A (Left)
-    if (event.keyCode === 68) this.movement.x = 0;       // D (Right)
+    if (event.keyCode === 65) this.movement.x = 0;        // A (Left)
+    if (event.keyCode === 68) this.movement.x = 0;        // D (Right)
 
-    //if (event.keyCode === 38) movement.y = 0;       // Up Arrow (Elevate)
-    //if (event.keyCode === 40) movement.y = 0;       // Down Arrow (Decline)
+    //if (event.keyCode === 38) movement.y = 0;           // Up Arrow (Elevate)
+    //if (event.keyCode === 40) movement.y = 0;           // Down Arrow (Decline)
 
-    if (event.keyCode === 87) this.movement.z = 0;       // W (Forwards)
-    if (event.keyCode === 83) this.movement.z = 0;       // S (Backwards)
+    if (event.keyCode === 87) this.movement.z = 0;        // W (Forwards)
+    if (event.keyCode === 83) this.movement.z = 0;        // S (Backwards)
 
-    if (event.keyCode === 38) this.turn.y = 0;       // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.turn.y = 0;       // Down Arrow (Turn Down)
+    if (event.keyCode === 38) this.turn.y = 0;            // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.turn.y = 0;            // Down Arrow (Turn Down)
 
-    if (event.keyCode === 37) this.turn.x = 0;       // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.turn.x = 0;       // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.turn.x = 0;            // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.turn.x = 0;            // Right Arrow (Turn Right)
 
     if (event.keyCode === 32) this.workerInterface.jumping = false;
 
+    if (!event.shiftKey) this.mouseMovesScreen = false;
+
     this.workerInterface.move(this.movement, this.turn);
+  }
+
+  mouseMove(event: any) {
+    if ((<any>window).blockMovement || !this.mouseMovesScreen) {
+      if (!this.mouseMovesScreen) {
+        this.lastMousePosition.x = event.clientX;
+        this.lastMousePosition.y = event.clientY;
+      }
+
+      this.viewPort.style.cursor = 'default';
+
+      return;
+    }
+
+    this.viewPort.style.cursor = 'crosshair';
+
+    if (this.lastMousePosition.x != event.clientX) {
+      this.turn.x = 100 * (this.lastMousePosition.x - event.clientX) / this.viewPort.clientWidth;
+    }
+
+    if (this.lastMousePosition.y != event.clientY) {
+      this.turn.y = 100 * (event.clientY - this.lastMousePosition.y) / this.viewPort.clientHeight;
+    }
+
+    this.lastMousePosition.x = event.clientX;
+    this.lastMousePosition.y = event.clientY;
+
+    this.workerInterface.move(this.movement, this.turn);
+
+
+    if (!this.mouseStop) {
+      this.mouseStop = true;
+      setTimeout(function () {
+        this.turn.x = 0;
+        this.turn.y = 0;
+        this.workerInterface.move(this.movement, this.turn);
+        this.mouseStop = false;
+      }.bind(this), 10);
+    }
+
+    return false;
   }
 
   tick() {
