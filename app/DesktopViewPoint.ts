@@ -71,6 +71,8 @@ export default class DesktopViewPoint {
     if (event.keyCode === 37) this.turn.x = 1;      // Left Arrow (Turn Left)
     if (event.keyCode === 39) this.turn.x = -1;       // Right Arrow (Turn Right)
 
+    if (event.keyCode === 32 && !this.workerInterface.jumping) this.workerInterface.jump();
+
     this.workerInterface.move(this.movement, this.turn);
   }
 
@@ -90,7 +92,7 @@ export default class DesktopViewPoint {
     if (event.keyCode === 37) this.turn.x = 0;       // Left Arrow (Turn Left)
     if (event.keyCode === 39) this.turn.x = 0;       // Right Arrow (Turn Right)
 
-    if (event.keyCode === 32) this.workerInterface.jump();
+    if (event.keyCode === 32) this.workerInterface.jumping = false;
 
     this.workerInterface.move(this.movement, this.turn);
   }

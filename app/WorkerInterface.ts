@@ -12,6 +12,7 @@ export default class WorkerInterface {
   changeListener: Function = null;
   playerPositionListener: ((position: THREE.Vector3) => void);
   lastId = 0;
+  jumping:boolean = false;
 
   constructor() {
     this.geoWorker = new Worker('build/worker.js');
@@ -103,6 +104,7 @@ export default class WorkerInterface {
   }
 
   jump() {
+    this.jumping = true;
     return this.invoke<Object>('action', { action: 'jump' });
   }
 
