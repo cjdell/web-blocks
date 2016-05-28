@@ -12,7 +12,7 @@ Move forwards / backwards: W and S
 
 Move sideways: A and D
 
-Look around: Arrow keys
+Look around: Arrow keys or press Shift to toggle using mouse to look around
 
 Code editor: Escape key
 
