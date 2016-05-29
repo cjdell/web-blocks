@@ -19,6 +19,7 @@ export default class DesktopViewPoint {
   mouseStop: boolean;
   mouseMovesScreen: boolean;
   pointerLock: boolean;
+  trusted: boolean;
 
   position: THREE.Vector3;
   movement: THREE.Vector3;
@@ -41,15 +42,21 @@ export default class DesktopViewPoint {
     this.movement = new THREE.Vector3();
     this.turn = new THREE.Vector2();
     this.pointerLock = false;
+    this.trusted = false;
 
     window.addEventListener('resize', _.debounce(() => this.onWindowResize(), 500), false);
 
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);
 
+    document.addEventListener('pointerlockchange', (e: any) => this.onPointerLockChange(e), false);
     this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
 
     this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
+  }
+
+  onPointerLockChange(event: any) {
+    this.trusted = event.isTrusted;
   }
 
   onWindowResize() {
@@ -87,7 +94,7 @@ export default class DesktopViewPoint {
       if (!this.pointerLock) {
         this.viewPort.requestPointerLock();
         this.pointerLock = true;
-      } else {
+      } else if (this.trusted) {
         document.exitPointerLock();
         this.pointerLock = false;
       }
@@ -117,7 +124,7 @@ export default class DesktopViewPoint {
     if (event.keyCode === 32) this.workerInterface.jumping = false;
 
     if (event.keyCode === 27 && !(<any>window).blockMovement) {
-      if (this.pointerLock) {
+      if (this.pointerLock && this.trusted) {
         this.viewPort.requestPointerLock();
       }
     }
@@ -128,7 +135,7 @@ export default class DesktopViewPoint {
 
   mouseMove(event: any) {
 
-    if ((<any>window).blockMovement || !this.pointerLock) {
+    if ((<any>window).blockMovement || !this.pointerLock || !this.trusted) {
       return;
     }
 
