@@ -51,6 +51,7 @@ export default class DesktopViewPoint {
 
     document.addEventListener('pointerlockchange', (e: any) => this.onPointerLockChange(e), false);
     this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
+    document.addEventListener('visibilitychange', (e: any) => this.refreshPointerLock(), false);
 
     this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
   }
@@ -91,7 +92,7 @@ export default class DesktopViewPoint {
     if (event.keyCode === 39) this.turn.x = -1;           // Right Arrow (Turn Right)
 
     if (event.shiftKey) {
-      if (!this.pointerLock) {
+      if (!document.pointerLockElement) {
         this.viewPort.requestPointerLock();
         this.pointerLock = true;
       } else if (this.trusted) {
@@ -123,11 +124,7 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 32) this.workerInterface.jumping = false;
 
-    if (event.keyCode === 27 && !(<any>window).blockMovement) {
-      if (this.pointerLock && this.trusted) {
-        this.viewPort.requestPointerLock();
-      }
-    }
+    if (event.keyCode === 27) this.refreshPointerLock();
 
     this.workerInterface.move(this.movement, this.turn);
   }
@@ -135,7 +132,7 @@ export default class DesktopViewPoint {
 
   mouseMove(event: any) {
 
-    if ((<any>window).blockMovement || !this.pointerLock || !this.trusted) {
+    if ((<any>window).blockMovement || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
       return;
     }
 
@@ -204,5 +201,18 @@ export default class DesktopViewPoint {
 
   setPosition(pos: THREE.Vector3) {
     this.position.set(pos.x, pos.y, pos.z);
+  }
+
+  refreshPointerLock() {
+    if (document.visibilityState == "hidden") {
+      this.pointerLock = false;
+    }
+
+    if (!(<any>window).blockMovement
+        && this.viewPort
+        && this.pointerLock
+        && this.trusted) {
+      this.viewPort.requestPointerLock();
+    }
   }
 }

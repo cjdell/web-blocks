@@ -40,6 +40,7 @@ export default class Interaction {
       viewPort.addEventListener('mousedown', (e) => this.mouseDown(e), false);
       viewPort.addEventListener('mousemove', (e) => this.mouseMove(e), false);
       viewPort.addEventListener('mouseup', (e) => this.mouseUp(e), false);
+      viewPort.addEventListener('contextmenu', (e) => this.mouseUp(e), false);
 
       document.addEventListener('keypress', (e) => this.keyPress(e), false);
     }
@@ -52,6 +53,10 @@ export default class Interaction {
   }
 
   private mouseDown(event: any) {
+    if (event.type == 'contextmenu' || event.button == 2) {
+      event.preventDefault();
+      return;
+    }
     this.down = true;
   }
 
@@ -72,6 +77,12 @@ export default class Interaction {
 
     const pos = this.getBlockPositionOfMouse();
     if (!pos) return;
+
+    // If we right-click
+    if (event.type == 'contextmenu' || event.button == 2) {
+      event.preventDefault();
+      return;
+    }
 
     if (!this.tool) {
       this.tool = this.getTool();
