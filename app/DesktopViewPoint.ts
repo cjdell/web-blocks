@@ -18,6 +18,8 @@ export default class DesktopViewPoint {
   lastMousePosition: THREE.Vector2;
   mouseStop: boolean;
   mouseMovesScreen: boolean;
+  pointerLock: boolean;
+  trusted: boolean;
 
   position: THREE.Vector3;
   movement: THREE.Vector3;
@@ -39,14 +41,22 @@ export default class DesktopViewPoint {
     this.position = new THREE.Vector3(100, 24, 120);
     this.movement = new THREE.Vector3();
     this.turn = new THREE.Vector2();
+    this.pointerLock = false;
+    this.trusted = false;
 
     window.addEventListener('resize', _.debounce(() => this.onWindowResize(), 500), false);
 
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);
-    viewPort.addEventListener('mousemove', (e: any) => this.mouseMove(e), false);
+
+    document.addEventListener('pointerlockchange', (e: any) => this.onPointerLockChange(e), false);
+    this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
 
     this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
+  }
+
+  onPointerLockChange(event: any) {
+    this.trusted = event.isTrusted;
   }
 
   onWindowResize() {
@@ -80,9 +90,17 @@ export default class DesktopViewPoint {
     if (event.keyCode === 37) this.turn.x = 1;            // Left Arrow (Turn Left)
     if (event.keyCode === 39) this.turn.x = -1;           // Right Arrow (Turn Right)
 
-    if (event.keyCode === 32 && !this.workerInterface.jumping) this.workerInterface.jump();
+    if (event.shiftKey) {
+      if (!this.pointerLock) {
+        this.viewPort.requestPointerLock();
+        this.pointerLock = true;
+      } else if (this.trusted) {
+        document.exitPointerLock();
+        this.pointerLock = false;
+      }
+    }
 
-    if (event.shiftKey) this.mouseMovesScreen = true;
+    if (event.keyCode === 32 && !this.workerInterface.jumping) this.workerInterface.jump();
 
     this.workerInterface.move(this.movement, this.turn);
   }
@@ -105,38 +123,26 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 32) this.workerInterface.jumping = false;
 
-    if (!event.shiftKey) this.mouseMovesScreen = false;
+    if (event.keyCode === 27 && !(<any>window).blockMovement) {
+      if (this.pointerLock && this.trusted) {
+        this.viewPort.requestPointerLock();
+      }
+    }
 
     this.workerInterface.move(this.movement, this.turn);
   }
 
+
   mouseMove(event: any) {
-    if ((<any>window).blockMovement || !this.mouseMovesScreen) {
-      if (!this.mouseMovesScreen) {
-        this.lastMousePosition.x = event.clientX;
-        this.lastMousePosition.y = event.clientY;
-      }
 
-      this.viewPort.style.cursor = 'default';
-
+    if ((<any>window).blockMovement || !this.pointerLock || !this.trusted) {
       return;
     }
 
-    this.viewPort.style.cursor = 'crosshair';
-
-    if (this.lastMousePosition.x != event.clientX) {
-      this.turn.x = 100 * (this.lastMousePosition.x - event.clientX) / this.viewPort.clientWidth;
-    }
-
-    if (this.lastMousePosition.y != event.clientY) {
-      this.turn.y = 100 * (event.clientY - this.lastMousePosition.y) / this.viewPort.clientHeight;
-    }
-
-    this.lastMousePosition.x = event.clientX;
-    this.lastMousePosition.y = event.clientY;
+    this.turn.x = 100 * (-event.movementX) / event.srcElement.clientWidth;
+    this.turn.y = 100 * (event.movementY) / event.srcElement.clientHeight;
 
     this.workerInterface.move(this.movement, this.turn);
-
 
     if (!this.mouseStop) {
       this.mouseStop = true;
