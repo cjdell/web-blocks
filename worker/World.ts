@@ -245,10 +245,10 @@ export default class World {
           const boundaryPoints = <THREE.Vector3[]>[];
 
           for (let bx = 0; bx < 2; bx++) {
+            const x1 = this.worldInfo.partitionDimensionsInBlocks.x * (x + bx);
             for (let by = 0; by < 2; by++) {
+              const y1 = this.worldInfo.partitionDimensionsInBlocks.y * (y + by);
               for (let bz = 0; bz < 2; bz++) {
-                const x1 = this.worldInfo.partitionDimensionsInBlocks.x * (x + bx);
-                const y1 = this.worldInfo.partitionDimensionsInBlocks.y * (y + by);
                 const z1 = this.worldInfo.partitionDimensionsInBlocks.z * (z + bz);
 
                 boundaryPoints.push(new THREE.Vector3(x1, y1, z1));

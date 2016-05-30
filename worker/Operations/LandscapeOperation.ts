@@ -47,7 +47,7 @@ export class LandscapeOperation extends Operation {
     const perlin = new ImprovedNoise();
     const size = width * height;
 
-    let quality = 1;
+    let reciprocal_of_quality = 1;
 
     let index = 0;
 
@@ -56,13 +56,13 @@ export class LandscapeOperation extends Operation {
 
       index = 0;
 
-      for (let x = pstart.x; x < pstart.x + width; x++) {
-        for (let z = pstart.z; z < pstart.z + height; z++ , index++) {
-          data[index] += perlin.noise(x / quality, z / quality, this.options.height) * quality;
+      for (let x = pstart.x * reciprocal_of_quality; x < (pstart.x + width) * reciprocal_of_quality; x += reciprocal_of_quality) {
+        for (let z = pstart.z * reciprocal_of_quality; z < (pstart.z + height) * reciprocal_of_quality; z += reciprocal_of_quality, index++) {
+          data[index] += perlin.noise(x, z, this.options.height) / reciprocal_of_quality;
         }
       }
 
-      quality *= 3.2;
+      reciprocal_of_quality *= 0.3125;
     }
 
     index = 0;

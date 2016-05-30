@@ -89,10 +89,9 @@ export default class Partition {
 
   updateHeightMap() {
     for (let z = 0; z < this.worldInfo.partitionDimensionsInBlocks.z; z++) {
+      const index = z * this.worldInfo.partitionDimensionsInBlocks.x;
       for (let x = 0; x < this.worldInfo.partitionDimensionsInBlocks.x; x++) {
-        const index = z * this.worldInfo.partitionDimensionsInBlocks.x + x;
-
-        this.heightMap[index] = this.getHighestPoint(x, z);
+        this.heightMap[index + x] = this.getHighestPoint(x, z);
       }
     }
   }
