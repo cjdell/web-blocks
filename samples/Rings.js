@@ -1,12 +1,13 @@
 for (var x = 0; x < 60; x++) {
+  var x_minus_30_squared = Math.pow(x - 30, 2);
   for (var z = 0; z < 60; z++) {
-    var r = Math.sqrt(Math.pow(x - 30, 2) + Math.pow(z - 30, 2));
+    var r = Math.sqrt(x_minus_30_squared + Math.pow(z - 30, 2));
 
-    if (r <= 30 && r > 27) {
+    if (r > 27 && r <= 30) {
       setBlocks(x + 20, 0, z + 20, x + 20, 20, z + 20, 1);
     }
 
-    if (r <= 24 && r > 21) {
+    if (r > 21 && r <= 24) {
       setBlocks(x + 20, 0, z + 20, x + 20, 20, z + 20, 2);
     }
   }
