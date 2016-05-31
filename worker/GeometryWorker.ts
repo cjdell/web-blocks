@@ -161,6 +161,30 @@ const setGravity = (invocation: Invocation<{ gravity: number }>) => {
   player.gravity = invocation.data.gravity;
 };
 
+const getMousePosition = () => {
+  return player.mousePosition;
+};
+
+const setMousePosition = (invocation: Invocation<{ pos: com.IntVector3, side: number }>) => {
+  player.mousePosition = invocation.data;
+};
+
+const rightClick = () => {
+  // mouseUp fires twice
+  if (!player.rightClicked) {
+    player.rightClick();
+    player.rightClicked = true;
+  } else {
+    player.rightClicked = false;
+  }
+  return;
+};
+
+const executeBoundScript = (invocation: Invocation<{ index: number }>) => {
+  const fn: Function = player.boundScripts[invocation.data.index];
+  if (fn) fn();
+};
+
 self.onmessage = (e) => {
   const invocation = <Invocation<void>>e.data;
 
@@ -218,5 +242,25 @@ self.onmessage = (e) => {
     const invocation = <Invocation<{ gravity: number }>>e.data;
 
     return setGravity(invocation);
+  }
+
+  if (invocation.action === 'getMousePosition') {
+    return getMousePosition();
+  }
+
+  if (invocation.action === 'setMousePosition') {
+    const invocation = <Invocation<{ pos: com.IntVector3, side: number}>>e.data;
+
+    return setMousePosition(invocation);
+  }
+
+  if (invocation.action === 'rightClick') {
+    return rightClick();
+  }
+
+  if (invocation.action === 'executeBoundScript') {
+    const invocation = <Invocation<{ index: number }>>e.data;
+
+    return executeBoundScript(invocation);
   }
 };

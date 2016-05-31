@@ -9,6 +9,15 @@ export default class Api {
   world: World;
   player: Player;
 
+  get BlockType() {
+    return {
+      Air: 0,
+      Stone: 1,
+      Grass: 2,
+      Water: 3
+    }
+  };
+
   intervalRefs = <number[]>[];
 
   constructor(world: World, player: Player) {
@@ -29,6 +38,18 @@ export default class Api {
 
   get hi() {
     return 'Hi there!';
+  }
+
+  bindRightClick(fn: Function) {
+    this.player.rightClick = fn;
+  }
+
+  bindScript(fn: Function, index: number) {
+    this.player.boundScripts[index] = fn;
+  }
+
+  getMousePosition(): { pos: com.IntVector3, side: number } {
+    return this.player.mousePosition;
   }
 
   setBlock(x: number, y: number, z: number, type: number, colour: number): void {

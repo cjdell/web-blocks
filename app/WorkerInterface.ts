@@ -123,4 +123,20 @@ export default class WorkerInterface {
   addChangeListener(listener: (data: any) => void) {
     this.changeListener = listener;
   }
+
+  rightClick() {
+    return this.invoke<Object>('rightClick', null);
+  }
+
+  getMousePosition() {
+    return this.invoke<Object>('getMousePosition', null);
+  }
+
+  setMousePosition(position: { pos: com.IntVector3, side: number }) {
+    return this.invoke<Object>('setMousePosition', position);
+  }
+
+  executeBoundScript(index: number) {
+    this.invoke<Object>('executeBoundScript', { index });
+  }
 }

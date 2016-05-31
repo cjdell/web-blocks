@@ -26,6 +26,8 @@ export default class Interaction {
   selectedTool: string = 'block';
   tool: Tool = null;
 
+  static rightClick: Function = function () {};
+
   isDesktop = true; // TODO: Detect mobile
 
   constructor(viewPort: HTMLElement, scene: THREE.Scene, camera: THREE.Camera, workerInterface: WorkerInterface, worldInfo: com.WorldInfo, webcam: Webcam) {
@@ -49,6 +51,8 @@ export default class Interaction {
   private keyPress(event: KeyboardEvent) {
     if (event.keyCode == 26 && event.ctrlKey) {
       this.workerInterface.undo();
+    } else if (!(<any>window).blockMovement && event.keyCode >= 48 && event.keyCode <= 57) {
+      this.workerInterface.executeBoundScript(event.keyCode - 48);
     }
   }
 
@@ -66,6 +70,7 @@ export default class Interaction {
 
     let pos = this.getBlockPositionOfMouse();
     if (!pos) return;
+    this.workerInterface.setMousePosition(pos);
 
     if (this.tool) {
       this.tool.onMouseMove(this.mouse, pos.pos, pos.side);
@@ -81,6 +86,7 @@ export default class Interaction {
     // If we right-click
     if (event.type == 'contextmenu' || event.button == 2) {
       event.preventDefault();
+      this.workerInterface.rightClick();
       return;
     }
 
