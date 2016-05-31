@@ -39,6 +39,10 @@ export default class Api {
     this.player.boundScripts[index] = fn;
   }
 
+  getMousePosition(): { pos: com.IntVector3, side: number } {
+    return this.player.mousePosition;
+  }
+
   setBlock(x: number, y: number, z: number, type: number, colour: number): void {
     this.world.setBlocks(x, y, z, x, y, z, type, colour);
   }

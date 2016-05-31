@@ -165,12 +165,17 @@ const getMousePosition = () => {
   return player.mousePosition;
 };
 
+const setMousePosition = (invocation: Invocation<{ pos: com.IntVector3, side: number }>) => {
+  player.mousePosition = invocation.data;
+};
+
 const rightClick = () => {
   // mouseUp fires twice
-  if (player.rightClicked) {
+  if (!player.rightClicked) {
     player.rightClick();
-  } else {
     player.rightClicked = true;
+  } else {
+    player.rightClicked = false;
   }
   return;
 };
@@ -241,6 +246,12 @@ self.onmessage = (e) => {
 
   if (invocation.action === 'getMousePosition') {
     return getMousePosition();
+  }
+
+  if (invocation.action === 'setMousePosition') {
+    const invocation = <Invocation<{ pos: com.IntVector3, side: number}>>e.data;
+
+    return setMousePosition(invocation);
   }
 
   if (invocation.action === 'rightClick') {

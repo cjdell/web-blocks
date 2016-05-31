@@ -28,7 +28,7 @@ export default class Player {
   private lastMovement: Movement;
   mousePosition: { pos: com.IntVector3, side: number };
   rightClick: Function = () => console.log("Right clicked!");
-  boundScripts: {number: Function} = {};
+  boundScripts: {number: Function}|{} = {};
 
   constructor(world: World) {
     this.world = world;

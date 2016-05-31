@@ -132,6 +132,10 @@ export default class WorkerInterface {
     return this.invoke<Object>('getMousePosition', null);
   }
 
+  setMousePosition(position: { pos: com.IntVector3, side: number }) {
+    return this.invoke<Object>('setMousePosition', position);
+  }
+
   executeBoundScript(index: number) {
     this.invoke<Object>('executeBoundScript', { index });
   }

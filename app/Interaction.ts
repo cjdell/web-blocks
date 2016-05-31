@@ -51,7 +51,7 @@ export default class Interaction {
   private keyPress(event: KeyboardEvent) {
     if (event.keyCode == 26 && event.ctrlKey) {
       this.workerInterface.undo();
-    } else if (event.keyCode >= 48 && event.keyCode <= 57) {
+    } else if (!(<any>window).blockMovement && event.keyCode >= 48 && event.keyCode <= 57) {
       this.workerInterface.executeBoundScript(event.keyCode - 48);
     }
   }
@@ -70,6 +70,7 @@ export default class Interaction {
 
     let pos = this.getBlockPositionOfMouse();
     if (!pos) return;
+    this.workerInterface.setMousePosition(pos);
 
     if (this.tool) {
       this.tool.onMouseMove(this.mouse, pos.pos, pos.side);

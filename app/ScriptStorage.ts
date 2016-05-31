@@ -51,6 +51,18 @@ const samples = [
     sample: true,
     modified: new Date(2015, 5, 7),
     code: fs.readFileSync('./samples/Palette.js')
+  },
+  {
+    name: 'Bound Pillar',
+    sample: true,
+    modified: new Date(2016, 5, 30),
+    code: fs.readFileSync('./samples/BoundPillar.js')
+  },
+  {
+    name: 'MouseBlock',
+    sample: true,
+    modified: new Date(2016, 5, 30),
+    code: fs.readFileSync('./samples/MouseBlock.js')
   }
 ];
 
