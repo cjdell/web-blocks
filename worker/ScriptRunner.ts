@@ -44,8 +44,8 @@ export default class ScriptRunner {
         return res.toString();
       }
     } catch (err) {
-      toRun.pop();
       if (!retried) {
+        toRun.pop();
         toRun.push(code);
         return this.evaluate(toRun, code, true);
       }

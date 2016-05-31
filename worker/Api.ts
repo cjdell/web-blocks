@@ -9,6 +9,15 @@ export default class Api {
   world: World;
   player: Player;
 
+  get BlockType() {
+    return {
+      Air: 0,
+      Stone: 1,
+      Grass: 2,
+      Water: 3
+    }
+  };
+
   intervalRefs = <number[]>[];
 
   constructor(world: World, player: Player) {
