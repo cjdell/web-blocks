@@ -31,6 +31,14 @@ export default class Api {
     return 'Hi there!';
   }
 
+  bindRightClick(fn: Function) {
+    this.player.rightClick = fn;
+  }
+
+  bindScript(fn: Function, index: number) {
+    this.player.boundScripts[index] = fn;
+  }
+
   setBlock(x: number, y: number, z: number, type: number, colour: number): void {
     this.world.setBlocks(x, y, z, x, y, z, type, colour);
   }

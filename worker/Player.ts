@@ -23,7 +23,11 @@ export default class Player {
   gravity = 0.002;
   changeListener: ((position: THREE.Vector3, target: THREE.Vector3) => void);
 
+  rightClicked: boolean = false;
   private lastMovement: Movement;
+  mousePosition: { pos: com.IntVector3, side: number };
+  rightClick: Function = () => console.log("Right clicked!");
+  boundScripts: {number: Function} = {};
 
   constructor(world: World) {
     this.world = world;
