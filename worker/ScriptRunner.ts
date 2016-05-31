@@ -9,26 +9,30 @@ export default class ScriptRunner {
   }
 
   run(code: string, expr: boolean): string {
-    var toRun = '';
+    var toRun:Array<string> = [];
 
     Object.keys(Api.prototype).forEach(function(key) {
       if (Api.prototype[key] instanceof Function) {
-        toRun += 'var ' + key + ' = context.' + key + '.bind(context);\n';
+        toRun.push('var ' + key + ' = context.' + key + '.bind(context);\n');
       } else {
-        toRun += 'var ' + key + ' = context.' + key + ';\n';
+        toRun.push('var ' + key + ' = context.' + key + ';\n');
       }
     });
 
     if (expr) {
-      toRun += 'return (' + code + ');';
+      toRun.push('return (' + code.split(/^var | var |;/).join('') + ');');
     } else {
-      toRun += code;
+      toRun.push(code);
     }
 
     this.api.clearIntervals();
 
+    return this.evaluate(toRun, code, false);
+  }
+
+  evaluate(toRun: Array<string>, code: string, retried: boolean):string {
     try {
-      var func = new Function('context', toRun);
+      var func = new Function('context', toRun.join(''));
 
       var res = func(this.api);
 
@@ -40,6 +44,11 @@ export default class ScriptRunner {
         return res.toString();
       }
     } catch (err) {
+      toRun.pop();
+      if (!retried) {
+        toRun.push(code);
+        return this.evaluate(toRun, code, true);
+      }
       console.error('parse error', err);
       return err.message;
     }
