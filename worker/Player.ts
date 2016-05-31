@@ -2,6 +2,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 import World from './World';
+import com from '../common/WorldInfo';
 
 export interface Movement {
   move: THREE.Vector3;
