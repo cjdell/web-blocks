@@ -3,7 +3,7 @@
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
-import { Movement } from '../worker/Player';
+import { Movement } from '../common/Types';
 
 export default class WorkerInterface {
   geoWorker: Worker;
@@ -12,7 +12,7 @@ export default class WorkerInterface {
   changeListener: Function = null;
   playerPositionListener: ((position: THREE.Vector3) => void);
   lastId = 0;
-  jumping:boolean = false;
+  jumping: boolean = false;
 
   constructor() {
     this.geoWorker = new Worker('build/worker.js');
@@ -99,8 +99,8 @@ export default class WorkerInterface {
     });
   }
 
-  move(move: THREE.Vector3, turn: THREE.Vector2) {
-    return this.invoke<Object>('move', { move, turn });
+  move(movement: Movement) {
+    return this.invoke<Object>('move', movement);
   }
 
   jump() {

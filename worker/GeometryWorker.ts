@@ -15,7 +15,7 @@ import CliServer from './Cli/CliServer';
 
 import { Loader } from './Geometry/Loader';
 
-import { Movement } from './Player';
+import { Movement } from '../common/Types';
 
 console.log('GeometryWorker: online');
 
@@ -249,7 +249,7 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'setMousePosition') {
-    const invocation = <Invocation<{ pos: com.IntVector3, side: number}>>e.data;
+    const invocation = <Invocation<{ pos: com.IntVector3, side: number }>>e.data;
 
     return setMousePosition(invocation);
   }

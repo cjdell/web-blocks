@@ -6,7 +6,7 @@ import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
 
 export default class TextRenderer {
-  workerInterface: WorkerInterface
+  workerInterface: WorkerInterface;
 
   constructor(workerInterface: WorkerInterface) {
     this.workerInterface = workerInterface;

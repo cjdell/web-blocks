@@ -109,7 +109,7 @@ export default class PartitionGeometry {
     for (let i = 0; i < blocks.length / VALUES_PER_VBLOCK; i++) {
       const o = i * VALUES_PER_VBLOCK;
 
-      const id = blocks[o + 0];
+      //const id = blocks[o + 0];
       const index = blocks[o + 1];
       const indexInWorld = blocks[o + 2];
       const type = blocks[o + 3];
@@ -128,8 +128,6 @@ export default class PartitionGeometry {
 
         continue;
       }
-
-      const vertexCount = VALUES_PER_VBLOCK * blocks.length;
 
       const xd = !(touchingBlocks & (1 << 12));
       const xu = !(touchingBlocks & (1 << 14));
@@ -173,8 +171,6 @@ export default class PartitionGeometry {
   }
 
   getTriangle(v: number, x: number, y: number, z: number, type: number, side: number, colour: number, shade: number, indexInWorld: number) {
-    const inverse = [1, 4].indexOf(side) !== -1;
-
     for (let i = 0; i < 6; i += 1) {
       this.position[(v + i) * 3 + 0] = FACES[side][i * 3 + 0] + x;
       this.position[(v + i) * 3 + 1] = FACES[side][i * 3 + 1] + y;

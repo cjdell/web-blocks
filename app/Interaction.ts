@@ -26,9 +26,9 @@ export default class Interaction {
   selectedTool: string = 'block';
   tool: Tool = null;
 
-  static rightClick: Function = function () {};
-
   isDesktop = true; // TODO: Detect mobile
+
+  static rightClick: Function = function () { };
 
   constructor(viewPort: HTMLElement, scene: THREE.Scene, camera: THREE.Camera, workerInterface: WorkerInterface, worldInfo: com.WorldInfo, webcam: Webcam) {
     this.viewPort = viewPort;
@@ -48,8 +48,26 @@ export default class Interaction {
     }
   }
 
+  getAvailableTools() {
+    return Tools.map(tool => ({
+      type: tool.type,
+      name: tool.name,
+      icon: tool.icon
+    }));
+  }
+
+  setType(_type: number) {
+    this.type = _type;
+
+    if (this.type === 4) this.webcam.init();
+  }
+
+  setToolType(toolType: string) {
+    this.selectedTool = toolType;
+  }
+
   private keyPress(event: KeyboardEvent) {
-    if (event.keyCode == 26 && event.ctrlKey) {
+    if (event.keyCode === 26 && event.ctrlKey) {
       this.workerInterface.undo();
     } else if (!(<any>window).blockMovement && event.keyCode >= 48 && event.keyCode <= 57) {
       this.workerInterface.executeBoundScript(event.keyCode - 48);
@@ -57,7 +75,7 @@ export default class Interaction {
   }
 
   private mouseDown(event: any) {
-    if (event.type == 'contextmenu' || event.button == 2) {
+    if (event.type === 'contextmenu' || event.button === 2) {
       event.preventDefault();
       return;
     }
@@ -84,7 +102,7 @@ export default class Interaction {
     if (!pos) return;
 
     // If we right-click
-    if (event.type == 'contextmenu' || event.button == 2) {
+    if (event.type === 'contextmenu' || event.button === 2) {
       event.preventDefault();
       this.workerInterface.rightClick();
       return;
@@ -210,23 +228,5 @@ export default class Interaction {
     const geo: any = mesh.geometry;
 
     return Math.floor(geo.attributes.data.array[vertexIndex * 4 + constants.VERTEX_DATA_SIDE]);
-  }
-
-  getAvailableTools() {
-    return Tools.map(tool => ({
-      type: tool.type,
-      name: tool.name,
-      icon: tool.icon
-    }));
-  }
-
-  setType(_type: number) {
-    this.type = _type;
-
-    if (this.type === 4) this.webcam.init();
-  }
-
-  setToolType(toolType: string) {
-    this.selectedTool = toolType;
   }
 }

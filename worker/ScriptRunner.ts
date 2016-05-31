@@ -9,9 +9,9 @@ export default class ScriptRunner {
   }
 
   run(code: string, expr: boolean): string {
-    var toRun:Array<string> = [];
+    var toRun: Array<string> = [];
 
-    Object.keys(Api.prototype).forEach(function(key) {
+    Object.keys(Api.prototype).forEach(function (key) {
       if (Api.prototype[key] instanceof Function) {
         toRun.push('var ' + key + ' = context.' + key + '.bind(context);\n');
       } else {
@@ -30,7 +30,7 @@ export default class ScriptRunner {
     return this.evaluate(toRun, code, false);
   }
 
-  evaluate(toRun: Array<string>, code: string, retried: boolean):string {
+  evaluate(toRun: Array<string>, code: string, retried: boolean): string {
     try {
       var func = new Function('context', toRun.join(''));
 

@@ -60,7 +60,7 @@ export default class Webcam {
 
       let msg = 'No camera available.';
 
-      if (e.code == 1) {
+      if (e.code === 1) {
         msg = 'User denied access to use camera.';
       }
 

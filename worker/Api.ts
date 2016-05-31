@@ -15,7 +15,7 @@ export default class Api {
       Stone: 1,
       Grass: 2,
       Water: 3
-    }
+    };
   };
 
   intervalRefs = <number[]>[];
@@ -31,7 +31,7 @@ export default class Api {
       'Not sure what to type? Here\'s some you can try:',
       '  setPosition(100,12,110)',
       '  setBlock(100,10,100,1)',
-      '  setBlocks(100,10,100,100,20,100,1)',
+      '  setBlocks(100,10,100,100,20,100,BlockType.Stone)',
       'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
     ].join('\n');
   }

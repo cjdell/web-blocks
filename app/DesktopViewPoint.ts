@@ -5,25 +5,25 @@ import THREE = require('three');
 
 import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
+import { Movement } from '../common/Types';
 
 export default class DesktopViewPoint {
-  camera: THREE.PerspectiveCamera;
-  light: THREE.Light;
-  viewPort: HTMLDivElement;
-  renderer: THREE.Renderer;
-  scene: THREE.Scene;
-  worldInfo: com.WorldInfo;
-  workerInterface: WorkerInterface;
+  private camera: THREE.PerspectiveCamera;
+  private light: THREE.Light;
+  private viewPort: HTMLDivElement;
+  private renderer: THREE.Renderer;
+  private scene: THREE.Scene;
+  private worldInfo: com.WorldInfo;
+  private workerInterface: WorkerInterface;
 
-  lastMousePosition: THREE.Vector2;
-  mouseStop: boolean;
-  mouseMovesScreen: boolean;
-  pointerLock: boolean;
-  trusted: boolean;
+  private lastMousePosition: THREE.Vector2;
+  private mouseStop: boolean;
+  private mouseMovesScreen: boolean;
+  private pointerLock: boolean;
+  private trusted: boolean;
 
-  position: THREE.Vector3;
-  movement: THREE.Vector3;
-  turn: THREE.Vector2;
+  private position: THREE.Vector3;
+  private movement: Movement;
 
   constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
     this.camera = camera;
@@ -39,8 +39,7 @@ export default class DesktopViewPoint {
     this.mouseMovesScreen = false;
 
     this.position = new THREE.Vector3(100, 24, 120);
-    this.movement = new THREE.Vector3();
-    this.turn = new THREE.Vector2();
+    this.movement = { move: new THREE.Vector3(), turn: new THREE.Vector2 };
     this.pointerLock = false;
     this.trusted = false;
 
@@ -61,7 +60,7 @@ export default class DesktopViewPoint {
   }
 
   onWindowResize() {
-    var width = this.viewPort.clientWidth, height = this.viewPort.clientHeight;
+    const width = this.viewPort.clientWidth, height = this.viewPort.clientHeight;
 
     console.log('onWindowResize', width, height);
 
@@ -76,20 +75,17 @@ export default class DesktopViewPoint {
   keyDown(event: any) {
     if ((<any>window).blockMovement) return;
 
-    if (event.keyCode === 65) this.movement.x = 1;        // A (Left)
-    if (event.keyCode === 68) this.movement.x = -1;       // D (Right)
+    if (event.keyCode === 65) this.movement.move.x = 1;        // A (Left)
+    if (event.keyCode === 68) this.movement.move.x = -1;       // D (Right)
 
-    //if (event.keyCode === 38) movement.y = 1;           // Up Arrow (Elevate)
-    //if (event.keyCode === 40) movement.y = -1;          // Down Arrow (Decline)
+    if (event.keyCode === 87) this.movement.move.z = 1;        // W (Forwards)
+    if (event.keyCode === 83) this.movement.move.z = -1;       // S (Backwards)
 
-    if (event.keyCode === 87) this.movement.z = 1;        // W (Forwards)
-    if (event.keyCode === 83) this.movement.z = -1;       // S (Backwards)
+    if (event.keyCode === 38) this.movement.turn.y = -1;           // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.movement.turn.y = 1;            // Down Arrow (Turn Down)
 
-    if (event.keyCode === 38) this.turn.y = -1;           // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.turn.y = 1;            // Down Arrow (Turn Down)
-
-    if (event.keyCode === 37) this.turn.x = 1;            // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.turn.x = -1;           // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.movement.turn.x = 1;            // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.movement.turn.x = -1;           // Right Arrow (Turn Right)
 
     if (event.shiftKey) {
       if (!document.pointerLockElement) {
@@ -103,52 +99,47 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 32 && !this.workerInterface.jumping) this.workerInterface.jump();
 
-    this.workerInterface.move(this.movement, this.turn);
+    this.workerInterface.move(this.movement);
   }
 
   keyUp(event: any) {
-    if (event.keyCode === 65) this.movement.x = 0;        // A (Left)
-    if (event.keyCode === 68) this.movement.x = 0;        // D (Right)
+    if (event.keyCode === 65) this.movement.move.x = 0;        // A (Left)
+    if (event.keyCode === 68) this.movement.move.x = 0;        // D (Right)
 
-    //if (event.keyCode === 38) movement.y = 0;           // Up Arrow (Elevate)
-    //if (event.keyCode === 40) movement.y = 0;           // Down Arrow (Decline)
+    if (event.keyCode === 87) this.movement.move.z = 0;        // W (Forwards)
+    if (event.keyCode === 83) this.movement.move.z = 0;        // S (Backwards)
 
-    if (event.keyCode === 87) this.movement.z = 0;        // W (Forwards)
-    if (event.keyCode === 83) this.movement.z = 0;        // S (Backwards)
+    if (event.keyCode === 38) this.movement.turn.y = 0;            // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.movement.turn.y = 0;            // Down Arrow (Turn Down)
 
-    if (event.keyCode === 38) this.turn.y = 0;            // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.turn.y = 0;            // Down Arrow (Turn Down)
-
-    if (event.keyCode === 37) this.turn.x = 0;            // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.turn.x = 0;            // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.movement.turn.x = 0;            // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.movement.turn.x = 0;            // Right Arrow (Turn Right)
 
     if (event.keyCode === 32) this.workerInterface.jumping = false;
 
     if (event.keyCode === 27) this.refreshPointerLock();
 
-    this.workerInterface.move(this.movement, this.turn);
+    this.workerInterface.move(this.movement);
   }
 
-
   mouseMove(event: any) {
-
     if ((<any>window).blockMovement || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
       return;
     }
 
-    this.turn.x = 100 * (-event.movementX) / event.srcElement.clientWidth;
-    this.turn.y = 100 * (event.movementY) / event.srcElement.clientHeight;
+    this.movement.turn.x = 100 * (-event.movementX) / event.srcElement.clientWidth;
+    this.movement.turn.y = 100 * (event.movementY) / event.srcElement.clientHeight;
 
-    this.workerInterface.move(this.movement, this.turn);
+    this.workerInterface.move({ move: this.movement.move, turn: this.movement.turn });
 
     if (!this.mouseStop) {
       this.mouseStop = true;
-      setTimeout(function () {
-        this.turn.x = 0;
-        this.turn.y = 0;
-        this.workerInterface.move(this.movement, this.turn);
+      setTimeout(() => {
+        this.movement.turn.x = 0;
+        this.movement.turn.y = 0;
+        this.workerInterface.move({ move: this.movement.move, turn: this.movement.turn });
         this.mouseStop = false;
-      }.bind(this), 10);
+      }, 10);
     }
 
     return false;
@@ -185,16 +176,6 @@ export default class DesktopViewPoint {
     this.scene.add(cube);
   }
 
-  // restrain(position: THREE.Vector3) {
-  //   position.x = Math.max(position.x, 0);
-  //   position.y = Math.max(position.y, 0);
-  //   position.z = Math.max(position.z, 0);
-
-  //   position.x = Math.min(position.x, this.worldInfo.worldDimensionsInBlocks.x);
-  //   position.y = Math.min(position.y, this.worldInfo.worldDimensionsInBlocks.y * 2);
-  //   position.z = Math.min(position.z, this.worldInfo.worldDimensionsInBlocks.z);
-  // }
-
   getPosition() {
     return this.position;
   }
@@ -209,9 +190,9 @@ export default class DesktopViewPoint {
     }
 
     if (!(<any>window).blockMovement
-        && this.viewPort
-        && this.pointerLock
-        && this.trusted) {
+      && this.viewPort
+      && this.pointerLock
+      && this.trusted) {
       this.viewPort.requestPointerLock();
     }
   }
