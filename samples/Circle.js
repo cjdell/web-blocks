@@ -2,7 +2,7 @@
 var radius = 20;
 // Make it 10 blocks tall
 var height = 10;
-// Find the distance using x^2 and z^2
+// Find the distance between x and y using x^2 and z^2
 var distance = function (xs, zs) { return Math.sqrt(xs, zs); };
 
 for (var x = -radius; x < radius; x++) {
