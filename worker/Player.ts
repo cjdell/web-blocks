@@ -148,19 +148,19 @@ export default class Player {
   }
 
   canMove(position: THREE.Vector3) {
-    const x = Math.round(position.x);
-    const y = Math.round(position.y);
-    const z = Math.round(position.z);
+    const x = Math.round(position.x - 0.5);
+    const y = Math.round(position.y - 0.5);
+    const z = Math.round(position.z - 0.5);
 
     const block = this.world.getBlock(x, y, z);
 
     return block === 0;
-  };
+  }
 
   onGround(position: THREE.Vector3) {
-    const x = Math.round(position.x);
+    const x = Math.round(position.x - 0.5);
     const y = Math.round(position.y) - 1;
-    const z = Math.round(position.z);
+    const z = Math.round(position.z - 0.5);
 
     const block = this.world.getBlock(x, y, z);
 
