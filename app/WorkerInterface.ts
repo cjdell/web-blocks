@@ -10,6 +10,7 @@ export default class WorkerInterface {
   callbacks: { [id: number]: Function } = {};
 
   changeListener: Function = null;
+  print: Function = null;
   playerPositionListener: ((position: THREE.Vector3) => void);
   lastId = 0;
   jumping: boolean = false;
@@ -32,6 +33,10 @@ export default class WorkerInterface {
 
       if (e.data.action === 'updatePlayerPosition') {
         if (this.playerPositionListener) this.playerPositionListener(e.data.data);
+      }
+
+      if (e.data.action === 'print') {
+        if (this.print) this.print(e.data.data);
       }
     };
   }

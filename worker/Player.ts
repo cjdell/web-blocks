@@ -8,6 +8,8 @@ import { Movement } from '../common/Types';
 export default class Player {
   gravity = 0.002;
   changeListener: ((position: THREE.Vector3, target: THREE.Vector3) => void);
+  print: ((msg: string) => void);
+
   rightClicked: boolean = false;
   mousePosition: { pos: com.IntVector3, side: number };
   boundScripts: { number: Function } | {} = {};

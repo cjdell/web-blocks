@@ -71,6 +71,13 @@ const init = (invocation: Invocation<void>): void => {
     });
   };
 
+  player.print = (msg: string) => {
+    _self.postMessage({
+      action: 'print',
+      data: msg
+    });
+  };
+
   Loader.Instance = new Loader(worldInfo);
 
   Loader.Instance.init().then(() => {

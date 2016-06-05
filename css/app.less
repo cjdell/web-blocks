@@ -23,6 +23,46 @@ body {
   -webkit-flex: 1;
   position: relative;
 
+  .miniConsole {
+    input:focus {outline:0;}
+    .miniConsoleInput {
+      height: 40px;
+      width: 50%;
+      line-height: 40px;
+      position: absolute;
+      bottom: 80px;
+      left: 5px;
+      right: 0;
+      padding-top: 0;
+      padding-left: 10px;
+      color: #fff;
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
+      border: none;
+      font-size: 22px;
+      display: none;
+    }
+    .miniConsoleOutput {
+
+      ul {
+        width: 50%;
+        overflow-y: hidden;
+        position: absolute;
+        bottom: 125px;
+        left: 5px;
+        padding-top: 0;
+        padding-left: 10px;
+        list-style-type: none;
+        li {
+          line-height: 40px;
+          font-size: 22px;
+          color: #fff;
+          text-shadow: 1px 1px 1px #000;
+        }
+      }
+    }
+  }
+
   .helpBar {
     height: 40px;
     line-height: 40px;
