@@ -126,7 +126,12 @@ export default class Player {
       this.position = nextPosition;
     } else {
       this.zDelta = 0;
-      this.position.y = nextPosition.y;
+      var yDiff = this.position.y - nextPosition.y;
+      if (yDiff > 0) {
+        this.position.y = nextPosition.y;
+      } else {
+        this.velocity.y = 0;
+      }
     }
 
     // Camera target is 2 units (arbitary distance) in front of the view point
@@ -148,19 +153,21 @@ export default class Player {
   }
 
   canMove(position: THREE.Vector3) {
-    const x = Math.round(position.x - 0.5);
-    const y = Math.round(position.y - 0.5);
-    const z = Math.round(position.z - 0.5);
+    const x = Math.floor(position.x);
+    const y = Math.floor(position.y);
+    const z = Math.floor(position.z);
 
-    const block = this.world.getBlock(x, y, z);
+    // I'm two blocks tall!
+    const blockHead = this.world.getBlock(x, y + 1, z);
+    const blockBody = this.world.getBlock(x, y, z);
 
-    return block === 0;
+    return blockBody === 0 && blockHead === 0;
   }
 
   onGround(position: THREE.Vector3) {
-    const x = Math.round(position.x - 0.5);
+    const x = Math.floor(position.x);
     const y = Math.round(position.y) - 1;
-    const z = Math.round(position.z - 0.5);
+    const z = Math.floor(position.z);
 
     const block = this.world.getBlock(x, y, z);
 
