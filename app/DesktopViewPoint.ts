@@ -73,6 +73,17 @@ export default class DesktopViewPoint {
   }
 
   keyDown(event: any) {
+    if (event.keyCode == 9 || event.which == 9) {
+      event.preventDefault();
+      if ((<any>window).blockMovement) {
+        if (document.activeElement instanceof HTMLTextAreaElement) {
+          var event = document.createEvent('TextEvent');
+          event.initTextEvent('textInput', true, true, null, "  ", 9, "en-US");
+          (<HTMLTextAreaElement>document.activeElement).dispatchEvent(event);
+        }
+      }
+    }
+
     if ((<any>window).blockMovement) return;
 
     if (event.keyCode === 65) this.movement.move.x = 1;        // A (Left)
