@@ -126,8 +126,7 @@ export default class Player {
       this.position = nextPosition;
     } else {
       this.zDelta = 0;
-      var yDiff = this.position.y - nextPosition.y;
-      if (yDiff > 0) {
+      if (this.position.y > nextPosition.y) {
         this.position.y = nextPosition.y;
       } else {
         this.velocity.y = 0;
