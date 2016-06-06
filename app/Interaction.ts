@@ -1,3 +1,4 @@
+import CuboidTool from "./tools/CuboidTool";
 "use strict";
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
@@ -113,6 +114,9 @@ export default class Interaction {
     }
 
     if (this.tool) {
+      if (this.tool instanceof CuboidTool) {
+        (<CuboidTool>this.tool).context.type = this.type;
+      }
       this.tool.onMouseClick(this.mouse, pos.pos, pos.side);
     }
   }
