@@ -77,7 +77,7 @@ export default class DesktopViewPoint {
       event.preventDefault();
       if ((<any>window).blockMovement) {
         if (document.activeElement instanceof HTMLTextAreaElement) {
-          var event = document.createEvent('TextEvent');
+          var event: any = document.createEvent('TextEvent');
           event.initTextEvent('textInput', true, true, null, "  ", 9, "en-US");
           (<HTMLTextAreaElement>document.activeElement).dispatchEvent(event);
         }
