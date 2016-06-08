@@ -40,6 +40,17 @@ export default class Api {
     return 'Hi there!';
   }
 
+  print(msg: any) {
+    if (msg instanceof Array) msg = JSON.stringify(msg);
+    if (msg instanceof Object || typeof(msg) === "object") {
+      if (typeof(msg) === "undefined") return;
+      else if (msg === null || msg.toString && msg.toString() === "[object Object]") msg = JSON.stringify(msg);
+    }
+    if (msg && msg.toString) msg = msg.toString();
+    if (typeof(msg) !== "string") msg = "Error: unable to print.";
+    this.player.print(msg);
+  }
+
   bindRightClick(fn: Function) {
     this.player.rightClick = fn;
   }
