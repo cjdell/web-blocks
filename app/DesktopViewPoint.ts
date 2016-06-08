@@ -158,8 +158,8 @@ export default class DesktopViewPoint {
   }
 
   mouseMove(event: any) {
-    if (((<any>window).blockMovement && !this.miniConsole.shown )
-        || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
+    if (((<any>window).blockMovement && !this.miniConsole.shown)
+      || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
       return;
     }
 
@@ -241,9 +241,9 @@ export default class DesktopViewPoint {
           var event: any = document.createEvent('TextEvent');
           event.initTextEvent('textInput', true, true, null, "  ", 9, "en-US");
           (<HTMLTextAreaElement>document.activeElement).dispatchEvent(event);
-		}
-	  }
-	}
+        }
+      }
+    }
   }
 
   handleMiniConsole(event: any) {
@@ -299,7 +299,7 @@ export default class DesktopViewPoint {
         this.miniConsole.history.unshift(script);
         const res = this.workerInterface.runScript(script, true);
         if (res instanceof Promise) {
-          return res.then((res:any) => {
+          return res.then((res: any) => {
             this.addMiniConsoleOutput(res.result);
             console.log(res.result);
           });
@@ -328,6 +328,8 @@ export default class DesktopViewPoint {
       this.miniConsole.output.removeChild(oldestChild);
       this.miniConsole.outputCount--;
     }
+    // Ensure the last line is visible when new output is displayed
+    this.miniConsole.output.scrollTop = this.miniConsole.output.scrollHeight;
     return;
   }
 }

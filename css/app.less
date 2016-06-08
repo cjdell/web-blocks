@@ -24,17 +24,26 @@ body {
   position: relative;
 
   .miniConsole {
-    input:focus {outline:0;}
+    font-family: Consolas, Menlo, Monaco, monospace;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    bottom: 50px;
+    right: 10px;
+
+    input:focus {
+      outline: 0;
+    }
+
     .miniConsoleInput {
+      font-family: Consolas, Menlo, Monaco, monospace;
+      width: 100%;
       height: 40px;
-      width: 50%;
       line-height: 40px;
       position: absolute;
-      bottom: 80px;
-      left: 5px;
-      right: 0;
-      padding-top: 0;
-      padding-left: 10px;
+      bottom: 0;
+      left: 0;
+      padding: 4px 10px;
       color: #fff;
       background-color: rgba(0, 0, 0, 0.2);
       border-radius: 2px;
@@ -42,17 +51,20 @@ body {
       font-size: 22px;
       display: none;
     }
-    .miniConsoleOutput {
 
+    .miniConsoleOutput {
       ul {
-        width: 50%;
         overflow-y: hidden;
         position: absolute;
-        bottom: 125px;
-        left: 5px;
-        padding-top: 0;
-        padding-left: 10px;
+        top: 0;
+        bottom: 60px;
+        left: 0;
+        right: 0;
+        padding: 0;
+        margin: 0;
         list-style-type: none;
+        opacity: 0.75;
+
         li {
           line-height: 40px;
           font-size: 22px;
@@ -159,11 +171,6 @@ body {
   border-radius: 4px;
   overflow: hidden;
 
-  // * {
-  //   max-height: 100% !important;
-  //   overflow: hidden !important;
-  // }
-
   .codeView {
     background: rgba(0, 0, 0, 0.5);
     padding: 20px;
@@ -235,36 +242,6 @@ body {
   button {
     height: 40px;
   }
-}
-
-.scriptPicker {
-  // position: fixed;
-  // left: 20%;
-  // top: 60px;
-  // right: 20%;
-  // bottom: 60px;
-  // background: rgba(255, 255, 255, 0.8);
-  // border-radius: 4px;
-  // color: #000;
-  // overflow: auto;
-
-  // ul {
-  //   margin: 0;
-  //   list-style: none;
-  //   padding: 0;
-  //
-  //   li {
-  //     line-height: 30px;
-  //     font-family: Consolas, Menlo, Monaco, monospace;
-  //     font-size: 20px;
-  //     padding: 0;
-  //     cursor: pointer;
-  //
-  //     &:hover {
-  //       background: rgba(255, 255, 255, 0.5);
-  //     }
-  //   }
-  // }
 }
 
 @-webkit-keyframes pulsate {
