@@ -7,6 +7,7 @@ import THREE = require('three');
 import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
 import { Movement } from '../common/Types';
+import MiniConsole from "./MiniConsole";
 
 export default class DesktopViewPoint {
   private camera: THREE.PerspectiveCamera;
@@ -27,16 +28,7 @@ export default class DesktopViewPoint {
   private movement: Movement;
 
   private enterDown: boolean;
-  private miniConsole: {
-    shown: boolean,
-    input: HTMLInputElement,
-    output: HTMLUListElement,
-    outputCount: number,
-    hider: NodeJS.Timer,
-    history: Array<string>,
-    historyIndex: number,
-    currentText: string
-  };
+  private miniConsole: MiniConsole;
 
   constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
     this.camera = camera;
@@ -57,30 +49,23 @@ export default class DesktopViewPoint {
     this.trusted = false;
 
     this.enterDown = false;
-    this.miniConsole = {
-      shown: false,
-      input: <HTMLInputElement>document.querySelector('.miniConsoleInput'),
-      output: <HTMLUListElement>document.querySelector('.miniConsoleOutput ul'),
-      outputCount: 0,
-      hider: null,
-      history: [],
-      historyIndex: -1,
-      currentText: ""
-    };
+    this.miniConsole = new MiniConsole(workerInterface);
 
+    this.setupEventListeners();
 
+    this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
+    this.workerInterface.print = this.miniConsole.addOutput.bind(this);
+  }
+
+  setupEventListeners() {
     window.addEventListener('resize', _.debounce(() => this.onWindowResize(), 500), false);
 
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);
-
     document.addEventListener('pointerlockchange', (e: any) => this.onPointerLockChange(e), false);
-    this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
-
     document.addEventListener('visibilitychange', (e: any) => this.refreshPointerLock(), false);
 
-    this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
-    this.workerInterface.print = this.addMiniConsoleOutput.bind(this);
+    this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
   }
 
   onPointerLockChange(event: any) {
@@ -113,8 +98,11 @@ export default class DesktopViewPoint {
   keyDown(event: any) {
 
     this.handleTabKey(event);
-    this.handleMiniConsole(event);
+
+    if (this.miniConsole.isShown()) this.handleEnterKey(event);
     if ((<any>window).blockMovement) return;
+
+    this.handleEnterKey(event);
 
     if (event.keyCode === 65) this.movement.move.x = 1;        // A (Left)
     if (event.keyCode === 68) this.movement.move.x = -1;       // D (Right)
@@ -152,13 +140,22 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 32) this.workerInterface.jumping = false;
 
-    if (event.keyCode === 27) this.refreshPointerLock();
+    if (event.keyCode === 27) this.escape();
 
     this.workerInterface.move(this.movement);
   }
 
+  escape() {
+    if (this.miniConsole.isShown()) {
+      this.miniConsole.toggle(true);
+      (<any>window).blockMovement = true;
+    } else {
+      this.refreshPointerLock();
+    }
+  }
+
   mouseMove(event: any) {
-    if (((<any>window).blockMovement && !this.miniConsole.shown)
+    if (((<any>window).blockMovement && !this.miniConsole.isShown())
       || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
       return;
     }
@@ -246,90 +243,12 @@ export default class DesktopViewPoint {
     }
   }
 
-  handleMiniConsole(event: any) {
+  handleEnterKey (event: any) {
     if (event.keyCode === 13 && !this.enterDown) {
       this.enterDown = true;
-      this.miniConsoleToggle();
+      this.miniConsole.toggle();
     }
 
-    if (this.miniConsole.shown) {
-      // Up Arrow
-      if (event.keyCode === 38 || event.keyCode === 40) event.preventDefault();
-      if (event.keyCode === 38 && this.miniConsole.history.length > this.miniConsole.historyIndex + 1) {
-        if (this.miniConsole.historyIndex == -1) {
-          this.miniConsole.currentText = this.miniConsole.input.value;
-        }
-        this.miniConsole.input.value = this.miniConsole.history[++this.miniConsole.historyIndex];
-      }
-      // Down Arrow
-      if (event.keyCode === 40 && this.miniConsole.historyIndex >= 0) {
-        this.miniConsole.historyIndex--;
-        if (this.miniConsole.historyIndex == -1) {
-          this.miniConsole.input.value = this.miniConsole.currentText;
-        } else if (this.miniConsole.historyIndex >= 0) {
-          this.miniConsole.input.value = this.miniConsole.history[this.miniConsole.historyIndex];
-        }
-      }
-    }
-  }
-
-  miniConsoleToggle() {
-    if ((<any>window).blockMovement && !this.miniConsole.shown) {
-      return;
-    }
-    this.miniConsole.input.style.display = this.miniConsole.shown ? "none" : "block";
-    if (!this.miniConsole.shown) {
-      // If we hit enter and it was hidden
-      // Clear any impending hides
-      if (this.miniConsole.hider) {
-        clearTimeout(this.miniConsole.hider);
-      }
-      this.miniConsole.output.style.display = "block";
-      this.miniConsole.input.focus();
-      (<any>window).blockMovement = true;
-      this.miniConsole.shown = true;
-    } else {
-      // If we hit enter and it was on-screen
-      var script = this.miniConsole.input.value;
-      this.miniConsole.input.value = "";
-      this.miniConsole.input.blur();
-      (<any>window).blockMovement = false;
-      this.miniConsole.shown = false;
-      if (script.length > 0) {
-        this.miniConsole.history.unshift(script);
-        const res = this.workerInterface.runScript(script, true);
-        if (res instanceof Promise) {
-          return res.then((res: any) => {
-            this.addMiniConsoleOutput(res.result);
-            console.log(res.result);
-          });
-        }
-      } else {
-        this.miniConsole.output.style.display = "none";
-      }
-    }
-  }
-
-  addMiniConsoleOutput(result: string) {
-    if (!result || result === "") return;
-    var line = document.createElement("li");
-    line.innerText = result;
-    this.miniConsole.output.appendChild(line);
-    // Hide output after 5 seconds
-    if (this.miniConsole.hider) {
-      clearTimeout(this.miniConsole.hider);
-    }
-    this.miniConsole.hider = setTimeout(() => {
-      this.miniConsole.output.style.display = "none";
-    }, 5000);
-    // If we have more than 6 outputs, remove the top one
-    if (this.miniConsole.outputCount++ > 5) {
-      var oldestChild: HTMLLIElement = <HTMLLIElement>this.miniConsole.output.querySelector("li");
-      this.miniConsole.output.removeChild(oldestChild);
-      this.miniConsole.outputCount--;
-    }
-    // Ensure the last line is visible when new output is displayed
-    this.miniConsole.output.scrollTop = this.miniConsole.output.scrollHeight;
-    return;
+    this.miniConsole.handleEvent(event);
   }
 }
