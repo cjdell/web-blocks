@@ -91,6 +91,7 @@ export default class MiniConsole {
         if (!result || result === "") return;
         var line = document.createElement("li");
         line.innerText = result;
+        if (!this.output) this.output = <HTMLUListElement>document.querySelector('.miniConsoleOutput ul');
         this.output.appendChild(line);
         // Hide output after 5 seconds
         if (this.hider) {
