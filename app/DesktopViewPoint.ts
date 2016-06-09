@@ -76,9 +76,11 @@ export default class DesktopViewPoint {
     if (!document.pointerLockElement) {
       this.viewPort.requestPointerLock();
       this.pointerLock = true;
+      (<HTMLParagraphElement>this.viewPort.querySelector('.cross-hair')).innerHTML = "\u2022";
     } else if (this.trusted) {
       document.exitPointerLock();
       this.pointerLock = false;
+      (<HTMLParagraphElement>this.viewPort.querySelector('.cross-hair')).innerHTML = "";
     }
   }
 
