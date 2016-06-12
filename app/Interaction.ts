@@ -8,6 +8,7 @@ import constants from '../common/Constants';
 import WorkerInterface from './WorkerInterface';
 import { Context, Tool } from './tools/ToolBase';
 import Webcam from './Webcam';
+import DesktopViewPoint from "./DesktopViewPoint";
 
 import Tools from './tools/Tools';
 
@@ -80,12 +81,44 @@ export default class Interaction {
       event.preventDefault();
       return;
     }
+    if (!this.down) {
+      if (DesktopViewPoint.pointerLock) {
+        this.mouse.x = this.viewPort.offsetWidth / this.viewPort.clientWidth - 1;
+        this.mouse.y = -this.viewPort.offsetHeight / this.viewPort.clientHeight + 1;
+      }
+      const pos = this.getBlockPositionOfMouse();
+      if (!pos) return;
+
+      // If we right-click
+      if (event.type === 'contextmenu' || event.button === 2) {
+        event.preventDefault();
+        this.workerInterface.rightClick();
+        return;
+      }
+
+      if (!this.tool) {
+        this.tool = this.getTool();
+      }
+
+      if (this.tool) {
+        if (this.tool instanceof CuboidTool) {
+          (<CuboidTool>this.tool).context.type = this.type;
+        }
+        this.tool.onMouseClick(this.mouse, pos.pos, pos.side);
+      }
+    }
     this.down = true;
   }
 
   private mouseMove(event: any) {
-    this.mouse.x = (event.clientX / this.viewPort.clientWidth) * 2 - 1;
-    this.mouse.y = -(event.clientY / this.viewPort.clientHeight) * 2 + 1;
+    var x = event.clientX;
+    var y = event.clientY;
+    if (DesktopViewPoint.pointerLock) {
+      x = this.viewPort.offsetWidth / 2;
+      y = this.viewPort.offsetHeight / 2;
+    }
+    this.mouse.x = (x / this.viewPort.clientWidth) * 2 - 1;
+    this.mouse.y = -(y / this.viewPort.clientHeight) * 2 + 1;
 
     let pos = this.getBlockPositionOfMouse();
     if (!pos) return;
@@ -98,27 +131,6 @@ export default class Interaction {
 
   private mouseUp(event: any) {
     this.down = false;
-
-    const pos = this.getBlockPositionOfMouse();
-    if (!pos) return;
-
-    // If we right-click
-    if (event.type === 'contextmenu' || event.button === 2) {
-      event.preventDefault();
-      this.workerInterface.rightClick();
-      return;
-    }
-
-    if (!this.tool) {
-      this.tool = this.getTool();
-    }
-
-    if (this.tool) {
-      if (this.tool instanceof CuboidTool) {
-        (<CuboidTool>this.tool).context.type = this.type;
-      }
-      this.tool.onMouseClick(this.mouse, pos.pos, pos.side);
-    }
   }
 
   private getTool() {
@@ -232,5 +244,9 @@ export default class Interaction {
     const geo: any = mesh.geometry;
 
     return Math.floor(geo.attributes.data.array[vertexIndex * 4 + constants.VERTEX_DATA_SIDE]);
+  }
+
+  public setMouseCoordinates(x: number, y: number) {
+
   }
 }

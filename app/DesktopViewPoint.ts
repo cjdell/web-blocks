@@ -21,7 +21,6 @@ export default class DesktopViewPoint {
   private lastMousePosition: THREE.Vector2;
   private mouseStop: boolean;
   private mouseMovesScreen: boolean;
-  private pointerLock: boolean;
   private trusted: boolean;
 
   private position: THREE.Vector3;
@@ -29,6 +28,8 @@ export default class DesktopViewPoint {
 
   private enterDown: boolean;
   private miniConsole: MiniConsole;
+
+  static pointerLock: boolean = false;
 
   constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
     this.camera = camera;
@@ -45,7 +46,6 @@ export default class DesktopViewPoint {
 
     this.position = new THREE.Vector3(100, 24, 120);
     this.movement = { move: new THREE.Vector3(), turn: new THREE.Vector2 };
-    this.pointerLock = false;
     this.trusted = false;
 
     this.enterDown = false;
@@ -75,11 +75,11 @@ export default class DesktopViewPoint {
   handlePointerLock() {
     if (!document.pointerLockElement) {
       this.viewPort.requestPointerLock();
-      this.pointerLock = true;
+      DesktopViewPoint.pointerLock = true;
       (<HTMLParagraphElement>this.viewPort.querySelector('.cross-hair')).innerHTML = "\u2022";
     } else if (this.trusted) {
       document.exitPointerLock();
-      this.pointerLock = false;
+      DesktopViewPoint.pointerLock = false;
       (<HTMLParagraphElement>this.viewPort.querySelector('.cross-hair')).innerHTML = "";
     }
   }
@@ -158,7 +158,7 @@ export default class DesktopViewPoint {
 
   mouseMove(event: any) {
     if (((<any>window).blockMovement && !this.miniConsole.isShown())
-      || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
+      || !DesktopViewPoint.pointerLock || !this.trusted || !document.pointerLockElement) {
       return;
     }
 
@@ -221,12 +221,13 @@ export default class DesktopViewPoint {
 
   refreshPointerLock() {
     if (document.visibilityState == "hidden") {
-      this.pointerLock = false;
+      DesktopViewPoint.pointerLock = false;
+      (<HTMLParagraphElement>this.viewPort.querySelector('.cross-hair')).innerHTML = "";
     }
 
     if (!(<any>window).blockMovement
       && this.viewPort
-      && this.pointerLock
+      && DesktopViewPoint.pointerLock
       && this.trusted) {
       this.viewPort.requestPointerLock();
     }
