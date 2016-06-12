@@ -83,8 +83,8 @@ export default class Interaction {
     }
     if (!this.down) {
       if (DesktopViewPoint.pointerLock) {
-        this.mouse.x = this.viewPort.offsetWidth / this.viewPort.clientWidth - 1;
-        this.mouse.y = -this.viewPort.offsetHeight / this.viewPort.clientHeight + 1;
+        this.mouse.x = 0;
+        this.mouse.y = 0;
       }
       const pos = this.getBlockPositionOfMouse();
       if (!pos) return;
