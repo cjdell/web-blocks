@@ -15,6 +15,22 @@ export default class Culling {
     this.worldInfo = worldInfo;
   }
 
+  getLocalPartitions(): number[] {
+    return this.worldInfo.partitionBoundaries.filter((partition:any) => {
+      var local: boolean = false;
+
+      partition.points.forEach((boundaryPoint:any) => {
+        let player = new THREE.Vector2(this.camera.position.x, this.camera.position.z);
+        let point = new THREE.Vector2(boundaryPoint.x, boundaryPoint.z);
+        if (player.distanceTo(point) < 128) {
+          local = true;
+          return;
+        }
+      });
+      return local;
+    }).map(partition => partition.partitionIndex);
+  }
+
   getVisiblePartitions(): number[] {
     this.camera.updateMatrix(); // make sure camera's local matrix is updated
     this.camera.updateMatrixWorld(false); // make sure camera's world matrix is updated
@@ -52,13 +68,13 @@ export default class Culling {
     }).map(partition => partition.partitionIndex);
   }
 
-  getNewlyVisiblePartitions() {
-    let visiblePartitions = this.getVisiblePartitions();
+  getPartitionsToLoad() {
+    let partitionsToLoad = this.getLocalPartitions();
 
-    let toBeAdded = _.difference(visiblePartitions, this.active);
-    let toBeRemoved = _.difference(this.active, visiblePartitions);
+    let toBeAdded = _.difference(partitionsToLoad, this.active);
+    let toBeRemoved = _.difference(this.active, partitionsToLoad);
 
-    this.active = visiblePartitions;
+    this.active = partitionsToLoad;
 
     return { toBeAdded: toBeAdded, toBeRemoved: toBeRemoved };
   }

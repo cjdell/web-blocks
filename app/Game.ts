@@ -134,7 +134,7 @@ export default class Game {
     this.frame += 1;
 
     if (this.frame % 20 === 0) {
-      const changes = this.culling.getNewlyVisiblePartitions();
+      const changes = this.culling.getPartitionsToLoad();
 
       this.worldViewer.exposeNewPartitions(changes);
     }

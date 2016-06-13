@@ -16,7 +16,7 @@ export default class WorldViewer {
   shaderMaterial: THREE.Material;
   workerInterface: WorkerInterface;
 
-  partitionCaches: PartitionCacheItem[] = null;
+  partitionCaches: Object = {};
 
   constructor(scene: THREE.Scene, worldInfo: com.WorldInfo, shaderMaterial: THREE.Material, workerInterface: WorkerInterface) {
     this.scene = scene;
@@ -26,14 +26,14 @@ export default class WorldViewer {
 
     workerInterface.addChangeListener(data => {
       let changeIndices = <number[]>data.changes;
-      let visibleIndices = <number[]>this.getVisiblePartitionIndices();
+      let loadedIndices = <number[]>this.getLoadedPartitionIndices();
 
-      let toUpdate = _.intersection(changeIndices, visibleIndices);
+      let toUpdate = _.intersection(changeIndices, loadedIndices);
 
       toUpdate.forEach(index => this.updatePartition(index));
     });
 
-    this.partitionCaches = new Array<PartitionCacheItem>(this.worldInfo.partitionCapacity);
+    this.partitionCaches = {};
 
     this.addSky();
   }
@@ -63,14 +63,13 @@ export default class WorldViewer {
     this.workerInterface.getPartition(partitionIndex).then(data => this.gotPartition(data));
   }
 
-  getVisiblePartitionIndices() {
-    return this.partitionCaches
-      .filter(function (partitionCache) {
-        return partitionCache.mesh !== null;
-      })
-      .map(function (partitionCache) {
-        return partitionCache.index;
-      });
+  getLoadedPartitionIndices() {
+    Object.keys(this.partitionCaches).forEach((key) => {
+      if (this.partitionCaches[key].mesh == null) {
+        delete this.partitionCaches[key];
+      }
+    });
+    return Object.keys(this.partitionCaches).map((key) => this.partitionCaches[key].index);
   }
 
   gotPartition(data: any) {

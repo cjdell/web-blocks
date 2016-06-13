@@ -127,7 +127,6 @@ export default class Player {
     if (this.canMove(boundary)) {
       this.position = nextPosition;
     } else {
-      this.zDelta = 0;
       if (this.position.y > nextPosition.y) {
         this.position.y = nextPosition.y;
       } else {
