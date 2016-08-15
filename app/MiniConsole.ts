@@ -99,7 +99,7 @@ export default class MiniConsole {
         }
         this.hider = setTimeout(() => {
             this.output.style.display = "none";
-        }, 5000);
+        }, 5000) as any;
         // If we have more than 6 outputs, remove the top one
         if (this.outputCount++ > 5) {
             var oldestChild: HTMLLIElement = <HTMLLIElement>this.output.querySelector("li");
