@@ -28,8 +28,7 @@ Building
 
 Requires NodeJS. Once installed, run these commands.
 
-  - npm -g install gulp
   - npm install
-  - gulp
+  - npm start
 
 Then point your browser at: http://localhost:8000/
