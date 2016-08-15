@@ -2,7 +2,6 @@
   "name": "Blocks",
   "version": "1.0.0",
   "description": "",
-  "main": "gulp",
   "scripts": {
     "test": "mocha --require ts-node/register test.ts"
   },
@@ -26,12 +25,14 @@
     "brfs": "1.4.1",
     "browserify": "11.2.0",
     "chai": "3.4.0",
-    "gulp": "3.9.0",
-    "gulp-less": "3.0.3",
-    "gulp-sourcemaps": "1.6.0",
-    "gulp-util": "3.0.7",
-    "gulp-webserver": "0.9.1",
+    "css-loader": "0.23.1",
+    "less": "2.7.1",
+    "less-loader": "2.2.3",
     "reactify": "1.1.1",
+    "source-map-loader": "0.1.5",
+    "style-loader": "0.13.1",
+    "transform-loader": "0.2.3",
+    "ts-loader": "0.8.2",
     "ts-node": "0.7.3",
     "tsify": "0.13.2",
     "tslint": "3.5.0",
@@ -39,6 +40,9 @@
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0",
     "watchify": "3.4.0",
+    "webpack": "1.13.1",
+    "webpack-dev-server": "1.14.1",
+    "webpack-livereload-plugin": "0.8.1",
     "ws": "0.8.0"
   },
   "repository": {
