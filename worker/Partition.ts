@@ -51,16 +51,18 @@ export default class Partition {
     const offset = VALUES_PER_BLOCK * index;
 
     const currentType = this.blocks[offset + 0];
+    const currentColour = this.blocks[offset + 1];
 
-    if (currentType === type) return;
+    if (currentType === type && currentColour === colour) return;
 
     this.blocks[offset + 0] = type;
     this.blocks[offset + 1] = colour | 0;
 
-    if (currentType === 0)
+    if (currentType === 0) {
       this.occupied += 1;
-    else if (type === 0)
+    } else if (type === 0) {
       this.occupied -= 1;
+    }
 
     this.dirty = true;
   }

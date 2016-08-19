@@ -27,13 +27,13 @@
       "commit": "0dd29bf8253536ae24e61c109524e924ea510046"
     },
     "react/react.d.ts": {
-      "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
+      "commit": "24b0b62ce0992d0674cd7f31e42927b4deaae386"
     },
     "material-ui/material-ui.d.ts": {
-      "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
+      "commit": "24b0b62ce0992d0674cd7f31e42927b4deaae386"
     },
     "react/react-dom.d.ts": {
-      "commit": "ab2462147a313f69e7118625cfcce21c005fa4af"
+      "commit": "24b0b62ce0992d0674cd7f31e42927b4deaae386"
     }
   }
 }

@@ -53,7 +53,7 @@ const init = (invocation: Invocation<void>): void => {
   player = new Player(world);
   api = new Api(world, player);
   scriptRunner = new ScriptRunner(api);
-  cliServer = new CliServer(scriptRunner);
+  // cliServer = new CliServer(scriptRunner);
 
   world.init();
 

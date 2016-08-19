@@ -139,9 +139,9 @@ export default class Game {
       this.worldViewer.exposeNewPartitions(changes);
     }
 
-    // if (this.frame % 3 === 0) {
+    if (this.frame % 3 === 0) {
     this.effect.render(this.scene, this.camera);
-    // }
+    }
 
     if (this.log) console.timeEnd('frame');
   }

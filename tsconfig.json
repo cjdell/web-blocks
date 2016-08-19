@@ -19,5 +19,12 @@
     "./**/*.tsx",
     "./**/*.d.ts",
     "!./node_modules/**/*.ts"
-  ]
+  ],
+  "exclude": [
+    "node_modules",
+    "bower_components"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    
+  }
 }

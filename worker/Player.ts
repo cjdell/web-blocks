@@ -21,7 +21,7 @@ export default class Player {
   private lastMovement: Movement;
 
   private lon = 180;
-  private lat = 20;
+  private lat = 0;
   private xDelta = 0;
   private zDelta = 0;
   private lastFrame = Date.now();

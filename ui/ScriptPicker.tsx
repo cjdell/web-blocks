@@ -1,10 +1,7 @@
 import React = require('react');
 import mui = require('material-ui');
 
-const List = mui.List;
-const ListItem = mui.ListItem;
-const ListDivider = mui.ListDivider;
-const Avatar = mui.Avatar;
+const { List, ListItem } = mui;
 
 const ScriptPicker = React.createClass({
   getInitialState() {

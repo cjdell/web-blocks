@@ -3,14 +3,7 @@
 import React = require('react');
 import mui = require('material-ui');
 
-const Dialog = mui.Dialog;
-const FlatButton = mui.FlatButton;
-const RaisedButton = mui.RaisedButton;
-const Toolbar = mui.Toolbar;
-const ToolbarGroup = mui.ToolbarGroup;
-const Tabs = mui.Tabs;
-const Tab = mui.Tab;
-const FontIcon = mui.FontIcon;
+const { Dialog, FlatButton, RaisedButton, Toolbar, ToolbarGroup, Tabs, Tab, TextField } = mui;
 
 const ScriptPicker = require('./ScriptPicker');
 
@@ -25,7 +18,15 @@ interface CodeEditorProps {
 
 const CodeEditor = React.createClass<CodeEditorProps, any>({
   getInitialState() {
-    return { mode: 'console', lines: [{ line: introMessage, type: 'intro' }], commands: [], scriptName: 'Scratch Pad' };
+    return {
+      mode: 'console',
+      lines: [{ line: introMessage, type: 'intro' }],
+      commands: [],
+      scriptName: 'Scratch Pad',
+      saveAsName: '',
+      scriptPickerDialogOpen: false,
+      saveAsDialogOpen: false
+    };
   },
   keyPress(e: any) {
     const consoleTextarea = this.refs.code;
@@ -85,6 +86,11 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
     this.addLine(res.result, 'answer');
   },
   runClicked() {
+    if (!this.state.scriptName) {
+      alert('Please save your script first');
+      return;
+    }
+
     const scriptTextarea = this.refs.script;
     const scriptCode = scriptTextarea.value;
 
@@ -92,13 +98,56 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
 
     (window as any).workerInterface.runScript(scriptCode, false);
   },
+  newClicked() {
+    const scriptTextarea = this.refs.script as HTMLTextAreaElement;
+
+    this.setState({ scriptName: '' });
+
+    scriptTextarea.value = '';
+
+    setTimeout(() => {
+      scriptTextarea.focus();
+    }, 100);
+  },
   loadClicked() {
-    this.refs.scriptPickerDialog.show();
+    this.setState({ scriptPickerDialogOpen: true });
   },
   saveClicked() {
-    const scriptTextarea = this.refs.script;
+    if (!this.state.scriptName) {
+      return this.saveAsClicked();
+    }
+
+    const scriptTextarea = this.refs.script as HTMLTextAreaElement;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
+  },
+  saveAsClicked() {
+    this.setState({
+      saveAsName: this.state.scriptName,
+      saveAsDialogOpen: true
+    });
+
+    // saveAsNameInput loses focus on typing if using React event handling....
+    setTimeout(() => {
+      const saveAsNameInput = document.getElementById('saveAsNameInput') as HTMLInputElement;
+      if (saveAsNameInput) saveAsNameInput.value = this.state.saveAsName;
+
+      saveAsNameInput.onchange = () => {
+        this.setState({ saveAsName: saveAsNameInput.value });
+      };
+
+      saveAsNameInput.focus();
+    }, 100);
+  },
+  saveAsDialogSaveClicked() {
+    const scriptTextarea = this.refs.script;
+
+    this.setState({
+      scriptName: this.state.saveAsName,
+      saveAsDialogOpen: false
+    });
+
+    this.props.scriptStorage.putScript(this.state.saveAsName, scriptTextarea.value);
   },
   tabClick(mode: string) {
     this.setState({ mode });
@@ -126,69 +175,107 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
   scriptChosen(name: string) {
     const scriptTextarea = this.refs.script;
 
-    this.setState({ scriptPickerVisible: false, scriptName: name });
+    this.setState({
+      scriptName: name,
+      scriptPickerDialogOpen: false
+    });
 
     const script = this.props.scriptStorage.getScript(name);
 
     scriptTextarea.value = script;
-
-    this.refs.scriptPickerDialog.dismiss();
+  },
+  scriptPickerDialogClosing() {
+    this.setState({ scriptPickerDialogOpen: false });
+  },
+  saveAsDialogClosing() {
+    this.setState({ saveAsDialogOpen: false });
   },
   render() {
     const items = this.state.lines.map((line: { type: string, line: string }, index: number) => {
       return <li key={index} className={line.type}>{line.line}</li>;
     });
 
-    const customActions = [
+    const scriptPickerCustomActions = [
       <FlatButton
         key="cancel"
         label="Cancel"
         secondary={true}
-        onTouchTap={(function() { this.refs.scriptPickerDialog.dismiss(); }).bind(this)} />
+        onTouchTap={this.scriptPickerDialogClosing} />
+    ];
+
+    const saveAsCustomActions = [
+      <FlatButton
+        key="cancel"
+        label="Cancel"
+        secondary={true}
+        onTouchTap={this.saveAsDialogClosing} />,
+      <FlatButton
+        key="save"
+        label="Save"
+        onTouchTap={this.saveAsDialogSaveClicked} />
     ];
 
     return (
-    <div className={'codeEditor ' + (this.props.visible ? 'show' : 'hide')}>
+      <div className={'codeEditor ' + (this.props.visible ? 'show' : 'hide') }>
 
-      <Tabs>
-        <Tab label="Console">
-          <div className="codeView console">
-            <ul ref="lines" onClick={this.linesClick}>
-              {items}
-              <li><textarea ref="code" onKeyPress={this.keyPress} onKeyUp={this.keyUp}></textarea></li>
-            </ul>
-          </div>
-        </Tab>
-        <Tab label="Script">
-          <Toolbar>
-            <ToolbarGroup>
-              <RaisedButton primary={true} onTouchTap={this.loadClicked} label="Open" />
-              <RaisedButton secondary={true} onTouchTap={this.runClicked} label="Run" />
-              <RaisedButton onTouchTap={this.saveClicked} label="Save" />
-            </ToolbarGroup>
-          </Toolbar>
+        <Tabs>
+          <Tab label="Console">
+            <div className="codeView console">
+              <ul ref="lines" onClick={this.linesClick}>
+                {items}
+                <li><textarea ref="code" onKeyPress={this.keyPress} onKeyUp={this.keyUp}></textarea></li>
+              </ul>
+            </div>
+          </Tab>
+          <Tab label="Script">
+            <Toolbar>
+              <ToolbarGroup>
+                <RaisedButton primary={true} onTouchTap={this.newClicked} label="New" />
+                <RaisedButton primary={true} onTouchTap={this.loadClicked} label="Open..." />
+                <RaisedButton onTouchTap={this.saveClicked} label="Save" />
+                <RaisedButton onTouchTap={this.saveAsClicked} label="Save As..." />
+                <RaisedButton secondary={true} onTouchTap={this.runClicked} label="Run ▶" />
+              </ToolbarGroup>
+            </Toolbar>
 
-          <div className="codeView script">
-            <h3>{this.state.scriptName}</h3>
-            <textarea ref="script"></textarea>
-          </div>
-        </Tab>
-      </Tabs>
+            <div className="codeView script">
+              <h3>{this.state.scriptName || '[New Script]'}</h3>
+              <textarea ref="script"></textarea>
+            </div>
+          </Tab>
+        </Tabs>
 
-      <Dialog
-        title="Choose a script..."
-        actions={customActions}
-        ref="scriptPickerDialog"
-        modal={false}
-        autoDetectWindowHeight={true}
-        autoScrollBodyContent={true}>
-        <ScriptPicker
-          visible={true}
-          scriptStorage={this.props.scriptStorage}
-          onScriptChosen={this.scriptChosen}/>
-      </Dialog>
+        <Dialog
+          open={this.state.scriptPickerDialogOpen}
+          onRequestClose={this.scriptPickerDialogClosing}
+          title="Choose a script..."
+          actions={scriptPickerCustomActions}
+          ref="scriptPickerDialog"
+          modal={false}
+          autoDetectWindowHeight={true}
+          autoScrollBodyContent={true}>
+          <ScriptPicker
+            visible={true}
+            scriptStorage={this.props.scriptStorage}
+            onScriptChosen={this.scriptChosen}/>
+        </Dialog>
 
-    </div>
+        <Dialog
+          open={this.state.saveAsDialogOpen}
+          onRequestClose={this.state.saveAsDialogClosing}
+          key="saveAsDialog"
+          title="Save as..."
+          actions={saveAsCustomActions}
+          ref="saveAsDialog"
+          modal={false}
+          autoDetectWindowHeight={true}
+          autoScrollBodyContent={true}>
+          <TextField
+            key="saveAsNameInput"
+            id="saveAsNameInput" />
+        </Dialog>
+
+      </div>
     );
   }
 });
