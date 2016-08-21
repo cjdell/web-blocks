@@ -2,7 +2,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
-const blockTypes = [
+const blockTypes: Array<BlockType> = [
   {
     "name": "Air",
     "textures": {
@@ -25,6 +25,13 @@ const blockTypes = [
     }
   },
   {
+    "name": "Dirt",
+    "textures": {
+      "top": "textures/dirt.png",
+      "side": "textures/dirt.png"
+    }
+  },
+  {
     "name": "Water",
     "textures": {
       "top": "textures/water.png",
@@ -36,6 +43,20 @@ const blockTypes = [
     "textures": {
       "top": "textures/webcam.png",
       "side": "textures/webcam.png"
+    }
+  },
+  {
+    "name": "Sand",
+    "textures": {
+      "top": "textures/sand.png",
+      "side": "textures/sand.png"
+    }
+  },
+  {
+    "name": "Melon",
+    "textures": {
+      "top": "textures/melon_top.png",
+      "side": "textures/melon_side.png"
     }
   },
   {
@@ -56,6 +77,25 @@ const blockTypes = [
   }
 ];
 
+function getId(name: string) {
+  const blockType = blockTypes.filter(blockType => blockType.name === name)[0];
+
+  return blockTypes.indexOf(blockType);
+}
+
+export const BlockTypeIds = {
+  Air: getId('Air'),
+  Stone: getId('Stone'),
+  Grass: getId('Grass'),
+  Dirt: getId('Dirt'),
+  Water: getId('Water'),
+  Webcam: getId('Webcam'),
+  Sand: getId('Sand'),
+  Melon: getId('Melon'),
+  Colour: getId('Colour'),
+  Fence: getId('Fence')
+};
+
 export interface BlockType {
   name: string;
   hideFromToolbox?: boolean;
@@ -66,7 +106,5 @@ export interface BlockType {
 }
 
 export class BlockTypeList {
-  getBlockTypes(): Array<BlockType> {
-    return blockTypes;
-  }
+  getBlockTypes = () => blockTypes;
 }

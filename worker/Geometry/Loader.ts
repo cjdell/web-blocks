@@ -1,8 +1,7 @@
 "use strict";
 /// <reference path="../../typings/tsd.d.ts" />
-import THREE = require('three');
-
 import com from '../../common/WorldInfo';
+import { BlockTypeIds } from '../../common/BlockTypeList';
 import { Geometry } from './Geometry';
 import { FenceGeometry } from './FenceGeometry';
 
@@ -16,15 +15,15 @@ export class Loader {
   constructor(worldInfo: com.WorldInfo) {
     this.worldInfo = worldInfo;
 
-    this.geometries[6] = new FenceGeometry(this.worldInfo);
+    this.geometries[BlockTypeIds.Fence] = new FenceGeometry(this.worldInfo);
   }
 
   init(): Promise<void> {
-    return this.geometries[6].init();
+    return this.geometries[BlockTypeIds.Fence].init();
   }
 
   getTypes(): number[] {
-    return Object.keys(this.geometries).map(t => parseInt(t));
+    return Object.keys(this.geometries).map(t => parseInt(t, 10));
   }
 
   getGeometry(type: number): Geometry {

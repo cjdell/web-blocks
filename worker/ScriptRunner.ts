@@ -26,6 +26,7 @@ export default class ScriptRunner {
     }
 
     this.api.clearIntervals();
+    this.api.clearTimeouts();
 
     return this.evaluate(toRun, code, false);
   }

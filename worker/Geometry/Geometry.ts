@@ -18,7 +18,7 @@ export class Geometry {
 
   getVertexCount(): number {
     if (!this.template) return 0;
-    
+
     return (<any>this.template.attributes).position.length / 3;
   }
 

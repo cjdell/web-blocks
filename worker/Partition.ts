@@ -25,7 +25,11 @@ export default class Partition {
 
     this.index = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
     this.capacity = this.worldInfo.partitionCapacity;
-    this.offset = new com.IntVector3(ppos.x * this.worldInfo.partitionDimensionsInBlocks.x, ppos.y * this.worldInfo.partitionDimensionsInBlocks.y, ppos.z * this.worldInfo.partitionDimensionsInBlocks.z);
+    this.offset = new com.IntVector3(
+      ppos.x * this.worldInfo.partitionDimensionsInBlocks.x,
+      ppos.y * this.worldInfo.partitionDimensionsInBlocks.y,
+      ppos.z * this.worldInfo.partitionDimensionsInBlocks.z
+    );
 
     this.dirty = false;
     this.occupied = 0;   // Total of everything that isn't air

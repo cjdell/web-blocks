@@ -1,3 +1,8 @@
+#define WEBCAM_ID 5.0
+
+// Number block types
+#define MAX_TYPE_COUNT 16.0
+
 attribute vec3 offset;
 attribute vec4 data;
 
@@ -35,12 +40,6 @@ void main() {
     float shade = data.z;
     float colour = data.w;
 
-    // Number of textures per cube
-    float sideCount = 8.0;
-
-    // Number block types
-    float typeCount = 8.0;
-
     float isSide = 0.0;
 
     if (side == 0.0 || side == 1.0 || side == 4.0 || side == 5.0) {
@@ -51,16 +50,16 @@ void main() {
     
     uv2 = ((uv2 - 0.5) * (0.97)) + 0.5;
 
-    vUv.x = uv2.x * (1.0 / sideCount) + isSide * (1.0 / sideCount);
-    vUv.y = uv2.y * (1.0 / typeCount) + type * (1.0 / typeCount);
+    vUv.x = uv2.x * (1.0 / MAX_TYPE_COUNT) + isSide * (1.0 / MAX_TYPE_COUNT);
+    vUv.y = uv2.y * (1.0 / MAX_TYPE_COUNT) + type * (1.0 / MAX_TYPE_COUNT);
 
     /*if (type == 3.0) {
         vPos.y += sin(time / 3.0) / 4.0 - 0.5;
     }*/
 
-    if (type == 4.0) {
-        // Webcam uses original coords
-        vUv = uv;
+    if (type == WEBCAM_ID) {
+      // Webcam uses original coords
+      vUv = uv;
     }
 
     // Rounding hack...

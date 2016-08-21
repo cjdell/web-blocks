@@ -1,10 +1,9 @@
 "use strict";
 /// <reference path="../../typings/tsd.d.ts" />
-import THREE = require('three');
-
 import com from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 import ImprovedNoise from '../ImprovedNoise';
+import { BlockTypeIds } from '../../common/BlockTypeList';
 
 export interface LandscapeOptions {
   height: number;
@@ -41,7 +40,8 @@ export class LandscapeOperation extends Operation {
       ids[index] = index;
     }
 
-    const width = this.worldInfo.partitionDimensionsInBlocks.x, height = this.worldInfo.partitionDimensionsInBlocks.z;
+    const width = this.worldInfo.partitionDimensionsInBlocks.x;
+    const height = this.worldInfo.partitionDimensionsInBlocks.z;
 
     const data = new Float64Array(width * height);
     const perlin = new ImprovedNoise();
@@ -52,7 +52,7 @@ export class LandscapeOperation extends Operation {
     let index = 0;
 
     for (let j = 0; j < 5; j++) {
-      if (j == 0) for (let i = 0; i < size; i++) data[i] = 0;
+      if (j === 0) for (let i = 0; i < size; i++) data[i] = 0;
 
       index = 0;
 
@@ -77,14 +77,14 @@ export class LandscapeOperation extends Operation {
 
             if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');
 
-            buffer[rindex * 2 + 0] = 2;
+            buffer[rindex * 2 + 0] = BlockTypeIds.Grass;
           }
         } else {
           const rindex = this.worldInfo.rindex(x, 2, z);
 
           // if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');
 
-          buffer[rindex * 2 + 0] = 3;
+          buffer[rindex * 2 + 0] = BlockTypeIds.Water;
         }
       }
     }

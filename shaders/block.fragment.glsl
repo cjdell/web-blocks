@@ -1,5 +1,9 @@
 #define M_PI 3.1415926535897932384626433832795
 
+#define WATER_ID 4.0
+#define WEBCAM_ID 5.0
+#define COLOUR_ID 8.0
+
 uniform sampler2D textures;
 uniform sampler2D webcam;
 
@@ -38,12 +42,12 @@ void main() {
 
   vec4 col;
 
-  if (type == 4.0)
+  if (type == WEBCAM_ID)
     col = texture2D(webcam, uv);
   else
     col = texture2D(textures, uv);
 
-  if (type == 5.0) {
+  if (type == COLOUR_ID) {
     col = normalize(col + vec4(vColour, 0.0));
   }
 
@@ -60,7 +64,7 @@ void main() {
   float shine = 0.0;
 
   // Make water somewhat wavey
-  if (type == 3.0) {
+  if (type == WATER_ID) {
     shine = sin(vPos.x + time * 0.5) * sin(vPos.z + time * 0.3) * 0.05;
   }
 

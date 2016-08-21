@@ -51,14 +51,17 @@ const samples = [
     sample: true,
     modified: new Date(2015, 5, 7),
     code: fs.readFileSync('./samples/Palette.js')
-  },
-  {
+  }, {
     name: 'Bound Pillar',
     sample: true,
     modified: new Date(2016, 5, 30),
     code: fs.readFileSync('./samples/BoundPillar.js')
-  },
-  {
+  }, {
+    name: 'Pong',
+    sample: true,
+    modified: new Date(2016, 8, 21),
+    code: fs.readFileSync('./samples/Pong.js')
+  }, {
     name: 'MouseBlock',
     sample: true,
     modified: new Date(2016, 5, 30),
@@ -86,7 +89,7 @@ export default class ScriptStorage {
   }
 
   save() {
-    const scriptsToSave = _.filter(this.scripts, function(s) {
+    const scriptsToSave = _.filter(this.scripts, function (s) {
       return !s.sample;
     });
 
@@ -102,7 +105,7 @@ export default class ScriptStorage {
   }
 
   getScript(name: string) {
-    const matches = this.scripts.filter(function(script) {
+    const matches = this.scripts.filter(function (script) {
       return script.name === name;
     });
 
@@ -114,7 +117,7 @@ export default class ScriptStorage {
   }
 
   putScript(name: string, code: string): void {
-    const matches = this.scripts.filter(function(script) {
+    const matches = this.scripts.filter(function (script) {
       return script.name === name;
     });
 

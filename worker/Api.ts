@@ -2,6 +2,7 @@
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
+import { BlockTypeIds }  from '../common/BlockTypeList';
 import World from './World';
 import Player from './Player';
 
@@ -10,17 +11,11 @@ export default class Api {
   player: Player;
 
   get BlockType() {
-    return {
-      Air: 0,
-      Stone: 1,
-      Grass: 2,
-      Water: 3,
-      Camera: 4,
-      Colour: 5
-    };
+    return BlockTypeIds;
   };
 
   intervalRefs = <number[]>[];
+  timeoutRefs = <number[]>[];
 
   constructor(world: World, player: Player) {
     this.world = world;
@@ -45,12 +40,12 @@ export default class Api {
 
   print(msg: any) {
     if (msg instanceof Array) msg = JSON.stringify(msg);
-    if (msg instanceof Object || typeof(msg) === "object") {
-      if (typeof(msg) === "undefined") return;
+    if (msg instanceof Object || typeof (msg) === "object") {
+      if (typeof (msg) === "undefined") return;
       else if (msg === null || msg.toString && msg.toString() === "[object Object]") msg = JSON.stringify(msg);
     }
     if (msg && msg.toString) msg = msg.toString();
-    if (typeof(msg) !== "string") msg = "Error: unable to print.";
+    if (typeof (msg) !== "string") msg = "Error: unable to print.";
     this.player.print(msg);
   }
 
@@ -70,7 +65,10 @@ export default class Api {
     this.world.setBlocks(x, y, z, x, y, z, type, colour);
   }
 
-  setBlocks(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, type: number, colour: number): void {
+  setBlocks(
+    x1: number, y1: number, z1: number,
+    x2: number, y2: number, z2: number,
+    type: number, colour: number): void {
     this.world.setBlocks(x1, y1, z1, x2, y2, z2, type, colour);
   }
 
@@ -103,4 +101,18 @@ export default class Api {
     this.intervalRefs.forEach(self.clearInterval);
     this.intervalRefs.length = 0;
   }
+
+  setTimeout(func: Function, timeout: number): void {
+    const ref = self.setTimeout(func, timeout);
+    this.timeoutRefs.push(ref);
+  }
+
+  clearTimeouts(): void {
+    this.timeoutRefs.forEach(self.clearTimeout);
+    this.timeoutRefs.length = 0;
+  }
 }
+
+Object.keys(BlockTypeIds).forEach(blockTypeName => {
+  Api.prototype[blockTypeName] = BlockTypeIds[blockTypeName];
+});

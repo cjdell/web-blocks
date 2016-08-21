@@ -120,6 +120,12 @@ body {
         width: 82px;
         height: 82px;
         margin: 0 8px 8px 0;
+
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -o-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        -ms-interpolation-mode: nearest-neighbor;
+        image-rendering: pixelated;
       }
     }
 
@@ -135,8 +141,8 @@ body {
       border: solid 2px #fff;
 
       &.codeButton {
-        background: #9999ff;
         font-family: Courier New, Courier, monospace;
+        font-weight: bold;
 
         -webkit-animation-name: pulsate;
         -webkit-animation-duration: 2s;

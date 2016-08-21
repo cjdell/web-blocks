@@ -16,6 +16,8 @@ import CardboardViewPoint from './CardboardViewPoint';
 
 const win = <any>self;
 
+const MAX_TYPE_COUNT = 16.0;
+
 export default class Game {
   platform: DesktopPlatform | CardboardPlatform;
 
@@ -187,10 +189,8 @@ export default class Game {
   getBlockTexture(blockTypes: Array<BlockType>) {
     const canvas = document.createElement('canvas');
 
-    const typeCount = 8;
-
-    canvas.width = typeCount * 16;
-    canvas.height = typeCount * 16;
+    canvas.width = MAX_TYPE_COUNT * 16;
+    canvas.height = MAX_TYPE_COUNT * 16;
 
     const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
 
@@ -203,8 +203,8 @@ export default class Game {
       return Promise.all([top, side]).then((results) => {
         const top = results[0], side = results[1];
 
-        ctx.drawImage(top, 0, (typeCount - index - 1) * 16, 16, 16);
-        ctx.drawImage(side, 16, (typeCount - index - 1) * 16, 16, 16);
+        ctx.drawImage(top, 0, (MAX_TYPE_COUNT - index - 1) * 16, 16, 16);
+        ctx.drawImage(side, 16, (MAX_TYPE_COUNT - index - 1) * 16, 16, 16);
       });
     });
 
