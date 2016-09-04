@@ -126,7 +126,7 @@ export default class WorldViewer {
     let plane = new THREE.Mesh(geometry, material);
 
     plane.position.x = this.worldInfo.worldDimensionsInBlocks.x / 2;
-    plane.position.y = 100;
+    plane.position.y = 128;
     plane.position.z = this.worldInfo.worldDimensionsInBlocks.z / 2;
 
     plane.rotation.x = Math.PI / 2;

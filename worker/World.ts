@@ -91,7 +91,7 @@ export default class World {
     }
 
     // Apply the default landscape
-    const randomHeight = this.worldInfo.partitionDimensionsInBlocks.y >> 1;
+    const randomHeight = 16; //this.worldInfo.partitionDimensionsInBlocks.y >> 1;
     const landscapeOperation = new LandscapeOperation(this.worldInfo, { height: randomHeight });
     const landscapeCommand = new OperationCommand(this.worldInfo, this.commands.length, landscapeOperation);
 

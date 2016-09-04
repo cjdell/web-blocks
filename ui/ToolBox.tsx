@@ -131,6 +131,8 @@ const ToolBox = React.createClass<{ game: Game }, any>({
         <div className="author">
           <div>Created by: <a href="https://twitter.com/cjdell" target="_blank"> @cjdell</a></div>
           <div><a href="https://github.com/cjdell/web-blocks" target="_blank">GitHub</a></div>
+          <div><a href="http://chrisdell.info/web-blocks-tutorial-1" target="_blank">Tutorial 1</a></div>
+          <div><a href="http://chrisdell.info/web-blocks-tutorial-2" target="_blank">Tutorial 2</a></div>
         </div>
       </div>
     );

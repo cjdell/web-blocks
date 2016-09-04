@@ -68,6 +68,13 @@ const blockTypes: Array<BlockType> = [
     }
   },
   {
+    "name": "Glass",
+    "textures": {
+      "top": "textures/glass.png",
+      "side": "textures/glass.png"
+    }
+  },
+  {
     "name": "Fence",
     "hideFromToolbox": true,    // WIP so disabling for now...
     "textures": {
@@ -93,6 +100,7 @@ export const BlockTypeIds = {
   Sand: getId('Sand'),
   Melon: getId('Melon'),
   Colour: getId('Colour'),
+  Glass: getId('Glass'),
   Fence: getId('Fence')
 };
 

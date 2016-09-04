@@ -22,6 +22,18 @@ export default class Api {
     this.player = player;
   }
 
+  resetPlayer() {
+    this.setGravity(0.002);
+    this.setPosition(100, 24, 120);
+    this.setDirection(0, 180);
+  }
+
+  undo(times = 1) {
+    for (let i = 0; i < times; i += 1) {
+      this.world.undo();
+    }
+  }
+
   get help() {
     return [
       'Here you can type JavaScript commands!',
@@ -55,6 +67,10 @@ export default class Api {
 
   bindScript(fn: Function, index: number) {
     this.player.boundScripts[index] = fn;
+  }
+
+  setGravity(gravity: number) {
+    this.player.gravity = gravity;
   }
 
   getMousePosition(): { pos: com.IntVector3, side: number } {

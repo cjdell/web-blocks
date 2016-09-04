@@ -44,7 +44,7 @@ const checkForChangedPartitions = _.debounce(() => {
 const init = (invocation: Invocation<void>): void => {
   const worldInfo = new com.WorldInfo({
     worldDimensionsInPartitions: new com.IntVector3(32, 1, 32),
-    partitionDimensionsInBlocks: new com.IntVector3(32, 32, 32),
+    partitionDimensionsInBlocks: new com.IntVector3(32, 128, 32),
     partitionBoundaries: null
   });
 

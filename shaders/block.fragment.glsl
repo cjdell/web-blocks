@@ -59,7 +59,8 @@ void main() {
     addedLights.rgb += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLightColor[l];
   }
 
-  gl_FragColor = col * (addedLights + vec4(ambientLightColor, 1.0));
+  float overcast = ((sin(time * 0.1 + vPos.x * 0.1) + 1.0) * 0.25 + 0.5);
+  gl_FragColor = col * (addedLights + vec4(ambientLightColor, 1.0)) * overcast;
 
   float shine = 0.0;
 

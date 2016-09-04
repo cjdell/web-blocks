@@ -62,10 +62,20 @@ const samples = [
     modified: new Date(2016, 8, 21),
     code: fs.readFileSync('./samples/Pong.js')
   }, {
-    name: 'MouseBlock',
+    name: 'Mouse Block',
     sample: true,
     modified: new Date(2016, 5, 30),
     code: fs.readFileSync('./samples/MouseBlock.js')
+  }, {
+    name: 'Bound House',
+    sample: true,
+    modified: new Date(2016, 8, 28),
+    code: fs.readFileSync('./samples/BoundHouse.js')
+  }, {
+    name: 'UFO',
+    sample: true,
+    modified: new Date(2016, 8, 28),
+    code: fs.readFileSync('./samples/UFO.js')
   }
 ];
 
@@ -146,18 +156,3 @@ export default class ScriptStorage {
   }
 }
 
-/*function makeRain(x, z) {
-  const h = 30;
-  setInterval(function() {
-    if (h <= 0) return;
-
-    api.setBlocks(x, h, z, x, h + 2, z, 0);
-    api.setBlocks(x, h, z, x, h - 2, z, 3);
-
-    h = h - 1;
-  }, 100);
-}
-
-setInterval(function() {
-  makeRain(100 * Math.random(), 100 * Math.random());
-}, 300);*/

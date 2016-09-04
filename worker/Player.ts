@@ -45,7 +45,11 @@ export default class Player {
   }
 
   jump() {
-    if (this.gravity !== 0) this.velocity.y = 0.1;
+    if (this.gravity > 0) {
+      this.velocity.y = 0.1;
+    } else if (this.gravity < 0) {
+      this.velocity.y = -0.1;
+    }
   }
 
   tick() {
