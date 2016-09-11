@@ -23,9 +23,7 @@ export default class Api {
   }
 
   resetPlayer() {
-    this.setGravity(0.002);
-    this.setPosition(100, 24, 120);
-    this.setDirection(0, 180);
+    this.player.resetPlayer();
   }
 
   undo(times = 1) {

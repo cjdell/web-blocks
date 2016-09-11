@@ -31,8 +31,14 @@ export default class Player {
   constructor(world: World) {
     this.world = world;
 
+    this.resetPlayer();
+  }
+
+  resetPlayer() {
     this.position = new THREE.Vector3(100, 24, 120);
     this.velocity = new THREE.Vector3(0, 0, 0);
+
+    this.setDirection(new THREE.Vector2(0, 180));
 
     this.lastMovement = {
       move: new THREE.Vector3(0, 0, 0),
@@ -124,7 +130,13 @@ export default class Player {
     const nextPosition = this.position.clone().add(shift);
     const boundary = this.position.clone().add(shift.normalize());  // Give player a radius of 1 for CD
 
-    this.canMove(nextPosition, boundary);
+    if (nextPosition.y < -100) {
+      // Player has fallen through the world, reset
+      this.resetPlayer();
+      return;
+    }
+
+    this.clipMovement(nextPosition, boundary);
 
     // Camera target is 2 units (arbitary distance) in front of the view point
     const targetStep = new THREE.Vector3(0, 0, 2);
@@ -144,12 +156,16 @@ export default class Player {
     return shift;
   }
 
-  canMove(nextPosition: THREE.Vector3, boundary: THREE.Vector3) {
-    if (nextPosition.x < 0 || nextPosition.z < 0) return false;
-
+  clipMovement(nextPosition: THREE.Vector3, boundary: THREE.Vector3) {
     const oldPosition = this.position;
 
     const test = (position: THREE.Vector3) => {
+      if (position.x < 0) return false;
+      if (position.z < 0) return false;
+
+      if (position.x > this.world.worldInfo.worldDimensionsInBlocks.x) return false;
+      if (position.z > this.world.worldInfo.worldDimensionsInBlocks.z) return false;
+
       const x = position.x | 0;
       const y = (position.y - 0.5) | 0;
       const z = position.z | 0;
@@ -180,7 +196,6 @@ export default class Player {
       if (!canz) {
         this.velocity.z = 0;
         this.position.z = oldPosition.z;
-        this.zDelta = 0;
       }
 
       if (!canx) {
