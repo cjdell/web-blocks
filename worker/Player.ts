@@ -4,9 +4,12 @@ import THREE = require('three');
 import World from './World';
 import com from '../common/WorldInfo';
 import { Movement } from '../common/Types';
+import { BlockTypeIds } from '../common/BlockTypeList';
+
+const FPS = 60;
 
 export default class Player {
-  gravity = 0.002;
+  gravity = 0.0;
   changeListener: ((position: THREE.Vector3, target: THREE.Vector3) => void);
   print: ((msg: string) => void);
 
@@ -20,10 +23,10 @@ export default class Player {
   private velocity: THREE.Vector3;
   private lastMovement: Movement;
 
-  private lon = 180;
-  private lat = 0;
-  private xDelta = 0;
-  private zDelta = 0;
+  private lon = 0.0;
+  private lat = 0.0;
+  private xDelta = 0.0;
+  private zDelta = 0.0;
   private lastFrame = Date.now();
 
   rightClick: Function = () => console.log("Right clicked!");
@@ -35,6 +38,8 @@ export default class Player {
   }
 
   resetPlayer() {
+    this.gravity = 9.8;
+
     this.position = new THREE.Vector3(100, 24, 120);
     this.velocity = new THREE.Vector3(0, 0, 0);
 
@@ -51,64 +56,21 @@ export default class Player {
   }
 
   jump() {
-    if (this.gravity > 0) {
-      this.velocity.y = 0.1;
-    } else if (this.gravity < 0) {
-      this.velocity.y = -0.1;
+    if (this.gravity >= 0) {
+      this.velocity.y = 5;
+    } else {
+      this.velocity.y = -5;
     }
   }
 
   tick() {
-    if (this.gravity !== 0) {
-      this.walk();
-    } else {
-      this.fly();
-    }
-  }
-
-  fly() {
-    const now = Date.now();
-    const correction = (now - this.lastFrame) / (1000 / 60);
-    this.lastFrame = now;
-
-    this.zDelta += this.lastMovement.move.z * 0.01;         // Creep speed up as user presses W
-
-    if (this.lastMovement.move.z === 0) this.zDelta = 0;   // Full stop
-
-    this.lon -= this.lastMovement.turn.x * correction * 2;
-    this.lat -= this.lastMovement.turn.y * correction * 2;
-
-    this.lat = Math.max(-89.9, Math.min(89.9, this.lat));
-
-    const phi = (90 - this.lat) * Math.PI / 180;
-    const theta = (this.lon * Math.PI / 180);
-
-    this.position.x += correction * ((this.zDelta * 0.5) * Math.cos(theta) + (this.lastMovement.move.x * 0.5) * Math.sin(theta));
-    this.position.z += correction * ((this.zDelta * 0.5) * Math.sin(theta) - (this.lastMovement.move.x * 0.5) * Math.cos(theta));
-    this.position.y += correction * ((this.zDelta * 0.5) * Math.cos(phi));
-
-    const targetX = 2.0 * Math.sin(phi) * Math.cos(theta) + this.position.x;
-    const targetY = 2.0 * Math.cos(phi) + this.position.y;
-    const targetZ = 2.0 * Math.sin(phi) * Math.sin(theta) + this.position.z;
-
-    const target = new THREE.Vector3(targetX, targetY, targetZ);
-
-    if (this.changeListener) this.changeListener(this.position, target);
+    this.walk();
   }
 
   walk() {
     const now = Date.now();
-    const correction = (now - this.lastFrame) / (1000 / 60);
+    const correction = (now - this.lastFrame) / (1000 / FPS);
     this.lastFrame = now;
-
-    this.zDelta += this.lastMovement.move.z * correction * 0.02;         // Creep speed up as user presses W/S
-    this.zDelta = this.lastMovement.move.z * Math.min(Math.abs(this.zDelta), 0.2);
-
-    this.xDelta += this.lastMovement.move.x * correction * 0.02;         // Creep speed up as user presses A/D
-    this.xDelta = this.lastMovement.move.x * Math.min(Math.abs(this.xDelta), 0.1);
-
-    if (this.lastMovement.move.z === 0) this.zDelta = 0;   // Full stop
-    if (this.lastMovement.move.x === 0) this.xDelta = 0;   // Full stop
 
 
     this.lon += this.lastMovement.turn.x * correction * 2;
@@ -119,16 +81,44 @@ export default class Player {
     const phi = this.lat * Math.PI / 180;
     const theta = this.lon * Math.PI / 180;
 
-    this.velocity.y -= this.gravity;   // Gravity
+    const accel = 100 / FPS;
+
+    let traction = 0;
+
+    if ([BlockTypeIds.Air, BlockTypeIds.Glass].indexOf(this.getGround(this.position)) !== -1) {
+      traction = 0.1;
+    } else if ([BlockTypeIds.Water].indexOf(this.getGround(this.position)) !== -1) {
+      traction = 4;
+    } else {
+      traction = 1;
+    }
+
+    this.zDelta = this.lastMovement.move.z * accel * traction;
+    this.xDelta = this.lastMovement.move.x * accel * traction;
+
+    this.zDelta = Math.min(this.zDelta, 10 * traction);
+    this.xDelta = Math.min(this.xDelta, 5 * traction);
+    this.zDelta = Math.max(this.zDelta, -10 * traction);
+    this.xDelta = Math.max(this.xDelta, -5 * traction);
 
     const moveStep = new THREE.Vector3(this.xDelta, 0, this.zDelta);
-    moveStep.multiplyScalar(correction);
 
     const shift = this.rotateStep(moveStep, phi, theta);
-    shift.y = this.velocity.y;
 
-    const nextPosition = this.position.clone().add(shift);
-    const boundary = this.position.clone().add(shift.normalize());  // Give player a radius of 1 for CD
+    this.velocity.x += shift.x;
+    this.velocity.z += shift.z;
+
+    // Friction
+    this.velocity.x -= this.velocity.x * 0.1 * traction;
+    this.velocity.z -= this.velocity.z * 0.1 * traction;
+
+
+    this.velocity.y -= this.gravity / FPS;  // Gravity
+
+    const inc = this.velocity.clone().multiplyScalar(correction / FPS);
+
+    const nextPosition = this.position.clone().add(inc);
+    const boundary = this.position.clone().add(this.velocity.clone().normalize());  // Give player a radius of 1 for CD
 
     if (nextPosition.y < -100) {
       // Player has fallen through the world, reset
@@ -218,14 +208,12 @@ export default class Player {
     return can;
   }
 
-  onGround(position: THREE.Vector3) {
-    const x = Math.floor(position.x);
-    const y = Math.round(position.y) - 1;
-    const z = Math.floor(position.z);
+  getGround(position: THREE.Vector3) {
+    const x = position.x | 0;
+    const y = (position.y - 0.51) | 0;
+    const z = position.z | 0;
 
-    const block = this.world.getBlock(x, y, z);
-
-    return block !== 0;
+    return this.world.getBlock(x, y, z);
   }
 
   update(position: THREE.Vector3, direction: THREE.Vector2) {

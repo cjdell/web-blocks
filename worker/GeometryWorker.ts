@@ -89,7 +89,7 @@ const init = (invocation: Invocation<void>): void => {
 
   setInterval(() => {
     player.tick();
-  }, 10);
+  }, 1000 / 60);
 };
 
 const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {

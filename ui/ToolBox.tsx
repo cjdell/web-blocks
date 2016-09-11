@@ -10,13 +10,13 @@ const MoveTypes = [
     type: 'walk',
     name: 'Walk',
     icon: 'textures/move-walk.png',
-    gravity: 0.002
+    gravity: 9.8
   },
   {
     type: 'fly',
     name: 'Fly',
     icon: 'textures/move-fly.png',
-    gravity: 0.0
+    gravity: 1.0
   }
 ];
 
