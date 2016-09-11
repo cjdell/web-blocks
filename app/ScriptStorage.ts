@@ -27,6 +27,11 @@ const samples = [
     modified: new Date(2015, 5, 1),
     code: fs.readFileSync('./samples/Circle.js')
   }, {
+    name: 'Magic Bridge',
+    sample: true,
+    modified: new Date(2016, 9, 11),
+    code: fs.readFileSync('./samples/MagicBridge.js')
+  }, {
     name: 'Rings',
     sample: true,
     modified: new Date(2015, 5, 2),
