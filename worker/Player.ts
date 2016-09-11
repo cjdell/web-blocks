@@ -117,27 +117,14 @@ export default class Player {
 
     const moveStep = new THREE.Vector3(this.xDelta, 0, this.zDelta);
     moveStep.multiplyScalar(correction);
+
     const shift = this.rotateStep(moveStep, phi, theta);
     shift.y = this.velocity.y;
+
     const nextPosition = this.position.clone().add(shift);
+    const boundary = this.position.clone().add(shift.normalize());  // Give player a radius of 1 for CD
 
-    const boundary = this.position.clone().add(shift.normalize());
-
-    if (this.onGround(nextPosition)) {
-      nextPosition.y = Math.floor(nextPosition.y) + 0.5;
-      this.velocity.y = 0;
-    }
-
-    if (this.canMove(boundary)) {
-      this.position = nextPosition;
-    } else {
-      this.zDelta = 0;
-      if (this.position.y > nextPosition.y) {
-        this.position.y = nextPosition.y;
-      } else {
-        this.velocity.y = 0;
-      }
-    }
+    this.canMove(nextPosition, boundary);
 
     // Camera target is 2 units (arbitary distance) in front of the view point
     const targetStep = new THREE.Vector3(0, 0, 2);
@@ -157,16 +144,63 @@ export default class Player {
     return shift;
   }
 
-  canMove(position: THREE.Vector3) {
-    const x = Math.floor(position.x);
-    const y = Math.floor(position.y);
-    const z = Math.floor(position.z);
+  canMove(nextPosition: THREE.Vector3, boundary: THREE.Vector3) {
+    if (nextPosition.x < 0 || nextPosition.z < 0) return false;
 
-    // I'm two blocks tall!
-    const blockHead = this.world.getBlock(x, y + 1, z);
-    const blockBody = this.world.getBlock(x, y, z);
+    const oldPosition = this.position;
 
-    return blockBody === 0 && blockHead === 0;
+    const test = (position: THREE.Vector3) => {
+      const x = position.x | 0;
+      const y = (position.y - 0.5) | 0;
+      const z = position.z | 0;
+
+      // I'm two blocks tall!
+      const blockHead = this.world.getBlock(x, y + 1, z);
+      const blockBody = this.world.getBlock(x, y, z);
+
+      return blockBody === 0 && blockHead === 0;
+    };
+
+    const can = test(nextPosition);
+
+    const canc = test(oldPosition);
+
+    const canz = test(new THREE.Vector3(oldPosition.x, oldPosition.y, boundary.z));
+    const canx = test(new THREE.Vector3(boundary.x, oldPosition.y, oldPosition.z));
+
+    const cany = test(new THREE.Vector3(oldPosition.x, nextPosition.y, oldPosition.z));
+
+    this.position = nextPosition;
+
+    // If we're blocked in, don't do CD so we can escape (except for ground)
+
+    if (canc) {
+      // We're not blocked in
+
+      if (!canz) {
+        this.velocity.z = 0;
+        this.position.z = oldPosition.z;
+        this.zDelta = 0;
+      }
+
+      if (!canx) {
+        this.velocity.x = 0;
+        this.position.x = oldPosition.x;
+      }
+
+      if (!cany && this.velocity.y > 0) {
+        this.velocity.y = 0;
+        this.position.y = (nextPosition.y | 0) - 0.5;
+      }
+    }
+
+    if (!cany && this.velocity.y < 0) {
+      // Hit the ground
+      this.velocity.y = 0;
+      this.position.y = (nextPosition.y | 0) + 0.5;
+    }
+
+    return can;
   }
 
   onGround(position: THREE.Vector3) {
