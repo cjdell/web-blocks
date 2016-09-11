@@ -4,12 +4,13 @@ import THREE = require('three');
 
 import com from '../common/WorldInfo';
 import { Movement } from '../common/Types';
+import { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 export default class WorkerInterface {
   geoWorker: Worker;
   callbacks: { [id: number]: Function } = {};
 
-  changeListener: Function = null;
+  changeListener: (data: { changes: number[] }) => void = null;
   print: Function = null;
   playerPositionListener: ((position: THREE.Vector3) => void);
   lastId = 0;
@@ -80,10 +81,9 @@ export default class WorkerInterface {
   }
 
   getBlock(pos: THREE.Vector3) {
-    return this.invoke<Object>('getBlock', { pos: pos })
-      .then(function (result: any) {
-        return <number>result.type;
-      });
+    return this.invoke<{ type: number }>('getBlock', { pos: pos }).then((result) => {
+      return result.type;
+    });
   }
 
   setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean) {
@@ -118,14 +118,14 @@ export default class WorkerInterface {
   }
 
   getPartition(index: number) {
-    return this.invoke<Object>('getPartition', { index: index });
+    return this.invoke<{ geo: PartitionGeometryResult }>('getPartition', { index });
   }
 
   registerChangeHandler(changeHandlerOptions: com.ChangeHandlerOptions, callback: (Change: any) => void) {
     return this.invokeCallback<Object>('registerChangeHandler', changeHandlerOptions, callback);
   }
 
-  addChangeListener(listener: (data: any) => void) {
+  addChangeListener(listener: (data: { changes: number[] }) => void) {
     this.changeListener = listener;
   }
 

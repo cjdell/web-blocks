@@ -115,6 +115,11 @@ const undo = (invocation: Invocation<void>) => {
 const getPartition = (invocation: Invocation<{ index: number }>) => {
   const geo = worldGeometry.getPartitionGeometry(invocation.data.index);
 
+  if (!geo.data.position) {
+    console.warn('Partition', invocation.data.index, 'no data');
+    return;
+  }
+
   _self.postMessage(
     {
       id: invocation.id,

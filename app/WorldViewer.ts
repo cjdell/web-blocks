@@ -4,6 +4,7 @@ import _ = require('underscore');
 
 import WorkerInterface from './WorkerInterface';
 import com from '../common/WorldInfo';
+import { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 interface PartitionCacheItem {
   mesh: THREE.Mesh;
@@ -25,10 +26,10 @@ export default class WorldViewer {
     this.workerInterface = workerInterface;
 
     workerInterface.addChangeListener(data => {
-      let changeIndices = <number[]>data.changes;
-      let visibleIndices = <number[]>this.getVisiblePartitionIndices();
+      const changeIndices = data.changes;
+      const visibleIndices = this.getVisiblePartitionIndices();
 
-      let toUpdate = _.intersection(changeIndices, visibleIndices);
+      const toUpdate = _.intersection(changeIndices, visibleIndices);
 
       toUpdate.forEach(index => this.updatePartition(index));
     });
@@ -38,8 +39,8 @@ export default class WorldViewer {
     this.addSky();
   }
 
-  getMesh(bufferGeometry: THREE.BufferGeometry, offset: THREE.Vector3): THREE.Mesh {
-    let mesh = new THREE.Mesh(bufferGeometry, this.shaderMaterial);
+  getMesh(bufferGeometry: THREE.BufferGeometry, offset: com.IntVector3): THREE.Mesh {
+    const mesh = new THREE.Mesh(bufferGeometry, this.shaderMaterial);
 
     mesh.position.x += offset.x;
     mesh.position.y += offset.y;
@@ -49,10 +50,13 @@ export default class WorldViewer {
   }
 
   addPartition(partitionIndex: number): void {
-    let partitionCache = this.partitionCaches[partitionIndex];
+    const partitionCache = this.partitionCaches[partitionIndex];
 
     if (!partitionCache) {
-      this.workerInterface.getPartition(partitionIndex).then(data => this.gotPartition(data));
+      this.workerInterface.getPartition(partitionIndex).then(data =>
+        this.gotPartition(data.geo, partitionIndex)
+      );
+
       return;
     }
 
@@ -60,7 +64,9 @@ export default class WorldViewer {
   }
 
   updatePartition(partitionIndex: number) {
-    this.workerInterface.getPartition(partitionIndex).then(data => this.gotPartition(data));
+    this.workerInterface.getPartition(partitionIndex).then(data =>
+      this.gotPartition(data.geo, partitionIndex)
+    );
   }
 
   getVisiblePartitionIndices() {
@@ -73,9 +79,7 @@ export default class WorldViewer {
       });
   }
 
-  gotPartition(data: any) {
-    let geo = data.geo, partitionIndex = data.index;
-
+  gotPartition(geo: PartitionGeometryResult, partitionIndex: number) {
     let partitionCache = this.partitionCaches[partitionIndex];
 
     if (partitionCache) {
@@ -84,7 +88,7 @@ export default class WorldViewer {
       partitionCache.mesh = null;
     }
 
-    let bufferGeometry = new THREE.BufferGeometry();
+    const bufferGeometry = new THREE.BufferGeometry();
 
     bufferGeometry.addAttribute('position', new THREE.BufferAttribute(geo.data.position, 3));
     bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(geo.data.normal, 3));
@@ -95,11 +99,11 @@ export default class WorldViewer {
     bufferGeometry.computeBoundingSphere();
     bufferGeometry.computeBoundingBox();
 
-    let mesh = this.getMesh(bufferGeometry, geo.offset);
+    const mesh = this.getMesh(bufferGeometry, geo.offset);
 
     partitionCache = {
       index: partitionIndex,
-      mesh: mesh
+      mesh
     };
 
     this.partitionCaches[partitionIndex] = partitionCache;
@@ -108,7 +112,7 @@ export default class WorldViewer {
   }
 
   removePartition(partitionIndex: number) {
-    let partitionCache = this.partitionCaches[partitionIndex];
+    const partitionCache = this.partitionCaches[partitionIndex];
 
     if (!partitionCache) return;
 
@@ -121,9 +125,9 @@ export default class WorldViewer {
   }
 
   addSky() {
-    let geometry = new THREE.PlaneBufferGeometry(1, 1);
-    let material = new THREE.MeshBasicMaterial({ color: 0xbbccff, side: THREE.DoubleSide });
-    let plane = new THREE.Mesh(geometry, material);
+    const geometry = new THREE.PlaneBufferGeometry(1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xbbccff, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(geometry, material);
 
     plane.position.x = this.worldInfo.worldDimensionsInBlocks.x / 2;
     plane.position.y = 128;

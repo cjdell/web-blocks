@@ -1,7 +1,5 @@
 "use strict";
 /// <reference path="../typings/tsd.d.ts" />
-import THREE = require('three');
-
 import com from '../common/WorldInfo';
 import PartitionGeometry from './PartitionGeometry';
 import { VertexData } from './PartitionGeometry';
@@ -14,7 +12,7 @@ export interface PartitionGeometryResult {
 
 export default class WorldGeometry {
   worldInfo: com.WorldInfo;
-  world: World
+  world: World;
   partitionGeometries: PartitionGeometry[];
 
   constructor(worldInfo: com.WorldInfo, world: World) {

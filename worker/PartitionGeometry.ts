@@ -1,20 +1,12 @@
 "use strict";
 /// <reference path="../typings/tsd.d.ts" />
-import THREE = require('three');
-
 import com from '../common/WorldInfo';
 import constants from '../common/Constants';
 import Partition from './Partition';
 import World from './World';
-
-import { Geometry } from './Geometry/Geometry';
-import { FenceGeometry } from './Geometry/FenceGeometry';
 import { Loader } from './Geometry/Loader';
 
-const FACE_PER_CUBE = 6;
 const VERTICES_PER_FACE = 6;
-const VERTICES_PER_CUBE = FACE_PER_CUBE * VERTICES_PER_FACE;
-
 const VALUES_PER_VBLOCK = 7;
 
 const FACES = [
@@ -71,8 +63,6 @@ export default class PartitionGeometry {
   generateGeometry(): void {
     const blocks = this.world.getVisibleBlocks(this.partition.index);
 
-    if (blocks.length === 0) return;
-
     let faceCount = 0, otherVertices = 0;
 
     // Count the faces
@@ -109,7 +99,6 @@ export default class PartitionGeometry {
     for (let i = 0; i < blocks.length / VALUES_PER_VBLOCK; i++) {
       const o = i * VALUES_PER_VBLOCK;
 
-      //const id = blocks[o + 0];
       const index = blocks[o + 1];
       const indexInWorld = blocks[o + 2];
       const type = blocks[o + 3];
