@@ -1,15 +1,15 @@
-import CuboidTool from "./tools/CuboidTool";
 "use strict";
 /// <reference path="../typings/tsd.d.ts" />
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
 import constants from '../common/Constants';
+import { BlockTypeIds } from '../common/BlockTypeList';
 import WorkerInterface from './WorkerInterface';
-import { Context, Tool } from './tools/ToolBase';
 import Webcam from './Webcam';
-
+import { Context, Tool } from './tools/ToolBase';
 import Tools from './tools/Tools';
+import CuboidTool from "./tools/CuboidTool";
 
 export default class Interaction {
   viewPort: HTMLElement;
@@ -60,7 +60,7 @@ export default class Interaction {
   setType(_type: number) {
     this.type = _type;
 
-    if (this.type === 4) this.webcam.init();
+    if (this.type === BlockTypeIds.Webcam) this.webcam.init();
   }
 
   setToolType(toolType: string) {
@@ -70,6 +70,7 @@ export default class Interaction {
   private keyPress(event: KeyboardEvent) {
     if (event.keyCode === 26 && event.ctrlKey) {
       this.workerInterface.undo();
+
     } else if (!(<any>window).blockMovement && event.keyCode >= 48 && event.keyCode <= 57) {
       this.workerInterface.executeBoundScript(event.keyCode - 48);
     }
@@ -80,6 +81,7 @@ export default class Interaction {
       event.preventDefault();
       return;
     }
+
     this.down = true;
   }
 
@@ -87,12 +89,12 @@ export default class Interaction {
     this.mouse.x = (event.clientX / this.viewPort.clientWidth) * 2 - 1;
     this.mouse.y = -(event.clientY / this.viewPort.clientHeight) * 2 + 1;
 
-    let pos = this.getBlockPositionOfMouse();
-    if (!pos) return;
-    this.workerInterface.setMousePosition(pos);
+    const pos = this.getBlockPositionOfMouse();
+
+    if (pos) this.workerInterface.setMousePosition(pos);
 
     if (this.tool) {
-      this.tool.onMouseMove(this.mouse, pos.pos, pos.side);
+      this.tool.onMouseMove(this.mouse, pos ? pos.pos : null, pos ? pos.side : null);
     }
   }
 
@@ -100,7 +102,6 @@ export default class Interaction {
     this.down = false;
 
     const pos = this.getBlockPositionOfMouse();
-    if (!pos) return;
 
     // If we right-click
     if (event.type === 'contextmenu' || event.button === 2) {
@@ -117,7 +118,8 @@ export default class Interaction {
       if (this.tool instanceof CuboidTool) {
         (<CuboidTool>this.tool).context.type = this.type;
       }
-      this.tool.onMouseClick(this.mouse, pos.pos, pos.side);
+
+      this.tool.onMouseClick(this.mouse, pos ? pos.pos : null, pos ? pos.side : null);
     }
   }
 
@@ -138,7 +140,8 @@ export default class Interaction {
       scene: this.scene,
       type: this.type,
       workerInterface: this.workerInterface,
-      getPositionOfMouseAlongXZPlane: this.getPositionOfMouseAlongXZPlane.bind(this),
+      getPositionOfMouseAlongXZPlane: (xPlane: number, zPlane: number) =>
+        this.getPositionOfMouseAlongXZPlane(xPlane, zPlane),
       finished: this.finished.bind(this)
     };
   }

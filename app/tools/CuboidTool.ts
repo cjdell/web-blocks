@@ -3,7 +3,7 @@
 import THREE = require('three');
 
 import com from '../../common/WorldInfo';
-import { Context, Tool } from './ToolBase';
+import { Context } from './ToolBase';
 
 export default class CuboidTool {
   context: Context;
@@ -21,11 +21,12 @@ export default class CuboidTool {
   }
 
   onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3): void {
-    if (this.state === 'select-start') {
+    if (this.state === 'select-start' && pos) {
       this.startPos = pos;
       this.cube = this.addCube(pos);
       this.state = 'select-end';
-    } else if (this.state === 'select-end') {
+
+    } else if (this.state === 'select-end' && pos) {
       this.endPos = pos.clone();
       this.endPos.y = this.startPos.y;
       this.heightPos = pos.clone();
@@ -34,6 +35,7 @@ export default class CuboidTool {
       this.initialMouseHeight = currentMouseHeight;
       this.relMouseHeight = 0;
       this.state = 'select-height';
+
     } else if (this.state === 'select-height') {
       this.context.finished();
       this.heightPos.y = this.endPos.y + this.relMouseHeight;
@@ -43,10 +45,11 @@ export default class CuboidTool {
   }
 
   onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3): void {
-    if (this.state === 'select-end') {
+    if (this.state === 'select-end' && pos) {
       this.endPos = pos.clone();
       this.endPos.y = this.startPos.y;
       this.scaleCube(this.cube, this.startPos, this.endPos);
+
     } else if (this.state === 'select-height') {
       const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(this.endPos.x, this.endPos.z).y;
       this.relMouseHeight = currentMouseHeight - this.initialMouseHeight;
@@ -60,9 +63,9 @@ export default class CuboidTool {
   }
 
   addCube(pos: com.IntVector3) {
-    var geometry = new THREE.BoxGeometry(1, 1, 1);
-    var material = new THREE.MeshLambertMaterial({ color: 0xffff00, side: THREE.DoubleSide });
-    var cube = new THREE.Mesh(geometry, material);
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshLambertMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    const cube = new THREE.Mesh(geometry, material);
 
     cube.position.x = pos.x + 0.5;
     cube.position.y = pos.y + 0.5;
@@ -82,24 +85,24 @@ export default class CuboidTool {
     toPos = toPos.clone();
 
     if (fromPos.x > toPos.x) {
-      var x = fromPos.x;
+      const x = fromPos.x;
       fromPos.x = toPos.x;
       toPos.x = x;
     }
 
     if (fromPos.y > toPos.y) {
-      var y = fromPos.y;
+      const y = fromPos.y;
       fromPos.y = toPos.y;
       toPos.y = y;
     }
 
     if (fromPos.z > toPos.z) {
-      var z = fromPos.z;
+      const z = fromPos.z;
       fromPos.z = toPos.z;
       toPos.z = z;
     }
 
-    var size = toPos.sub(fromPos);
+    let size = toPos.sub(fromPos);
 
     size = size.clone();
 

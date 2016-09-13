@@ -1,4 +1,3 @@
-import HTML = Mocha.reporters.HTML;
 "use strict";
 /// <reference path="../typings/tsd.d.ts" />
 import _ = require('underscore');
@@ -30,7 +29,15 @@ export default class DesktopViewPoint {
   private enterDown: boolean;
   private miniConsole: MiniConsole;
 
-  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
+  constructor(
+    camera: THREE.PerspectiveCamera,
+    light: THREE.Light,
+    viewPort: HTMLDivElement,
+    renderer: THREE.Renderer,
+    scene: THREE.Scene,
+    worldInfo: com.WorldInfo,
+    workerInterface: WorkerInterface
+  ) {
     this.camera = camera;
     this.light = light;
     this.viewPort = viewPort;
@@ -96,7 +103,6 @@ export default class DesktopViewPoint {
   }
 
   keyDown(event: any) {
-
     this.handleTabKey(event);
 
     if (this.miniConsole.isShown()) this.handleEnterKey(event);
@@ -167,6 +173,7 @@ export default class DesktopViewPoint {
 
     if (!this.mouseStop) {
       this.mouseStop = true;
+
       setTimeout(() => {
         this.movement.turn.x = 0;
         this.movement.turn.y = 0;
@@ -179,7 +186,7 @@ export default class DesktopViewPoint {
   }
 
   tick() {
-    //this.workerInterface.move(this.movement, this.turn);
+    return;
   }
 
   onPlayerPositionChanged(player: { position: THREE.Vector3, target: THREE.Vector3 }) {
@@ -192,6 +199,10 @@ export default class DesktopViewPoint {
 
     this.camera.position.set(player.position.x, player.position.y, player.position.z);
     this.camera.lookAt(player.target);
+
+    // this.camera.position.set(player.position.x, player.position.y + 10, player.position.z);
+    // this.camera.lookAt(player.position);
+    // this.camera.rotateZ(-Math.PI / 2);
 
     this.light.position.set(player.position.x, player.position.y, player.position.z);
 
@@ -218,7 +229,7 @@ export default class DesktopViewPoint {
   }
 
   refreshPointerLock() {
-    if (document.visibilityState == "hidden") {
+    if (document.visibilityState === "hidden") {
       this.pointerLock = false;
     }
 
@@ -231,11 +242,12 @@ export default class DesktopViewPoint {
   }
 
   handleTabKey(event: any) {
-    if (event.keyCode == 9 || event.which == 9) {
+    if (event.keyCode === 9 || event.which === 9) {
       event.preventDefault();
+
       if ((<any>window).blockMovement) {
         if (document.activeElement instanceof HTMLTextAreaElement) {
-          var event: any = document.createEvent('TextEvent');
+          const event: any = document.createEvent('TextEvent');
           event.initTextEvent('textInput', true, true, null, "  ", 9, "en-US");
           (<HTMLTextAreaElement>document.activeElement).dispatchEvent(event);
         }
@@ -243,7 +255,7 @@ export default class DesktopViewPoint {
     }
   }
 
-  handleEnterKey (event: any) {
+  handleEnterKey(event: any) {
     if (event.keyCode === 13 && !this.enterDown) {
       this.enterDown = true;
       this.miniConsole.toggle();

@@ -32,14 +32,14 @@ interface Invocation<DataType> {
   data: DataType;
 }
 
-const checkForChangedPartitions = _.debounce(() => {
+const checkForChangedPartitions = _.throttle(() => {
   const dirty = world.getDirtyPartitions();
 
   _self.postMessage({
     action: 'update',
     changes: dirty
   });
-}, 20);
+}, 100);
 
 const init = (invocation: Invocation<void>): void => {
   const worldInfo = new com.WorldInfo({

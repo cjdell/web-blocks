@@ -7,17 +7,16 @@ import com from '../common/WorldInfo';
 const VALUES_PER_BLOCK = 3;
 
 export default class Partition {
-  worldInfo: com.WorldInfo;
-  partitionPosition: com.IntVector3;
-  index: number;
+  public offset: com.IntVector3;
+  public blocks: Uint8Array = null;
+  public index: number;
+  public capacity: number;
+  public occupied = 0;
+  public heightMap: Uint8Array;
 
-  capacity: number;
-  offset: com.IntVector3;
-  blocks: Uint8Array = null;
-  dirty = false;
-  occupied = 0;
-
-  heightMap: Uint8Array;
+  private worldInfo: com.WorldInfo;
+  private partitionPosition: com.IntVector3;
+  private dirty = false;
 
   constructor(worldInfo: com.WorldInfo, ppos: com.IntVector3) {
     this.worldInfo = worldInfo;
@@ -25,6 +24,7 @@ export default class Partition {
 
     this.index = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
     this.capacity = this.worldInfo.partitionCapacity;
+
     this.offset = new com.IntVector3(
       ppos.x * this.worldInfo.partitionDimensionsInBlocks.x,
       ppos.y * this.worldInfo.partitionDimensionsInBlocks.y,
@@ -91,6 +91,10 @@ export default class Partition {
 
   isDirty(): boolean {
     return this.dirty;
+  }
+
+  clearDirty() {
+    this.dirty = false;
   }
 
   updateHeightMap() {

@@ -274,6 +274,7 @@ export default class World {
 
       if (partition.isDirty()) {
         dirty.push(partitionIndex);
+        partition.clearDirty();
       }
     }
 
@@ -410,7 +411,7 @@ export default class World {
       id += 1 | 0;
     }
 
-    partition.dirty = false;
+    partition.clearDirty();
 
     const ret = new Int32Array(id * VALUES_PER_VBLOCK);
 
