@@ -9,7 +9,7 @@ for (var x = -radius; x < radius; x++) {
   var x_squared = x * x;
   for (var z = -radius; z < radius; z++) {
     if (distance(x_squared, z * z) < radius - 1) {
-      setBlocks(x + 100, 0, z + 100, x + 100, height, z + 100, BlockType.Stone);
+      setBlocks(x + 100, 0, z + 100, x + 100, height, z + 100, Stone);
     }
   }
 }
