@@ -74,23 +74,18 @@ export default class Game {
       this.uniforms.color = { type: 'f', value: 1.0 };
       this.uniforms.time = { type: 'f', value: 0.0 };
 
-      this.uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['lights'], this.uniforms]);
-      this.uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib['fog'], this.uniforms]);
-
       const attributes: any = {
         data: { type: 'v4', value: null },
         offset: { type: 'f', value: null }
       };
 
-      const blockMaterial = new THREE.ShaderMaterial({
+      const blockMaterial = new THREE.RawShaderMaterial({
         attributes: attributes,
         uniforms: this.uniforms,
         vertexShader: this.vertexShader,
         fragmentShader: this.fragmentShader,
         vertexColors: THREE.VertexColors,
-        transparent: false,
-        lights: true,
-        fog: true
+        transparent: false
       });
 
       const blockTypes = this.blockTypeList.getBlockTypes();
@@ -99,16 +94,8 @@ export default class Game {
         blockMaterial.uniforms.textures.value = texture;
       });
 
-      const ambientLight = new THREE.AmbientLight(0x777777);
-      this.scene.add(ambientLight);
-
-      // Create light
-      const pointLight = new THREE.PointLight(0xffffff, 1.0);
-      pointLight.position.set(5.0, 5.0, 5.0);
-      this.scene.add(pointLight);
-
       this.worldViewer = new WorldViewer(this.scene, worldInfo, blockMaterial, this.workerInterface);
-      this.viewPoint = this.platform.getViewPoint(this.camera, pointLight, this.viewPort, this.effect, this.scene, worldInfo, this.workerInterface);
+      this.viewPoint = this.platform.getViewPoint(this.camera, null, this.viewPort, this.effect, this.scene, worldInfo, this.workerInterface);
       this.culling = new Culling(this.camera, worldInfo);
       this.webcam = new Webcam();
       this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo, this.webcam);

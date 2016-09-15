@@ -1,3 +1,9 @@
+precision highp float;
+precision highp int;
+
+uniform mat4 viewMatrix;
+uniform vec3 cameraPosition;
+
 #define M_PI 3.1415926535897932384626433832795
 
 #define WATER_ID 4.0
@@ -8,10 +14,6 @@ uniform sampler2D textures;
 uniform sampler2D webcam;
 
 uniform vec3 ambientLightColor;
-
-uniform vec3 pointLightColor[MAX_POINT_LIGHTS];
-uniform vec3 pointLightPosition[MAX_POINT_LIGHTS];
-uniform float pointLightDistance[MAX_POINT_LIGHTS];
 
 uniform float time;
 
@@ -25,9 +27,9 @@ varying float vSide;
 varying float vShade;
 varying vec3 vColour;
 
-uniform vec3 fogColor;
-
 void main() {
+  vec3 fogColor = vec3(1.0, 1.0, 1.0);
+
   vec2 uv = vUv;
 
   float type = floor(vType);
@@ -54,12 +56,15 @@ void main() {
   // Pretty basic lambertian lighting...
   vec4 addedLights = vec4(0.0, 0.0, 0.0, 1.0);
 
-  for (int l = 0; l < MAX_POINT_LIGHTS; l++) {
-    vec3 lightDirection = normalize(vPos - pointLightPosition[l]);
-    addedLights.rgb += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLightColor[l];
-  }
+  //vec3 pointLightPosition = vec3(100.0, 10.0, 100.0);
+  vec3 pointLightColor = vec3(1.0, 1.0, 1.0);
+  vec3 ambientLightColor = vec3(0.5, 0.5, 0.5);
 
-  float overcast = ((sin(time * 0.1 + vPos.x * 0.1) + 1.0) * 0.25 + 0.5);
+  //vec3 lightDirection = normalize(vPos - pointLightPosition);
+  vec3 lightDirection = vec3(-0.5, -0.5, -0.5);
+  addedLights.rgb += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLightColor;
+
+  float overcast = ((sin(time * 0.1 + vPos.x * 0.1) + 1.0) * 0.125 + 0.75);
   gl_FragColor = col * (addedLights + vec4(ambientLightColor, 1.0)) * overcast;
 
   float shine = 0.0;
@@ -69,7 +74,7 @@ void main() {
     shine = sin(vPos.x + time * 0.5) * sin(vPos.z + time * 0.3) * 0.05;
   }
 
-  float fog = min(1.0, pow((gl_FragCoord.z / gl_FragCoord.w) / 96.0, 1.8));
+  float fog = min(1.0, pow((gl_FragCoord.z / gl_FragCoord.w) / 128.0, 1.8));
 
   // Only top face has shade
   if (side == 3.0) {

@@ -234,29 +234,28 @@ export default class World {
     this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);
   }
 
-  getPartitionBoundaries(): any[] {
-    const partitionBoundaries = <any[]>[];
+  getPartitionBoundaries(): com.PartitionBoundaries[] {
+    const partitionBoundaries = <com.PartitionBoundaries[]>[];
 
     for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
         for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
           const partitionIndex = this.worldInfo.pindex(x, y, z);
 
-          const boundaryPoints = <THREE.Vector3[]>[];
+          const points = new Array<THREE.Vector3>();
 
-          for (let bx = 0; bx < 2; bx++) {
-            const x1 = this.worldInfo.partitionDimensionsInBlocks.x * (x + bx);
-            for (let by = 0; by < 2; by++) {
-              const y1 = this.worldInfo.partitionDimensionsInBlocks.y * (y + by);
-              for (let bz = 0; bz < 2; bz++) {
-                const z1 = this.worldInfo.partitionDimensionsInBlocks.z * (z + bz);
+          const x1 = this.worldInfo.partitionDimensionsInBlocks.x * (x + 0);
+          const y1 = this.worldInfo.partitionDimensionsInBlocks.y * (y + 0);
+          const z1 = this.worldInfo.partitionDimensionsInBlocks.z * (z + 0);
 
-                boundaryPoints.push(new THREE.Vector3(x1, y1, z1));
-              }
-            }
-          }
+          const x2 = this.worldInfo.partitionDimensionsInBlocks.x * (x + 1);
+          const y2 = this.worldInfo.partitionDimensionsInBlocks.y * (y + 1);
+          const z2 = this.worldInfo.partitionDimensionsInBlocks.z * (z + 1);
 
-          partitionBoundaries.push({ partitionIndex: partitionIndex, points: boundaryPoints });
+          points.push(new THREE.Vector3(x1, y1, z1));
+          points.push(new THREE.Vector3(x2, y2, z2));
+
+          partitionBoundaries.push({ partitionIndex, points });
         }
       }
     }

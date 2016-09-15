@@ -72,7 +72,7 @@ export default class WorldViewer {
   getVisiblePartitionIndices() {
     return this.partitionCaches
       .filter(function (partitionCache) {
-        return partitionCache.mesh !== null;
+        return partitionCache && partitionCache.mesh !== null;
       })
       .map(function (partitionCache) {
         return partitionCache.index;
@@ -109,6 +109,8 @@ export default class WorldViewer {
     this.partitionCaches[partitionIndex] = partitionCache;
 
     this.scene.add(partitionCache.mesh);
+
+    // console.log('Visible Partitions:', this.getVisiblePartitionIndices().length);
   }
 
   removePartition(partitionIndex: number) {
@@ -117,6 +119,8 @@ export default class WorldViewer {
     if (!partitionCache) return;
 
     this.scene.remove(partitionCache.mesh);
+
+    // this.partitionCaches[partitionIndex] = null;
   }
 
   exposeNewPartitions(changes: any) {

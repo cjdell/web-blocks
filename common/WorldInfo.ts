@@ -3,10 +3,15 @@
 import THREE = require('three');
 
 module Common {
+  export interface PartitionBoundaries {
+    partitionIndex: number;
+    points: THREE.Vector3[];
+  }
+
   export class WorldInfoInterface {
     partitionDimensionsInBlocks: IntVector3;
     worldDimensionsInPartitions: IntVector3;
-    partitionBoundaries: Array<any>;
+    partitionBoundaries: Array<PartitionBoundaries>;
   }
 
   // Immutable integer vector
@@ -66,7 +71,7 @@ module Common {
     partitionDimensionsInBlocks: IntVector3;
     worldDimensionsInPartitions: IntVector3;
     worldDimensionsInBlocks: IntVector3;
-    partitionBoundaries: Array<any>;
+    partitionBoundaries: PartitionBoundaries[];
     partitionCapacity: number;
     worldCapacity: number;
     worldPartitionCapacity: number;

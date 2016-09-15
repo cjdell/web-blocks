@@ -204,7 +204,7 @@ export default class DesktopViewPoint {
     // this.camera.lookAt(player.position);
     // this.camera.rotateZ(-Math.PI / 2);
 
-    this.light.position.set(player.position.x, player.position.y, player.position.z);
+    // this.light.position.set(player.position.x, player.position.y, player.position.z);
 
     // this.dot(player.position, 0x0000ff);
     // this.dot(player.target, 0xff0000);
