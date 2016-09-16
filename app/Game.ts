@@ -70,7 +70,7 @@ export default class Game {
       this.uniforms = {};
 
       this.uniforms.textures = { type: 't', value: null };
-      this.uniforms.webcam = { type: 't', value: null };
+      // this.uniforms.webcam = { type: 't', value: null };
       this.uniforms.color = { type: 'f', value: 1.0 };
       this.uniforms.time = { type: 'f', value: 0.0 };
 
@@ -80,7 +80,7 @@ export default class Game {
       };
 
       const blockMaterial = new THREE.RawShaderMaterial({
-        attributes: attributes,
+        attributes,
         uniforms: this.uniforms,
         vertexShader: this.vertexShader,
         fragmentShader: this.fragmentShader,
@@ -103,7 +103,7 @@ export default class Game {
 
       win.workerInterface = this.workerInterface;
 
-      blockMaterial.uniforms.webcam.value = this.webcam.getTexture();
+      // blockMaterial.uniforms.webcam.value = this.webcam.getTexture();
 
       this.textRenderer.renderText(new THREE.Vector3(75, 5, 90), 'Welcome!');
 
@@ -161,16 +161,14 @@ export default class Game {
     return Promise.all([
       win.fetch('shaders/block.vertex.glsl'),
       win.fetch('shaders/block.fragment.glsl')
-    ])
-      .then(res => {
-        return Promise.all([res[0].text(), res[1].text()]);
-      })
-      .then(data => {
-        this.vertexShader = data[0];
-        this.fragmentShader = data[1];
+    ]).then(res => {
+      return Promise.all([res[0].text(), res[1].text()]);
+    }).then(data => {
+      this.vertexShader = data[0];
+      this.fragmentShader = data[1];
 
-        return null;
-      });
+      return null;
+    });
   }
 
   getBlockTexture(blockTypes: Array<BlockType>) {

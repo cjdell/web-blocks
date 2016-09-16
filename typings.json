@@ -1,0 +1,15 @@
+{
+  "name": "Blocks",
+  "globalDependencies": {
+    "es6-promise": "github:DefinitelyTyped/DefinitelyTyped/es6-promise/es6-promise.d.ts#31ce460184172fbb3c59c9fb03dcb74156014eed",
+    "three": "github:DefinitelyTyped/DefinitelyTyped/threejs/three.d.ts#43861a1703feb7c6c413a4026a262c2ecb97eec0",
+    "underscore": "github:DefinitelyTyped/DefinitelyTyped/underscore/underscore.d.ts#52dc8fc39354569838b7bc09e24df690b852b4d9",
+    "chai": "github:DefinitelyTyped/DefinitelyTyped/chai/chai.d.ts#e95958ac847d9a343bdc8d7cbc796a5f6da29f71",
+    "mocha": "github:DefinitelyTyped/DefinitelyTyped/mocha/mocha.d.ts#e95958ac847d9a343bdc8d7cbc796a5f6da29f71",
+    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#0dd29bf8253536ae24e61c109524e924ea510046",
+    "ws": "github:DefinitelyTyped/DefinitelyTyped/ws/ws.d.ts#0dd29bf8253536ae24e61c109524e924ea510046",
+    "react": "github:DefinitelyTyped/DefinitelyTyped/react/react.d.ts#24b0b62ce0992d0674cd7f31e42927b4deaae386",
+    "material-ui": "github:DefinitelyTyped/DefinitelyTyped/material-ui/material-ui.d.ts#24b0b62ce0992d0674cd7f31e42927b4deaae386",
+    "react-dom": "github:DefinitelyTyped/DefinitelyTyped/react/react-dom.d.ts#24b0b62ce0992d0674cd7f31e42927b4deaae386"
+  }
+}

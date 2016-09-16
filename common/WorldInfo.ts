@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 
 module Common {
@@ -11,7 +11,7 @@ module Common {
   export class WorldInfoInterface {
     partitionDimensionsInBlocks: IntVector3;
     worldDimensionsInPartitions: IntVector3;
-    partitionBoundaries: Array<PartitionBoundaries>;
+    partitionBoundaries: PartitionBoundaries[];
   }
 
   // Immutable integer vector
@@ -26,23 +26,23 @@ module Common {
       this.z = z | 0;
     }
 
-    clone(): IntVector3 {
+    clone() {
       return new IntVector3(this.x, this.y, this.z);
     }
 
-    add(v: IntVector3): IntVector3 {
+    add(v: IntVector3) {
       return new IntVector3(this.x + v.x, this.y + v.y, this.z + v.z);
     }
 
-    sub(v: IntVector3): IntVector3 {
+    sub(v: IntVector3) {
       return new IntVector3(this.x - v.x, this.y - v.y, this.z - v.z);
     }
 
-    mul(v: IntVector3): IntVector3 {
+    mul(v: IntVector3) {
       return new IntVector3(this.x * v.x, this.y * v.y, this.z * v.z);
     }
 
-    clamp(min: IntVector3, max: IntVector3): IntVector3 {
+    clamp(min: IntVector3, max: IntVector3) {
       let x = this.x, y = this.y, z = this.z;
 
       if (this.x < min.x) {

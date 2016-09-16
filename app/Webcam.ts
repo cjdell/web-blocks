@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 
 export default class Webcam {
@@ -15,15 +15,15 @@ export default class Webcam {
   }
 
   init() {
-    let nav = <any>navigator;
-    let win = <any>window;
+    const nav = <any>navigator;
+    const win = <any>window;
 
     let getUserMedia = <any>(nav.getUserMedia || nav.webkitGetUserMedia || nav.mozGetUserMedia);
-    let URL = <any>(win.URL || win.webkitURL);
+    const URL = <any>(win.URL || win.webkitURL);
 
     getUserMedia = getUserMedia.bind(navigator);
 
-    let camvideo = document.createElement('video');
+    const camvideo = document.createElement('video');
 
     camvideo.autoplay = true;
     camvideo.width = 640;
@@ -81,13 +81,13 @@ export default class Webcam {
     this.videoTexture.minFilter = THREE.LinearFilter;
     this.videoTexture.magFilter = THREE.LinearFilter;
 
-    let movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: 1, side: THREE.DoubleSide });
+    const movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: 1, side: THREE.DoubleSide });
 
     // the geometry on which the movie will be displayed;
     // 		movie image will be scaled to fit these dimensions.
-    let movieGeometry = new THREE.PlaneGeometry(20, 20, 1, 1);
+    const movieGeometry = new THREE.PlaneGeometry(20, 20, 1, 1);
 
-    let movieScreen = new THREE.Mesh(movieGeometry, movieMaterial);
+    const movieScreen = new THREE.Mesh(movieGeometry, movieMaterial);
 
     movieScreen.position.set(100, 10, 100);
   }

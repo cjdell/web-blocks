@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 import _ = require('underscore');
 

@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import _ = require('underscore');
 import THREE = require('three');
 
@@ -34,7 +34,7 @@ export default class Culling {
       );
 
       const cam2d = this.camera.position.clone().setY(0);
-      const partCentre = box.center().setY(0);
+      const partCentre = box.getCenter().setY(0);
 
       const dist = cam2d.distanceTo(partCentre);
 

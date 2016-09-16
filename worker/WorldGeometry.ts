@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import com from '../common/WorldInfo';
 import PartitionGeometry from './PartitionGeometry';
 import { VertexData } from './PartitionGeometry';

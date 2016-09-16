@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 
 require('../lib/StereoEffect');
@@ -35,7 +35,14 @@ export default class CardboardPlatform {
     this.effect.setSize(width, height);
   }
 
-  getViewPoint(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
+  getViewPoint(
+    camera: THREE.PerspectiveCamera,
+    light: THREE.Light,
+    viewPort: HTMLDivElement,
+    renderer: THREE.Renderer,
+    scene: THREE.Scene,
+    worldInfo: com.WorldInfo,
+    workerInterface: WorkerInterface) {
     return new CardboardViewPoint(camera, light, viewPort, renderer, scene, worldInfo, workerInterface);
   }
 

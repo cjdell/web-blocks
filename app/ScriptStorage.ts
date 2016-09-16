@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import fs = require('fs');
 import _ = require('underscore');
 
@@ -92,10 +92,12 @@ export default class ScriptStorage {
   }
 
   load() {
-    let loaded = Array<Script>();
+    let loaded = new Array<Script>();
 
-    if (window.localStorage.getItem('scripts')) {
-      loaded = <Array<Script>>JSON.parse(window.localStorage.getItem('scripts'));
+    const scripts = window.localStorage.getItem('scripts');
+
+    if (scripts) {
+      loaded = <Script[]>JSON.parse(scripts);
     }
 
     loaded = loaded.concat(samples);
@@ -104,7 +106,7 @@ export default class ScriptStorage {
   }
 
   save() {
-    const scriptsToSave = _.filter(this.scripts, function (s) {
+    const scriptsToSave = _.filter(this.scripts, s => {
       return !s.sample;
     });
 
@@ -120,19 +122,23 @@ export default class ScriptStorage {
   }
 
   getScript(name: string) {
-    const matches = this.scripts.filter(function (script) {
+    const matches = this.scripts.filter(script => {
       return script.name === name;
     });
 
-    if (matches.length > 0) return matches[0].code;
+    if (matches.length > 0) {
+      return matches[0].code;
+    }
 
-    if (name === 'Scratch Pad') return '// Type your code here or select a sample script by clicking the "Load" button below\n';
+    if (name === 'Scratch Pad') {
+      return '// Type your code here or select a sample script by clicking the "Open" button above\n';
+    }
 
     return '';
   }
 
   putScript(name: string, code: string): void {
-    const matches = this.scripts.filter(function (script) {
+    const matches = this.scripts.filter(script => {
       return script.name === name;
     });
 
@@ -140,7 +146,9 @@ export default class ScriptStorage {
       const match = matches[0];
 
       // Don't overwrite samples
-      if (match.sample) return this.putScript(name + ' (modified)', code);
+      if (match.sample) {
+        return this.putScript(name + ' (modified)', code);
+      }
 
       match.code = code;
       match.modified = new Date();
@@ -160,4 +168,3 @@ export default class ScriptStorage {
     this.save();
   }
 }
-

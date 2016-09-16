@@ -1,9 +1,9 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
-import { Movement } from '../common/Types';
+import { Movement, SetBlockArgs, SetBlocksArgs } from '../common/Types';
 import { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 export default class WorkerInterface {
@@ -87,21 +87,25 @@ export default class WorkerInterface {
   }
 
   setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean) {
-    return this.invoke<Object>('setBlocks', {
+    const args: SetBlocksArgs = {
       start,
       end,
       type,
       colour,
       update
-    });
+    };
+
+    return this.invoke<Object>('setBlocks', args);
   }
 
   addBlock(position: com.IntVector3, side: number, type: number) {
-    return this.invoke<Object>('addBlock', {
+    const args: SetBlockArgs = {
       position,
       side,
       type
-    });
+    };
+
+    return this.invoke<Object>('addBlock', args);
   }
 
   move(movement: Movement) {

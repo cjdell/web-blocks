@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 
 const blockTypes: Array<BlockType> = [
@@ -40,6 +40,7 @@ const blockTypes: Array<BlockType> = [
   },
   {
     "name": "Webcam",
+    "hideFromToolbox": true,
     "textures": {
       "top": "textures/webcam.png",
       "side": "textures/webcam.png"

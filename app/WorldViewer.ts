@@ -19,7 +19,12 @@ export default class WorldViewer {
 
   partitionCaches: PartitionCacheItem[] = null;
 
-  constructor(scene: THREE.Scene, worldInfo: com.WorldInfo, shaderMaterial: THREE.Material, workerInterface: WorkerInterface) {
+  constructor(
+    scene: THREE.Scene,
+    worldInfo: com.WorldInfo,
+    shaderMaterial: THREE.Material,
+    workerInterface: WorkerInterface) {
+
     this.scene = scene;
     this.worldInfo = worldInfo;
     this.shaderMaterial = shaderMaterial;
@@ -71,12 +76,8 @@ export default class WorldViewer {
 
   getVisiblePartitionIndices() {
     return this.partitionCaches
-      .filter(function (partitionCache) {
-        return partitionCache && partitionCache.mesh !== null;
-      })
-      .map(function (partitionCache) {
-        return partitionCache.index;
-      });
+      .filter(partitionCache => partitionCache && partitionCache.mesh !== null)
+      .map(partitionCache => partitionCache.index);
   }
 
   gotPartition(geo: PartitionGeometryResult, partitionIndex: number) {

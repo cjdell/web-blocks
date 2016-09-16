@@ -26,7 +26,7 @@ uniform float time;
 varying vec3 vPos;
 varying vec3 vNormal;
 varying vec2 vUv;
-varying vec3 vOffset;
+// varying vec3 vOffset;
 
 varying float vType;
 varying float vSide;
@@ -41,7 +41,7 @@ vec3 hsv2rgb(vec3 c) {
 
 void main() {
   vNormal = normal;
-  vOffset = offset;
+  // vOffset = offset;
 
   float on = 1.0;
 

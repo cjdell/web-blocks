@@ -1,4 +1,4 @@
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/index.d.ts" />
 "use strict";
 const _self = <any>self;
 
@@ -6,16 +6,15 @@ import _ = require('underscore');
 import THREE = require('three');
 
 import com from '../common/WorldInfo';
+import { Movement, SetBlockArgs, SetBlocksArgs } from '../common/Types';
+
 import World from './World';
 import WorldGeometry from './WorldGeometry';
 import Player from './Player';
 import Api from './Api';
 import ScriptRunner from './ScriptRunner';
 import CliServer from './Cli/CliServer';
-
 import { Loader } from './Geometry/Loader';
-
-import { Movement } from '../common/Types';
 
 console.log('GeometryWorker: online');
 
@@ -146,18 +145,18 @@ const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
     id: invocation.id,
     data: {
       pos: invocation.data.pos,
-      type: type
+      type
     }
   });
 };
 
-const setBlocks = (invocation: Invocation<{ start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean }>) => {
+const setBlocks = (invocation: Invocation<SetBlocksArgs>) => {
   const { start, end, type, colour } = invocation.data;
 
   world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, type, colour);
 };
 
-const addBlock = (invocation: Invocation<{ position: com.IntVector3, side: number, type: number }>) => {
+const addBlock = (invocation: Invocation<SetBlockArgs>) => {
   world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
 };
 

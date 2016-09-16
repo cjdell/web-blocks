@@ -20,7 +20,7 @@ uniform float time;
 varying vec3 vPos;
 varying vec3 vNormal;
 varying vec2 vUv;
-varying vec3 vOffset;
+// varying vec3 vOffset;
 
 varying float vType;
 varying float vSide;

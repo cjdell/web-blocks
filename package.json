@@ -1,5 +1,5 @@
 {
-  "name": "Blocks",
+  "name": "web-blocks",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -18,7 +18,7 @@
     "react-addons-update": "15.3.1",
     "react-dom": "15.3.1",
     "react-tap-event-plugin": "1.0.0",
-    "three": "0.71.1",
+    "three": "0.81.0",
     "underscore": "1.8.3",
     "whatwg-fetch": "0.10.0"
   },

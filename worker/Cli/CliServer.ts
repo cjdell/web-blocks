@@ -1,4 +1,4 @@
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../typings/index.d.ts" />
 "use strict";
 
 import ScriptRunner from '../ScriptRunner';
