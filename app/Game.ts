@@ -74,13 +74,13 @@ export default class Game {
       this.uniforms.color = { type: 'f', value: 1.0 };
       this.uniforms.time = { type: 'f', value: 0.0 };
 
-      const attributes: any = {
-        data: { type: 'v4', value: null },
-        offset: { type: 'f', value: null }
-      };
+      // const attributes: any = {
+      //   data: { type: 'v4', value: null },
+      //   offset: { type: 'f', value: null }
+      // };
 
       const blockMaterial = new THREE.RawShaderMaterial({
-        attributes,
+        // attributes,
         uniforms: this.uniforms,
         vertexShader: this.vertexShader,
         fragmentShader: this.fragmentShader,

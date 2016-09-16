@@ -6,7 +6,7 @@ import THREE = require('three');
 import com from '../common/WorldInfo';
 
 export default class Culling {
-  active = new Array<number>();
+  active: number[] = [];
   camera: THREE.Camera;
   worldInfo: com.WorldInfo;
 
@@ -22,7 +22,12 @@ export default class Culling {
 
     const frustum = new THREE.Frustum();
 
-    frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse));
+    frustum.setFromMatrix(
+      new THREE.Matrix4().multiplyMatrices(
+        this.camera.projectionMatrix,
+        this.camera.matrixWorldInverse
+      )
+    );
 
     return this.worldInfo.partitionBoundaries.filter(partition => {
       const c1 = partition.points[0];
@@ -61,6 +66,6 @@ export default class Culling {
 
     this.active = visiblePartitions;
 
-    return { toBeAdded: toBeAdded, toBeRemoved: toBeRemoved };
+    return { toBeAdded, toBeRemoved };
   }
 }

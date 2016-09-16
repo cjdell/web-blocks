@@ -2,7 +2,7 @@ import React = require('react');
 import ReactDOM = require('react-dom');
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import LightRawTheme from 'material-ui/styles/raw-themes/light-raw-theme';
+import { lightBaseTheme } from 'material-ui/styles';
 
 import ToolBox = require('./ToolBox');
 import Game from '../app/Game';
@@ -10,6 +10,55 @@ import Game from '../app/Game';
 const injectTapEventPlugin = require('react-tap-event-plugin');
 
 injectTapEventPlugin();
+
+const ViewPort = React.createClass<{ ref: string }, any>({
+  getInitialState() {
+    return {};
+  },
+
+  render() {
+    return (
+      <MuiThemeProvider>
+        <div className="viewPort">
+          <div className="miniConsole">
+            <div className="miniConsoleOutput">
+              <ul></ul>
+            </div>
+            <input className="miniConsoleInput" />
+          </div>
+          <div className="helpBar">
+            Keys: [WASD]= Walk, [SHIFT]= Un/Lock Camera to Mouse, [SPACE]= Jump, [ESCAPE]= Toggle Code Editor, [Enter]= On-screen console
+          </div>
+        </div>
+      </MuiThemeProvider>
+    );
+  }
+});
+
+const App = React.createClass<{ game?: Game }, any>({
+  getInitialState() {
+    return {};
+  },
+
+  childContextTypes: {
+    muiTheme: React.PropTypes.object
+  },
+
+  getChildContext() {
+    return {
+      muiTheme: getMuiTheme(lightBaseTheme)
+    };
+  },
+
+  render() {
+    return (
+      <div className="app">
+        <ViewPort ref="viewPort"></ViewPort>
+        <ToolBox game={this.props.game}></ToolBox>
+      </div>
+    );
+  }
+});
 
 class UserInterface {
   container: HTMLDivElement;
@@ -28,56 +77,5 @@ class UserInterface {
     this.app = ReactDOM.render(<App game={game} />, this.container);
   }
 }
-
-const App = React.createClass<{ game?: Game }, any>({
-  getInitialState() {
-    return {};
-  },
-
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-
-  getChildContext() {
-    return {
-      muiTheme: getMuiTheme(LightRawTheme)
-    };
-  },
-
-  componentWillMount() {
-    
-  },
-
-  render() {
-    return (
-      <div className="app">
-        <ViewPort ref="viewPort"></ViewPort>
-        <ToolBox game={this.props.game}></ToolBox>
-      </div>
-    );
-  }
-});
-
-const ViewPort = React.createClass<{ ref: string }, any>({
-  getInitialState() {
-    return {};
-  },
-
-  render() {
-    return (
-      <MuiThemeProvider>
-        <div className="viewPort">
-          <div className="miniConsole">
-            <div className="miniConsoleOutput">
-              <ul></ul>
-            </div>
-            <input className="miniConsoleInput" />
-          </div>
-          <div className="helpBar">Keys: [WASD]= Walk, [SHIFT]= Un/Lock Camera to Mouse, [SPACE]= Jump, [ESCAPE]= Toggle Code Editor, [Enter]= On-screen console</div>
-        </div>
-      </MuiThemeProvider>
-    );
-  }
-});
 
 export default UserInterface;
