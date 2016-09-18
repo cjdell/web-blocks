@@ -1,5 +1,5 @@
 "use strict";
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../typings/index.d.ts" />
 import com from '../../common/WorldInfo';
 import { BlockTypeIds } from '../../common/BlockTypeList';
 import { Geometry } from './Geometry';
