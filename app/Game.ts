@@ -32,7 +32,7 @@ export default class Game {
   blockTypeList: BlockTypeList = null;
   worldViewer: WorldViewer = null;
   viewPoint: DesktopViewPoint | CardboardViewPoint = null;
-  culling: any = null;
+  culling: Culling = null;
   interaction: Interaction = null;
   webcam: Webcam = null;
   textRenderer: TextRenderer = null;

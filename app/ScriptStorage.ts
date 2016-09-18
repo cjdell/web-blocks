@@ -37,6 +37,11 @@ const samples = [
     modified: new Date(2015, 5, 2),
     code: fs.readFileSync('./samples/Rings.js')
   }, {
+    name: 'Stargate',
+    sample: true,
+    modified: new Date(2015, 9, 17),
+    code: fs.readFileSync('./samples/Stargate.js')
+  }, {
     name: 'Trail',
     sample: true,
     modified: new Date(2015, 5, 4),
@@ -76,6 +81,11 @@ const samples = [
     sample: true,
     modified: new Date(2016, 8, 28),
     code: fs.readFileSync('./samples/BoundHouse.js')
+  }, {
+    name: 'Tunnel Digger',
+    sample: true,
+    modified: new Date(2016, 9, 17),
+    code: fs.readFileSync('./samples/TunnelDigger.js')
   }, {
     name: 'UFO',
     sample: true,

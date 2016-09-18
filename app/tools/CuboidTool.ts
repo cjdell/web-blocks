@@ -64,7 +64,7 @@ export default class CuboidTool {
 
   addCube(pos: com.IntVector3) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshLambertMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
     const cube = new THREE.Mesh(geometry, material);
 
     cube.position.x = pos.x + 0.5;

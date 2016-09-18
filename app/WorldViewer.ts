@@ -9,15 +9,19 @@ import { PartitionGeometryResult } from '../worker/WorldGeometry';
 interface PartitionCacheItem {
   mesh: THREE.Mesh;
   index: number;
+  visible: boolean;
+  used: number;
 }
 
-export default class WorldViewer {
-  scene: THREE.Scene;
-  worldInfo: com.WorldInfo;
-  shaderMaterial: THREE.Material;
-  workerInterface: WorkerInterface;
+const MaxLoadedPartitions = 64;
 
-  partitionCaches: PartitionCacheItem[] = null;
+export default class WorldViewer {
+  private scene: THREE.Scene;
+  private worldInfo: com.WorldInfo;
+  private shaderMaterial: THREE.Material;
+  private workerInterface: WorkerInterface;
+  private partitionCaches: PartitionCacheItem[] = null;
+  private loading = false;
 
   constructor(
     scene: THREE.Scene,
@@ -32,9 +36,9 @@ export default class WorldViewer {
 
     workerInterface.addChangeListener(data => {
       const changeIndices = data.changes;
-      const visibleIndices = this.getVisiblePartitionIndices();
+      const loadedIndices = this.getLoadedPartitionIndices();
 
-      const toUpdate = _.intersection(changeIndices, visibleIndices);
+      const toUpdate = _.intersection(changeIndices, loadedIndices);
 
       toUpdate.forEach(index => this.updatePartition(index));
     });
@@ -42,6 +46,13 @@ export default class WorldViewer {
     this.partitionCaches = new Array<PartitionCacheItem>(this.worldInfo.partitionCapacity);
 
     this.addSky();
+
+    // setInterval(() => {
+    //   const loaded = this.partitionCaches.filter(partitionCache => !!partitionCache.mesh);
+    //   const visible = this.partitionCaches.filter(partitionCache => partitionCache.visible);
+
+    //   // console.log('loaded', loaded.length, 'visible', visible.length);
+    // }, 1000);
   }
 
   getMesh(bufferGeometry: THREE.BufferGeometry, offset: com.IntVector3): THREE.Mesh {
@@ -54,36 +65,39 @@ export default class WorldViewer {
     return mesh;
   }
 
-  addPartition(partitionIndex: number): void {
-    const partitionCache = this.partitionCaches[partitionIndex];
+  addPartition(pindex: number): Promise<void> {
+    const partitionCache = this.partitionCaches[pindex];
 
-    if (!partitionCache) {
-      this.workerInterface.getPartition(partitionIndex).then(data =>
-        this.gotPartition(data.geo, partitionIndex)
-      );
-
-      return;
+    if (partitionCache && partitionCache.mesh) {
+      this.scene.add(partitionCache.mesh);
+      partitionCache.visible = true;
+      partitionCache.used = Date.now();
+      return Promise.resolve(null);
+    } else {
+      return this.workerInterface.getPartition(pindex).then(data => {
+        // console.log('Generating partition', pindex);
+        return this.gotPartition(data.geo, pindex);
+      });
     }
-
-    this.scene.add(partitionCache.mesh);
   }
 
-  updatePartition(partitionIndex: number) {
-    this.workerInterface.getPartition(partitionIndex).then(data =>
-      this.gotPartition(data.geo, partitionIndex)
-    );
+  updatePartition(pindex: number) {
+    this.workerInterface.getPartition(pindex).then(data => {
+      // console.log('Updating partition', pindex);
+      return this.gotPartition(data.geo, pindex);
+    });
   }
 
-  getVisiblePartitionIndices() {
+  getLoadedPartitionIndices() {
     return this.partitionCaches
       .filter(partitionCache => partitionCache && partitionCache.mesh !== null)
       .map(partitionCache => partitionCache.index);
   }
 
-  gotPartition(geo: PartitionGeometryResult, partitionIndex: number) {
-    let partitionCache = this.partitionCaches[partitionIndex];
+  gotPartition(geo: PartitionGeometryResult, pindex: number) {
+    let partitionCache = this.partitionCaches[pindex];
 
-    if (partitionCache) {
+    if (partitionCache && partitionCache.mesh) {
       this.scene.remove(partitionCache.mesh);
 
       partitionCache.mesh = null;
@@ -103,30 +117,68 @@ export default class WorldViewer {
     const mesh = this.getMesh(bufferGeometry, geo.offset);
 
     partitionCache = {
-      index: partitionIndex,
-      mesh
+      index: pindex,
+      mesh,
+      visible: true,
+      used: Date.now()
     };
 
-    this.partitionCaches[partitionIndex] = partitionCache;
+    this.partitionCaches[pindex] = partitionCache;
 
     this.scene.add(partitionCache.mesh);
 
-    // console.log('Visible Partitions:', this.getVisiblePartitionIndices().length);
+    // // console.log('Visible Partitions:', this.getVisiblePartitionIndices().length);
   }
 
-  removePartition(partitionIndex: number) {
-    const partitionCache = this.partitionCaches[partitionIndex];
+  removePartition(pindex: number) {
+    const partitionCache = this.partitionCaches[pindex];
 
     if (!partitionCache) return;
 
     this.scene.remove(partitionCache.mesh);
 
+    partitionCache.visible = false;
+
     // this.partitionCaches[partitionIndex] = null;
+
+    return Promise.resolve(null);
   }
 
-  exposeNewPartitions(changes: any) {
-    changes.toBeAdded.forEach((partitionIndex: number) => this.addPartition(partitionIndex));
-    changes.toBeRemoved.forEach((partitionIndex: number) => this.removePartition(partitionIndex));
+  exposeNewPartitions(changes: { toBeAdded: number[], toBeRemoved: number[] }) {
+    if (this.loading) {
+      // console.log('Still loading...');
+      return null;
+    }
+
+    this.loading = true;
+
+    return Promise.resolve().then(() => {
+      return Promise.all(changes.toBeAdded.map(pindex => this.addPartition(pindex)));
+    }).then(() => {
+      return Promise.all(changes.toBeRemoved.map(pindex => this.removePartition(pindex)));
+    }).then(() => {
+      if (changes.toBeAdded.length || changes.toBeRemoved.length) {
+        const loaded = this.partitionCaches.filter(partitionCache => !!partitionCache.mesh);
+        const visible = this.partitionCaches.filter(partitionCache => partitionCache.visible);
+
+        // console.log('loaded', loaded.length, 'visible', visible.length);
+
+        const loadedPartition = this.partitionCaches.filter(c => !!c.mesh);
+
+        if (loadedPartition.length > MaxLoadedPartitions) {
+          _.sortBy(loadedPartition, 'used').forEach((partitionCache, i) => {
+            if (i < loadedPartition.length - MaxLoadedPartitions && !partitionCache.visible) {
+              partitionCache.mesh = null;
+              // console.log('Cleaned', partitionCache.index, i);
+            }
+          });
+        }
+      }
+
+      this.loading = false;
+    }).catch(() => {
+      this.loading = false;
+    });
   }
 
   addSky() {

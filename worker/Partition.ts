@@ -1,7 +1,5 @@
 "use strict";
 /// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
-
 import com from '../common/WorldInfo';
 
 const VALUES_PER_BLOCK = 3;
@@ -16,7 +14,9 @@ export default class Partition {
 
   private worldInfo: com.WorldInfo;
   private partitionPosition: com.IntVector3;
+
   private dirty = false;
+  private edgeDirty = [false, false, false, false]; // x, x, z, z 
 
   constructor(worldInfo: com.WorldInfo, ppos: com.IntVector3) {
     this.worldInfo = worldInfo;
@@ -32,9 +32,14 @@ export default class Partition {
     );
 
     this.dirty = false;
+    this.edgeDirty = [false, false, false, false];
+
     this.occupied = 0;   // Total of everything that isn't air
 
-    this.heightMap = new Uint8Array(this.worldInfo.partitionDimensionsInBlocks.x * this.worldInfo.partitionDimensionsInBlocks.z);
+    this.heightMap = new Uint8Array(
+      this.worldInfo.partitionDimensionsInBlocks.x *
+      this.worldInfo.partitionDimensionsInBlocks.z
+    );
   }
 
   init(): void {
@@ -51,7 +56,70 @@ export default class Partition {
     return new Uint8Array([this.blocks[VALUES_PER_BLOCK * index]]);
   }
 
-  setBlockWithIndex(index: number, type: number, colour: number): void {
+  setBlock(px: number, py: number, pz: number, type: number, colour: number): void {
+    this.rangeCheck(px, py, pz);
+
+    this.checkEdgeDirty(px, pz);
+
+    this.setBlockWithIndex(this.worldInfo.rindex(px, py, pz), type, colour);
+  }
+
+  setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number): void {
+    this.rangeCheck(start.x, start.y, start.z);
+    this.rangeCheck(end.x, end.y, end.z);
+
+    this.checkEdgeDirty(start.x, start.z);
+    this.checkEdgeDirty(end.x, end.z);
+
+    for (let z = start.z; z <= end.z; z++) {
+      for (let y = start.y; y <= end.y; y++) {
+        let index = this.worldInfo.rindex(start.x, y, z);
+
+        for (let x = start.x; x <= end.x; x++ , index++) {
+          this.setBlockWithIndex(index, type, 0);
+        }
+      }
+    }
+  }
+
+  isDirty(): boolean {
+    return this.dirty;
+  }
+
+  isEdgeDirty(edge: number): boolean {
+    return this.edgeDirty[edge];
+  }
+
+  clearDirty() {
+    this.dirty = false;
+    this.edgeDirty = [false, false, false, false];
+  }
+
+  updateHeightMap() {
+    for (let z = 0; z < this.worldInfo.partitionDimensionsInBlocks.z; z++) {
+      const index = z * this.worldInfo.partitionDimensionsInBlocks.x;
+
+      for (let x = 0; x < this.worldInfo.partitionDimensionsInBlocks.x; x++) {
+        this.heightMap[index + x] = this.getHighestPoint(x, z);
+      }
+    }
+  }
+
+  getHighestPoint(x: number, z: number) {
+    for (let y = this.worldInfo.partitionDimensionsInBlocks.y - 1; y >= 0; y--) {
+      const index = this.worldInfo.rindex(x, y, z);
+
+      if (this.blocks[VALUES_PER_BLOCK * index] !== 0) return y;
+    }
+
+    return 0;
+  }
+
+  isInited(): boolean {
+    return this.blocks !== null;
+  }
+
+  private setBlockWithIndex(index: number, type: number, colour: number): void {
     const offset = VALUES_PER_BLOCK * index;
 
     const currentType = this.blocks[offset + 0];
@@ -71,52 +139,32 @@ export default class Partition {
     this.dirty = true;
   }
 
-  setBlock(px: number, py: number, pz: number, type: number, colour: number): void {
+  private rangeCheck(px: number, py: number, pz: number) {
     if (px < 0 || py < 0 || pz < 0) throw new Error('Out of range');
-    if (px >= this.worldInfo.partitionDimensionsInBlocks.x || py >= this.worldInfo.partitionDimensionsInBlocks.y || pz >= this.worldInfo.partitionDimensionsInBlocks.z) throw new Error('Out of range');
 
-    this.setBlockWithIndex(this.worldInfo.rindex(px, py, pz), type, colour);
-  }
-
-  setBlocks(start: THREE.Vector3, end: THREE.Vector3, type: number, colour: number): void {
-    for (let z = start.z; z <= end.z; z++) {
-      for (let y = start.y; y <= end.y; y++) {
-        let index = this.worldInfo.rindex(start.x, y, z);
-        for (let x = start.x; x <= end.x; x++ , index++) {
-          this.setBlockWithIndex(index, type, 0);
-        }
-      }
+    if (
+      px >= this.worldInfo.partitionDimensionsInBlocks.x ||
+      py >= this.worldInfo.partitionDimensionsInBlocks.y ||
+      pz >= this.worldInfo.partitionDimensionsInBlocks.z) {
+      throw new Error('Out of range');
     }
   }
 
-  isDirty(): boolean {
-    return this.dirty;
-  }
-
-  clearDirty() {
-    this.dirty = false;
-  }
-
-  updateHeightMap() {
-    for (let z = 0; z < this.worldInfo.partitionDimensionsInBlocks.z; z++) {
-      const index = z * this.worldInfo.partitionDimensionsInBlocks.x;
-      for (let x = 0; x < this.worldInfo.partitionDimensionsInBlocks.x; x++) {
-        this.heightMap[index + x] = this.getHighestPoint(x, z);
-      }
-    }
-  }
-
-  getHighestPoint(x: number, z: number) {
-    for (let y = this.worldInfo.partitionDimensionsInBlocks.y - 1; y >= 0; y--) {
-      const index = this.worldInfo.rindex(x, y, z);
-
-      if (this.blocks[VALUES_PER_BLOCK * index] !== 0) return y;
+  private checkEdgeDirty(px: number, pz: number) {
+    if (px === 0) {
+      this.edgeDirty[0] = true;
     }
 
-    return 0;
-  }
+    if (pz === 0) {
+      this.edgeDirty[2] = true;
+    }
 
-  isInited(): boolean {
-    return this.blocks !== null;
+    if (px === this.worldInfo.partitionDimensionsInBlocks.x - 1) {
+      this.edgeDirty[1] = true;
+    }
+
+    if (pz === this.worldInfo.partitionDimensionsInBlocks.z - 1) {
+      this.edgeDirty[3] = true;
+    }
   }
 }

@@ -140,7 +140,7 @@ export default class Interaction {
       scene: this.scene,
       type: this.type,
       workerInterface: this.workerInterface,
-      getPositionOfMouseAlongXZPlane: (xPlane: number, zPlane: number) =>
+      getPositionOfMouseAlongXZPlane: (xPlane, zPlane) =>
         this.getPositionOfMouseAlongXZPlane(xPlane, zPlane),
       finished: this.finished.bind(this)
     };

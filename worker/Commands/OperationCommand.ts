@@ -1,9 +1,6 @@
 "use strict";
-/// <reference path="../../typings/tsd.d.ts" />
-import THREE = require('three');
-
+/// <reference path="../../typings/index.d.ts" />
 import com from '../../common/WorldInfo';
-import Command from './Command';
 import UndoableCommand from './UndoableCommand';
 import Partition from '../Partition';
 import { Operation } from '../Operations/Operation';

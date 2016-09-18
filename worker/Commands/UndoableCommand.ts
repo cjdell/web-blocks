@@ -50,7 +50,8 @@ export default class UndoableCommand extends Command {
     snapshot.blockData[blockNumber * 2 + 0] = blockData;
     // snapshot.blockData[blockNumber * 2 + 1] = blockData[1];
 
-    partition.setBlockWithIndex(rindex, type, colour);
+    // partition.setBlockWithIndex(rindex, type, colour);
+    partition.setBlock(rpos[0], rpos[1], rpos[2], type, colour);
   }
 
   undo(partition: Partition): void {
@@ -64,7 +65,9 @@ export default class UndoableCommand extends Command {
       const type = snapshot.blockData[i * 2 + 0];
       const colour = snapshot.blockData[i * 2 + 1];
 
-      partition.setBlockWithIndex(rindex, type, colour);
+      this.worldInfo.rpos2(rpos, rindex);
+
+      partition.setBlock(rpos[0], rpos[1], rpos[2], type, colour);
     }
   }
 }

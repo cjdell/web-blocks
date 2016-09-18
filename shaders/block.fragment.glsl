@@ -61,7 +61,7 @@ void main() {
   vec3 ambientLightColor = vec3(0.5, 0.5, 0.5);
 
   //vec3 lightDirection = normalize(vPos - pointLightPosition);
-  vec3 lightDirection = vec3(-0.5, -0.5, -0.5);
+  vec3 lightDirection = vec3(-1.0, -1.0, -1.0);
   addedLights.rgb += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLightColor;
 
   float overcast = ((sin(time * 0.1 + vPos.x * 0.1) + 1.0) * 0.125 + 0.75);

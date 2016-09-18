@@ -191,11 +191,24 @@ export default class World {
   }
 
   setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {
+    const min = new com.IntVector3(0, 0, 0);
+    const max = new com.IntVector3(
+      this.worldInfo.worldDimensionsInBlocks.x,
+      this.worldInfo.worldDimensionsInBlocks.y,
+      this.worldInfo.worldDimensionsInBlocks.z
+    );
+
+    let start = new com.IntVector3(wx1, wy1, wz1);
+    let end = new com.IntVector3(wx2, wy2, wz2);
+
+    start = start.clamp(min, max);
+    end = end.clamp(min, max);
+
     const operation = new CuboidOperation(this.worldInfo, {
-      start: new com.IntVector3(wx1, wy1, wz1),
-      end: new com.IntVector3(wx2, wy2, wz2),
-      type: type,
-      colour: colour
+      start,
+      end,
+      type,
+      colour,
     });
 
     const command = new OperationCommand(this.worldInfo, this.commands.length, operation);
@@ -264,12 +277,34 @@ export default class World {
   }
 
   getDirtyPartitions(): number[] {
-    const dirty = new Array<number>();
+    const dirty: number[] = [];
 
-    for (let partitionIndex = 0 | 0; partitionIndex < this.capacity; partitionIndex++) {
+    for (let partitionIndex = 0 | 0; partitionIndex < this.capacity; partitionIndex += 1) {
+      const ppos = this.worldInfo.ppos(partitionIndex);
+
+      const checkAdjacent = (x: number, z: number, edge: number) => {
+        if (
+          ppos.x + x >= 0 &&
+          ppos.z + z >= 0 &&
+          ppos.x + x < this.worldInfo.worldDimensionsInPartitions.x &&
+          ppos.z + z < this.worldInfo.worldDimensionsInPartitions.z
+        ) {
+          const pindex = this.worldInfo.pindex(ppos.x + x, 0, ppos.z + z);
+
+          if (this.partitions[pindex].isEdgeDirty(edge)) {
+            dirty.push(partitionIndex);
+          }
+        }
+      };
+
+      checkAdjacent(-1, 0, 1);
+      checkAdjacent(0, -1, 3);
+      checkAdjacent(1, 0, 0);
+      checkAdjacent(0, 1, 2);
+    }
+
+    for (let partitionIndex = 0 | 0; partitionIndex < this.capacity; partitionIndex += 1) {
       const partition = this.partitions[partitionIndex];
-
-      if (!partition) console.log('no part', partitionIndex);
 
       if (partition.isDirty()) {
         dirty.push(partitionIndex);
@@ -277,7 +312,7 @@ export default class World {
       }
     }
 
-    return dirty;
+    return _.unique(dirty);
   }
 
   // ========
