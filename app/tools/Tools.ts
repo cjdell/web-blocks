@@ -1,5 +1,3 @@
-"use strict";
-
 import { Tool, Context } from './ToolBase';
 import CuboidTool from './CuboidTool';
 import BlockTool from './BlockTool';

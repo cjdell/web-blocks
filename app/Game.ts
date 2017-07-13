@@ -1,18 +1,24 @@
-"use strict";
 import THREE = require('three');
-
-import com from '../common/WorldInfo';
-import Culling from './Culling';
-import { BlockTypeList, BlockType } from '../common/BlockTypeList';
-import Interaction from './Interaction';
-import WorldViewer from './WorldViewer';
-import WorkerInterface from './WorkerInterface';
-import Webcam from './Webcam';
-import TextRenderer from './TextRenderer';
-import DesktopPlatform from './DesktopPlatform';
-import CardboardPlatform from './CardboardPlatform';
-import DesktopViewPoint from './DesktopViewPoint';
+import com                from '../common/WorldInfo';
+import Culling            from './Culling';
+import Interaction        from './Interaction';
+import WorldViewer        from './WorldViewer';
+import WorkerInterface    from './WorkerInterface';
+import Webcam             from './Webcam';
+import TextRenderer       from './TextRenderer';
+import DesktopPlatform    from './DesktopPlatform';
+import CardboardPlatform  from './CardboardPlatform';
+import DesktopViewPoint   from './DesktopViewPoint';
 import CardboardViewPoint from './CardboardViewPoint';
+
+import {
+  BlockTypeList,
+  BlockType
+} from '../common/BlockTypeList';
+
+import {
+  BoundScriptsChangeListener
+} from '../common/Types';
 
 const win = <any>self;
 
@@ -64,7 +70,10 @@ export default class Game {
   }
 
   init() {
-    return Promise.all([this.workerInterface.init(), this.loadShaders()]).then(res => {
+    return Promise.all([
+      this.workerInterface.init(),
+      this.loadShaders()
+    ]).then(res => {
       const worldInfo = new com.WorldInfo(<com.WorldInfo>res[0]);
 
       this.uniforms = {};
@@ -73,11 +82,6 @@ export default class Game {
       // this.uniforms.webcam = { type: 't', value: null };
       this.uniforms.color = { type: 'f', value: 1.0 };
       this.uniforms.time = { type: 'f', value: 0.0 };
-
-      // const attributes: any = {
-      //   data: { type: 'v4', value: null },
-      //   offset: { type: 'f', value: null }
-      // };
 
       const blockMaterial = new THREE.RawShaderMaterial({
         // attributes,
@@ -90,7 +94,7 @@ export default class Game {
 
       const blockTypes = this.blockTypeList.getBlockTypes();
 
-      this.getBlockTexture(blockTypes).then((texture: THREE.Texture) => {
+      this.getBlockTexture(blockTypes).then(texture => {
         blockMaterial.uniforms.textures.value = texture;
       });
 
@@ -128,9 +132,9 @@ export default class Game {
       this.worldViewer.exposeNewPartitions(changes);
     }
 
-    // if (this.frame % 3 === 0) {
-    this.effect.render(this.scene, this.camera);
-    // }
+    if (this.frame % 10 === 0) {
+      this.effect.render(this.scene, this.camera);
+    }
 
     if (this.log) console.timeEnd('frame');
   }
@@ -214,5 +218,9 @@ export default class Game {
 
       image.src = src;
     });
+  }
+
+  onBoundScriptsChange(listener: BoundScriptsChangeListener) {
+    this.workerInterface.onBoundScriptsChange(listener);
   }
 }

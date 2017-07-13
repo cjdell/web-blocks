@@ -1,15 +1,13 @@
-"use strict";
 /// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
 import _ = require('underscore');
-
-import com from '../common/WorldInfo';
-import Partition from './Partition';
-import Command from './Commands/Command';
-import { CuboidOperation } from './Operations/CuboidOperation';
+import com                    from '../common/WorldInfo';
+import Partition              from './Partition';
+import Command                from './Commands/Command';
+import { CuboidOperation }    from './Operations/CuboidOperation';
 import { LandscapeOperation } from './Operations/LandscapeOperation';
-import { TreeOperation } from './Operations/TreeOperation';
-import { OperationCommand } from './Commands/OperationCommand';
+import { TreeOperation }      from './Operations/TreeOperation';
+import { OperationCommand }   from './Commands/OperationCommand';
 
 // export interface ChangeHandler {
 //   callback(change: com.Change): void;
@@ -192,10 +190,11 @@ export default class World {
 
   setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {
     const min = new com.IntVector3(0, 0, 0);
+
     const max = new com.IntVector3(
-      this.worldInfo.worldDimensionsInBlocks.x,
-      this.worldInfo.worldDimensionsInBlocks.y,
-      this.worldInfo.worldDimensionsInBlocks.z
+      this.worldInfo.worldDimensionsInBlocks.x - 1,
+      this.worldInfo.worldDimensionsInBlocks.y - 1,
+      this.worldInfo.worldDimensionsInBlocks.z - 1
     );
 
     let start = new com.IntVector3(wx1, wy1, wz1);
@@ -335,9 +334,20 @@ export default class World {
 
           let block = 0 | 0;
 
-          if (rx === (-1 | 0) || ry === (-1 | 0) || rz === (-1 | 0) || rx === this.worldInfo.partitionDimensionsInBlocks.x || ry === this.worldInfo.partitionDimensionsInBlocks.y || rz === this.worldInfo.partitionDimensionsInBlocks.z) {
+          if (
+            rx === (-1 | 0) ||
+            ry === (-1 | 0) ||
+            rz === (-1 | 0) ||
+            rx === this.worldInfo.partitionDimensionsInBlocks.x ||
+            ry === this.worldInfo.partitionDimensionsInBlocks.y ||
+            rz === this.worldInfo.partitionDimensionsInBlocks.z
+          ) {
             // If outside partition boundaries, we need to check adjacent partitions...
-            block = this.getBlock((partition.offset.x + rx) | 0, (partition.offset.y + ry) | 0, (partition.offset.z + rz) | 0);
+            block = this.getBlock(
+              (partition.offset.x + rx) | 0,
+              (partition.offset.y + ry) | 0,
+              (partition.offset.z + rz) | 0
+            );
           } else {
             // otherwise, just read directly from partiton buffer (faster)
             const rindex = this.worldInfo.rindex(rx, ry, rz) | 0;

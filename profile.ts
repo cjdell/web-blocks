@@ -1,8 +1,5 @@
-"use strict";
 /// <reference path="./typings/index.d.ts" />
-
 import THREE = require('three');
-
 import com from './common/WorldInfo';
 import World from './worker/World';
 

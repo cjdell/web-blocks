@@ -1,23 +1,25 @@
-"use strict";
 /// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
-import World from './World';
-import com from '../common/WorldInfo';
-import { Movement } from '../common/Types';
+import World            from './World';
+import com              from '../common/WorldInfo';
 import { BlockTypeIds } from '../common/BlockTypeList';
+
+import {
+  Movement,
+  PlayerPositionChangeListener,
+  BoundScriptsChangeListener
+} from '../common/Types';
 
 const FPS = 60;
 
 export default class Player {
   gravity = 0.0;
-  changeListener: ((position: THREE.Vector3, target: THREE.Vector3) => void);
   print: ((msg: string) => void);
-
   rightClicked: boolean = false;
   mousePosition: { pos: com.IntVector3, side: number };
-  boundScripts: { number: Function } | {} = {};
 
   private world: World;
+  private boundScripts: { [key: number]: () => void } = {};
 
   private position: THREE.Vector3;
   private velocity: THREE.Vector3;
@@ -28,6 +30,9 @@ export default class Player {
   private xDelta = 0.0;
   private zDelta = 0.0;
   private lastFrame = Date.now();
+
+  private playerPositionChangeListener: PlayerPositionChangeListener;
+  private boundScriptsChangeListener: BoundScriptsChangeListener;
 
   rightClick: Function = () => console.log("Right clicked!");
 
@@ -132,7 +137,9 @@ export default class Player {
     const targetStep = new THREE.Vector3(0, 0, 2);
     const target = this.position.clone().add(this.rotateStep(targetStep, phi, theta));
 
-    if (this.changeListener) this.changeListener(this.position, target);
+    if (this.playerPositionChangeListener) {
+      this.playerPositionChangeListener({ position: this.position, target });
+    }
   }
 
   rotateStep(step: THREE.Vector3, phi: number, theta: number) {
@@ -238,5 +245,27 @@ export default class Player {
   setDirection(direction: THREE.Vector2) {
     this.lat = direction.x;
     this.lon = direction.y;
+  }
+
+  addBoundScript(key: number, fn: () => void) {
+    this.boundScripts[key] = fn;
+
+    const scripts = Object.keys(this.boundScripts).map(str => parseInt(str, 10));
+
+    this.boundScriptsChangeListener({
+      scripts
+    });
+  }
+
+  getBoundScript(key: number) {
+    return this.boundScripts[key];
+  }
+
+  onPlayerPositionChange(listener: PlayerPositionChangeListener) {
+    this.playerPositionChangeListener = listener;
+  }
+
+  onBoundScriptsChange(listener: BoundScriptsChangeListener) {
+    this.boundScriptsChangeListener = listener;
   }
 }

@@ -1,15 +1,13 @@
-"use strict";
 /// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
-
-import com from '../common/WorldInfo';
-import constants from '../common/Constants';
-import { BlockTypeIds } from '../common/BlockTypeList';
-import WorkerInterface from './WorkerInterface';
-import Webcam from './Webcam';
-import { Context, Tool } from './tools/ToolBase';
-import Tools from './tools/Tools';
-import CuboidTool from "./tools/CuboidTool";
+import com                from '../common/WorldInfo';
+import constants          from '../common/Constants';
+import { BlockTypeIds }   from '../common/BlockTypeList';
+import WorkerInterface    from './WorkerInterface';
+import Webcam             from './Webcam';
+import { Context, Tool }  from './tools/ToolBase';
+import Tools              from './tools/Tools';
+import CuboidTool         from "./tools/CuboidTool";
 
 export default class Interaction {
   viewPort: HTMLElement;
@@ -24,14 +22,21 @@ export default class Interaction {
 
   down = false;
   type = 1;
-  selectedTool: string = 'block';
+  selectedTool = 'block';
   tool: Tool = null;
 
   isDesktop = true; // TODO: Detect mobile
 
-  static rightClick: Function = function () { };
+  static rightClick: () => void = () => void 0;
 
-  constructor(viewPort: HTMLElement, scene: THREE.Scene, camera: THREE.Camera, workerInterface: WorkerInterface, worldInfo: com.WorldInfo, webcam: Webcam) {
+  constructor(
+    viewPort: HTMLElement,
+    scene: THREE.Scene,
+    camera: THREE.Camera,
+    workerInterface: WorkerInterface,
+    worldInfo: com.WorldInfo,
+    webcam: Webcam
+  ) {
     this.viewPort = viewPort;
     this.scene = scene;
     this.camera = camera;

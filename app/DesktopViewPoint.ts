@@ -1,12 +1,11 @@
-"use strict";
 /// <reference path="../typings/index.d.ts" />
 import _ = require('underscore');
 import THREE = require('three');
+import com              from '../common/WorldInfo';
+import WorkerInterface  from './WorkerInterface';
+import MiniConsole      from "./MiniConsole";
 
-import com from '../common/WorldInfo';
-import WorkerInterface from './WorkerInterface';
-import { Movement } from '../common/Types';
-import MiniConsole from "./MiniConsole";
+import { Movement, PlayerPositionChangeArgs } from '../common/Types';
 
 export default class DesktopViewPoint {
   private camera: THREE.PerspectiveCamera;
@@ -60,7 +59,10 @@ export default class DesktopViewPoint {
 
     this.setupEventListeners();
 
-    this.workerInterface.playerPositionListener = this.onPlayerPositionChanged.bind(this);
+    this.workerInterface.onPlayerPositionChange(args => {
+      this.onPlayerPositionChanged(args);
+    });
+
     this.workerInterface.print = this.miniConsole.addOutput.bind(this);
   }
 
@@ -189,7 +191,7 @@ export default class DesktopViewPoint {
     return;
   }
 
-  onPlayerPositionChanged(player: { position: THREE.Vector3, target: THREE.Vector3 }) {
+  onPlayerPositionChanged(player: PlayerPositionChangeArgs) {
     const PLAYER_HEIGHT = 1.0;
 
     player.position.y += PLAYER_HEIGHT;

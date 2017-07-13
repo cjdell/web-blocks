@@ -1,8 +1,6 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
 import THREE = require('three');
-import fs = require('fs');
-
+// import fs = require('fs');
 import com from '../../common/WorldInfo';
 import { Geometry } from './Geometry';
 

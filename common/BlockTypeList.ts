@@ -1,7 +1,3 @@
-"use strict";
-/// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
-
 const blockTypes: Array<BlockType> = [
   {
     "name": "Air",
@@ -111,7 +107,7 @@ export interface BlockType {
   textures: {
     top: string;
     side: string;
-  }
+  };
 }
 
 export class BlockTypeList {

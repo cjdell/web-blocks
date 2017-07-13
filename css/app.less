@@ -13,15 +13,14 @@ body {
 }
 
 .app {
-  display: -webkit-flex;
-  display: flex;
   height: 100vh;
+  position: relative;
 }
 
 .viewPort {
-  flex: 1;
-  -webkit-flex: 1;
-  position: relative;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
 
   .miniConsole {
     font-family: Consolas, Menlo, Monaco, monospace;
@@ -74,23 +73,44 @@ body {
       }
     }
   }
+}
 
-  .helpBar {
-    height: 40px;
-    line-height: 40px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding-left: 10px;
-    background: rgba(0,0,0,0.3);
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
+.boundScriptBar {
+  position: absolute;
+  left: 0;
+  width: 52px;
+  height: 100vh;
+  background: rgba(255,255,255,0.5);
+
+  ul {
+    margin: 0;
+    padding: 0;
+
+    li {
+      list-style: none;
+      
+      a {
+        text-decoration: none;
+        background: white;
+        color: black;
+        display: block;
+        width: 36px;
+        height: 36px;
+        border: solid 2px #000;
+        margin: 8px;
+        text-align: center;
+        line-height: 32px;
+      }
+    }
   }
 }
 
 .toolBox {
+  position: absolute;
+  right: 0;
   width: 96px;
+  height: 100vh;
+  background: rgba(255,255,255,0.5);
 
   > ul {
     margin: 0;
@@ -167,11 +187,25 @@ body {
   }
 }
 
+.helpBar {
+  position: absolute;
+  height: 40px;
+  line-height: 40px;
+  position: absolute;
+  bottom: 0;
+  left: 52px;
+  right: 96px;
+  padding-left: 10px;
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  text-shadow: 1px 1px 1px #000;
+}
+
 .codeEditor {
   position: fixed;
-  left: 40px;
+  left: 92px;
   top: 40px;
-  right: 140px;
+  right: 136px;
   bottom: 40px;
   color: #fff;
   border-radius: 4px;

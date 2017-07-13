@@ -1,7 +1,4 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
-import THREE = require('three');
-
 import com from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 

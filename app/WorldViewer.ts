@@ -1,7 +1,5 @@
-"use strict";
 import THREE = require('three');
 import _ = require('underscore');
-
 import WorkerInterface from './WorkerInterface';
 import com from '../common/WorldInfo';
 import { PartitionGeometryResult } from '../worker/WorldGeometry';

@@ -1,4 +1,3 @@
-"use strict";
 import Api from './Api';
 
 export default class ScriptRunner {
@@ -9,18 +8,18 @@ export default class ScriptRunner {
   }
 
   run(code: string, expr: boolean): string {
-    var toRun: Array<string> = [];
+    const toRun: string[] = [];
 
-    Object.keys(Api.prototype).forEach(function (key) {
+    Object.keys(Api.prototype).forEach(key => {
       if (Api.prototype[key] instanceof Function) {
-        toRun.push('var ' + key + ' = context.' + key + '.bind(context);\n');
+        toRun.push('const ' + key + ' = context.' + key + '.bind(context);\n');
       } else {
-        toRun.push('var ' + key + ' = context.' + key + ';\n');
+        toRun.push('const ' + key + ' = context.' + key + ';\n');
       }
     });
 
     if (expr) {
-      toRun.push('return (' + code.split(/^var | var |;/).join('') + ');');
+      toRun.push('return (' + code.split(/^const | const |;/).join('') + ');');
     } else {
       toRun.push(code);
     }
@@ -31,16 +30,20 @@ export default class ScriptRunner {
     return this.evaluate(toRun, code, false);
   }
 
-  evaluate(toRun: Array<string>, code: string, retried: boolean): string {
+  evaluate(toRun: string[], code: string, retried: boolean): string {
     try {
-      var func = new Function('context', toRun.join(''));
+      const func = new Function('context', toRun.join(''));
 
-      var res = func(this.api);
+      const res = func(this.api);
 
       if (typeof res !== 'undefined') {
-        if (res instanceof Promise) return res;
+        if (res instanceof Promise) {
+          return res;
+        }
 
-        if (typeof res === 'object') return JSON.stringify(res);
+        if (typeof res === 'object') {
+          return JSON.stringify(res);
+        }
 
         return res.toString();
       }
@@ -50,7 +53,9 @@ export default class ScriptRunner {
         toRun.push(code);
         return this.evaluate(toRun, code, true);
       }
+
       console.error('parse error', err);
+
       return err.message;
     }
 

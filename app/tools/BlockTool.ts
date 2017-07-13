@@ -1,4 +1,3 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
 import THREE = require('three');
 

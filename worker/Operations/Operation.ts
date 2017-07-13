@@ -1,7 +1,4 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
-import THREE = require('three');
-
 import com from '../../common/WorldInfo';
 
 export interface OperationResult {
@@ -10,7 +7,7 @@ export interface OperationResult {
 }
 
 export class Operation {
-  worldInfo: com.WorldInfo
+  worldInfo: com.WorldInfo;
 
   constructor(worldInfo: com.WorldInfo) {
     this.worldInfo = worldInfo;

@@ -1,11 +1,8 @@
-"use strict";
-
 import React = require('react');
 import mui = require('material-ui');
+import ScriptPicker = require('./ScriptPicker');
 
 const { Dialog, FlatButton, RaisedButton, Toolbar, ToolbarGroup, Tabs, Tab, TextField } = mui;
-
-const ScriptPicker = require('./ScriptPicker');
 
 const introMessage = 'Hello there, here you can write JavaScript! For more info type: help';
 
@@ -16,28 +13,47 @@ interface CodeEditorProps {
   scriptStorage: any;
 }
 
-const CodeEditor = React.createClass<CodeEditorProps, any>({
-  getInitialState() {
-    return {
+class CodeEditor extends React.Component<CodeEditorProps, any> {
+  constructor() {
+    super();
+
+    this.state = {
       mode: 'console',
       lines: [{ line: introMessage, type: 'intro' }],
-      commands: [],
+      commands: [] as string[],
       scriptName: 'Scratch Pad',
       saveAsName: '',
       scriptPickerDialogOpen: false,
       saveAsDialogOpen: false
     };
-  },
+
+    this.keyPress = this.keyPress.bind(this);
+    this.keyUp = this.keyUp.bind(this);
+    this.linesClick = this.linesClick.bind(this);
+    this.loadClicked = this.loadClicked.bind(this);
+    this.newClicked = this.newClicked.bind(this);
+    this.runClicked = this.runClicked.bind(this);
+    this.saveAsClicked = this.saveAsClicked.bind(this);
+    this.saveAsDialogSaveClicked = this.saveAsDialogSaveClicked.bind(this);
+    this.scriptChosen = this.scriptChosen.bind(this);
+    this.scriptPickerDialogClosing = this.scriptPickerDialogClosing.bind(this);
+  }
+
   keyPress(e: any) {
-    const consoleTextarea = this.refs.code;
+    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
 
     if (e.which === 13) {
       let cmd = consoleTextarea.value;
       consoleTextarea.value = '';
 
       // Take the CR off the end
-      if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) cmd = cmd.substring(0, cmd.length - 1);
-      if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) cmd = cmd.substring(0, cmd.length - 1);
+      if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) {
+        cmd = cmd.substring(0, cmd.length - 1);
+      }
+
+      if (cmd.length && [10, 13].indexOf(cmd.charCodeAt(cmd.length - 1)) !== -1) {
+        cmd = cmd.substring(0, cmd.length - 1);
+      }
 
       this.state.commands.push(cmd);
 
@@ -48,9 +64,10 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
 
       e.preventDefault();
     }
-  },
+  }
+
   keyUp(e: any) {
-    const consoleTextarea = this.refs.code;
+    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
 
     if (e.which === 38 || e.which === 40) {
       let dir: number;
@@ -68,12 +85,14 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
 
       e.preventDefault();
     }
-  },
+  }
+
   addLine(line: string, type: string) {
     const lines = this.state.lines;
-    lines.push({ line: line, type: type, index: this.state.lines.length });
-    this.setState({ lines: lines });
-  },
+    lines.push({ line, type, index: this.state.lines.length });
+    this.setState({ lines });
+  }
+
   runCmd(cmd: string) {
     const res = (window as any).workerInterface.runScript(cmd, true);
 
@@ -84,22 +103,24 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
     }
 
     this.addLine(res.result, 'answer');
-  },
+  }
+
   runClicked() {
     if (!this.state.scriptName) {
       alert('Please save your script first');
       return;
     }
 
-    const scriptTextarea = this.refs.script;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
     const scriptCode = scriptTextarea.value;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptCode);
 
     (window as any).workerInterface.runScript(scriptCode, false);
-  },
+  }
+
   newClicked() {
-    const scriptTextarea = this.refs.script as HTMLTextAreaElement;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
 
     this.setState({ scriptName: '' });
 
@@ -108,19 +129,22 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
     setTimeout(() => {
       scriptTextarea.focus();
     }, 100);
-  },
+  }
+
   loadClicked() {
     this.setState({ scriptPickerDialogOpen: true });
-  },
+  }
+
   saveClicked() {
     if (!this.state.scriptName) {
       return this.saveAsClicked();
     }
 
-    const scriptTextarea = this.refs.script as HTMLTextAreaElement;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
-  },
+  }
+
   saveAsClicked() {
     this.setState({
       saveAsName: this.state.scriptName,
@@ -138,9 +162,10 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
 
       saveAsNameInput.focus();
     }, 100);
-  },
+  }
+
   saveAsDialogSaveClicked() {
-    const scriptTextarea = this.refs.script;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
 
     this.setState({
       scriptName: this.state.saveAsName,
@@ -148,32 +173,37 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
     });
 
     this.props.scriptStorage.putScript(this.state.saveAsName, scriptTextarea.value);
-  },
+  }
+
   tabClick(mode: string) {
     this.setState({ mode });
-  },
+  }
+
   linesClick(e: any) {
-    const consoleTextarea = this.refs.code;
+    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
     consoleTextarea.focus();
     e.preventDefault();
-  },
+  }
+
   componentDidMount() {
-    const scriptTextarea = this.refs.script;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
 
     scriptTextarea.value = this.props.scriptStorage.getScript(this.state.scriptName);
-  },
+  }
+
   componentDidUpdate() {
-    const consoleTextarea = this.refs.code;
-    const scriptTextarea = this.refs.script;
-    const ul = this.refs.lines;
+    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const ul = this.refs['lines'] as HTMLUListElement;
 
     if (this.state.mode === 'console') consoleTextarea.focus();
     if (this.state.mode === 'script') scriptTextarea.focus();
 
     ul.scrollTop = ul.scrollHeight;
-  },
+  }
+
   scriptChosen(name: string) {
-    const scriptTextarea = this.refs.script;
+    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
 
     this.setState({
       scriptName: name,
@@ -183,13 +213,16 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
     const script = this.props.scriptStorage.getScript(name);
 
     scriptTextarea.value = script;
-  },
+  }
+
   scriptPickerDialogClosing() {
     this.setState({ scriptPickerDialogOpen: false });
-  },
+  }
+
   saveAsDialogClosing() {
     this.setState({ saveAsDialogOpen: false });
-  },
+  }
+
   render() {
     const items = this.state.lines.map((line: { type: string, line: string }, index: number) => {
       return <li key={index} className={line.type}>{line.line}</li>;
@@ -278,6 +311,6 @@ const CodeEditor = React.createClass<CodeEditorProps, any>({
       </div>
     );
   }
-});
+}
 
 export = CodeEditor;

@@ -1,5 +1,3 @@
-"use strict";
-
 const VERTEX_DATA_TYPE = 0;
 const VERTEX_DATA_SIDE = 1;
 const VERTEX_DATA_SHADE = 2;

@@ -1,6 +1,4 @@
-"use strict";
 import THREE = require('three');
-
 import com from '../common/WorldInfo';
 import { BlockTypeIds }  from '../common/BlockTypeList';
 import World from './World';
@@ -70,8 +68,8 @@ export default class Api {
     this.player.rightClick = fn;
   }
 
-  bindScript(fn: Function, index: number) {
-    this.player.boundScripts[index] = fn;
+  bindScript(fn: () => void, key: number) {
+    this.player.addBoundScript(key, fn);
   }
 
   setGravity(gravity: number) {
@@ -82,14 +80,18 @@ export default class Api {
     return this.player.mousePosition;
   }
 
-  setBlock(x: number, y: number, z: number, type: number, colour: number): void {
+  setBlock(
+    x: number, y: number, z: number,
+    type: number, colour: number
+  ): void {
     this.world.setBlocks(x, y, z, x, y, z, type, colour);
   }
 
   setBlocks(
     x1: number, y1: number, z1: number,
     x2: number, y2: number, z2: number,
-    type: number, colour: number): void {
+    type: number, colour: number
+  ): void {
     this.world.setBlocks(x1, y1, z1, x2, y2, z2, type, colour);
   }
 

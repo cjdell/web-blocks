@@ -1,5 +1,3 @@
-"use strict";
-/// <reference path="../typings/index.d.ts" />
 import fs = require('fs');
 import _ = require('underscore');
 

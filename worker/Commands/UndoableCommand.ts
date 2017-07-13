@@ -1,7 +1,4 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
-import THREE = require('three');
-
 import com from '../../common/WorldInfo';
 import Command from './Command';
 import Partition from '../Partition';

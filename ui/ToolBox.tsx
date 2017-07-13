@@ -1,7 +1,7 @@
 import React = require('react');
-import ScriptStorage from '../app/ScriptStorage';
 import CodeEditor = require('./CodeEditor');
-import Game from '../app/Game';
+import ScriptStorage  from '../app/ScriptStorage';
+import Game           from '../app/Game';
 
 const scriptStorage = new ScriptStorage();
 
@@ -35,14 +35,17 @@ const ToolBox = React.createClass<{ game: Game }, any>({
 
     (this.props.game as Game).setBlockType(blockTypeIndex);
   },
+
   toggleCodeEditor() {
     this.setState({ codeEditorVisible: !this.state.codeEditorVisible });
   },
+
   switchTool(toolType: string) {
     this.setState({ toolType });
 
     (this.props.game as Game).setTool(toolType);
   },
+
   switchMove(moveType: string) {
     this.setState({ moveType });
 
@@ -57,6 +60,7 @@ const ToolBox = React.createClass<{ game: Game }, any>({
       if (event.keyCode === 27) this.toggleCodeEditor();
     }, false);
   },
+
   componentDidUpdate() {
     (window as any).blockMovement = this.state.codeEditorVisible;
   },

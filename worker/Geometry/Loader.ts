@@ -1,4 +1,3 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
 import com from '../../common/WorldInfo';
 import { BlockTypeIds } from '../../common/BlockTypeList';

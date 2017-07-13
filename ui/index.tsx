@@ -1,21 +1,16 @@
 import React = require('react');
 import ReactDOM = require('react-dom');
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import { lightBaseTheme } from 'material-ui/styles';
-
+import BoundScriptBar = require('./BoundScriptBar');
 import ToolBox = require('./ToolBox');
-import Game from '../app/Game';
-
 const injectTapEventPlugin = require('react-tap-event-plugin');
+import MuiThemeProvider   from 'material-ui/styles/MuiThemeProvider';
+import getMuiTheme        from 'material-ui/styles/getMuiTheme';
+import { lightBaseTheme } from 'material-ui/styles';
+import Game               from '../app/Game';
 
 injectTapEventPlugin();
 
-const ViewPort = React.createClass<{ ref: string }, any>({
-  getInitialState() {
-    return {};
-  },
-
+class ViewPort extends React.Component<{ ref: string }, any> {
   render() {
     return (
       <MuiThemeProvider>
@@ -26,47 +21,75 @@ const ViewPort = React.createClass<{ ref: string }, any>({
             </div>
             <input className="miniConsoleInput" />
           </div>
-          <div className="helpBar">
-            Keys: [WASD]= Walk, [SHIFT]= Un/Lock Camera to Mouse, [SPACE]= Jump, [ESCAPE]= Toggle Code Editor, [Enter]= On-screen console
-          </div>
         </div>
       </MuiThemeProvider>
     );
   }
-});
+}
 
-const App = React.createClass<{ game?: Game }, any>({
-  getInitialState() {
-    return {};
-  },
+interface AppProps {
+  game?: Game;
+  scripts: number[];
+}
 
-  childContextTypes: {
+class App extends React.Component<AppProps, any> {
+  static childContextTypes = {
     muiTheme: React.PropTypes.object
-  },
+  };
+
+  constructor() {
+    super();
+
+    this.executeBoundScript = this.executeBoundScript.bind(this);
+  }
 
   getChildContext() {
     return {
       muiTheme: getMuiTheme(lightBaseTheme)
     };
-  },
+  }
+
+  executeBoundScript(key: number) {
+    this.props.game.workerInterface.executeBoundScript(key);
+  }
 
   render() {
     return (
       <div className="app">
-        <ViewPort ref="viewPort"></ViewPort>
-        <ToolBox game={this.props.game}></ToolBox>
+        <ViewPort
+          ref="viewPort" />
+
+        <BoundScriptBar
+          scripts={this.props.scripts}
+          onExecuteBoundScript={this.executeBoundScript} />
+
+        <ToolBox
+          game={this.props.game} />
+
+        <div className="helpBar">
+          Keys:
+          [WASD]= Walk,
+          [SHIFT]= Un/Lock Camera to Mouse,
+          [SPACE]= Jump,
+          [ESCAPE]= Toggle Code Editor,
+          [Enter]= On-screen console
+        </div>
       </div>
     );
   }
-});
+}
 
 class UserInterface {
   container: HTMLDivElement;
   app: any;
 
+  game: Game;
+  scripts: number[] = [];
+
   init(_container: HTMLDivElement) {
     this.container = _container;
-    this.app = ReactDOM.render(<App />, this.container);
+
+    this.render();
   }
 
   getViewPort() {
@@ -74,7 +97,22 @@ class UserInterface {
   }
 
   setGame(game: Game) {
-    this.app = ReactDOM.render(<App game={game} />, this.container);
+    this.game = game;
+
+    this.game.onBoundScriptsChange(args => {
+      this.scripts = args.scripts;
+
+      this.render();
+    });
+
+    this.render();
+  }
+
+  render() {
+    this.app = ReactDOM.render(
+      <App game={this.game} scripts={this.scripts} />,
+      this.container
+    );
   }
 }
 

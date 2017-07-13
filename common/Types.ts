@@ -1,4 +1,7 @@
-"use strict";
+/**
+ * Common types shared between UI and Web workers  
+ */
+
 import com from '../common/WorldInfo';
 
 /**
@@ -9,7 +12,7 @@ export interface Movement {
   turn: THREE.Vector2;
 }
 
-export interface SetBlockArgs {
+export interface AddBlockArgs {
   position: com.IntVector3;
   side: number;
   type: number;
@@ -22,3 +25,22 @@ export interface SetBlocksArgs {
   colour: number;
   update: boolean;
 }
+
+export interface PlayerPositionChangeArgs {
+  position: THREE.Vector3;
+  target: THREE.Vector3;
+}
+
+export interface PlayerPositionChangeListener {
+  (args: PlayerPositionChangeArgs): void;
+}
+
+export interface BoundScriptsChangeArgs {
+  scripts: BoundScripts;
+}
+
+export interface BoundScriptsChangeListener {
+  (args: BoundScriptsChangeArgs): void;
+}
+
+export type BoundScripts = number[];

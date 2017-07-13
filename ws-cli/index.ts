@@ -1,4 +1,3 @@
-"use strict";
 /// <reference path="../typings/index.d.ts" />
 import ws = require('ws');
 import readline = require('readline');

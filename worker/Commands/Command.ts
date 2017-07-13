@@ -1,12 +1,9 @@
-"use strict";
 /// <reference path="../../typings/index.d.ts" />
-import THREE = require('three');
-
 import Partition from '../Partition';
 import com from '../../common/WorldInfo';
 
 export default class Command {
-  worldInfo: com.WorldInfo
+  worldInfo: com.WorldInfo;
   version: number;
   options: any;
 

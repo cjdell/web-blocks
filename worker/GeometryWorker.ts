@@ -1,20 +1,21 @@
 /// <reference path="../typings/index.d.ts" />
-"use strict";
 const _self = <any>self;
 
 import _ = require('underscore');
-import THREE = require('three');
+import com            from '../common/WorldInfo';
+import World          from './World';
+import WorldGeometry  from './WorldGeometry';
+import Player         from './Player';
+import Api            from './Api';
+import ScriptRunner   from './ScriptRunner';
+import CliServer      from './Cli/CliServer';
+import { Loader }     from './Geometry/Loader';
 
-import com from '../common/WorldInfo';
-import { Movement, SetBlockArgs, SetBlocksArgs } from '../common/Types';
-
-import World from './World';
-import WorldGeometry from './WorldGeometry';
-import Player from './Player';
-import Api from './Api';
-import ScriptRunner from './ScriptRunner';
-import CliServer from './Cli/CliServer';
-import { Loader } from './Geometry/Loader';
+import {
+  Movement,
+  AddBlockArgs,
+  SetBlocksArgs
+} from '../common/Types';
 
 console.log('GeometryWorker: online');
 
@@ -60,15 +61,19 @@ const init = (invocation: Invocation<void>): void => {
     checkForChangedPartitions();
   });
 
-  player.changeListener = (position: THREE.Vector3, target: THREE.Vector3) => {
+  player.onPlayerPositionChange(args => {
     _self.postMessage({
-      action: 'updatePlayerPosition',
-      data: {
-        position: position,
-        target: target
-      }
+      action: 'playerPositionChange',
+      data: args
     });
-  };
+  });
+
+  player.onBoundScriptsChange(args => {
+    _self.postMessage({
+      action: 'boundScriptsChange',
+      data: args
+    });
+  });
 
   player.print = (msg: string) => {
     _self.postMessage({
@@ -96,9 +101,7 @@ const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {
 
   _self.postMessage({
     id: invocation.id,
-    data: {
-      result: result
-    }
+    data: { result }
   });
 };
 
@@ -124,7 +127,7 @@ const getPartition = (invocation: Invocation<{ index: number }>) => {
       id: invocation.id,
       data: {
         index: invocation.data.index,
-        geo: geo
+        geo
       }
     }, [
       geo.data.position.buffer,
@@ -156,7 +159,7 @@ const setBlocks = (invocation: Invocation<SetBlocksArgs>) => {
   world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, type, colour);
 };
 
-const addBlock = (invocation: Invocation<SetBlockArgs>) => {
+const addBlock = (invocation: Invocation<AddBlockArgs>) => {
   world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
 };
 
@@ -188,12 +191,14 @@ const rightClick = () => {
   } else {
     player.rightClicked = false;
   }
-  return;
 };
 
 const executeBoundScript = (invocation: Invocation<{ index: number }>) => {
-  const fn: Function = player.boundScripts[invocation.data.index];
-  if (fn) fn();
+  const fn = player.getBoundScript(invocation.data.index);
+
+  if (fn) {
+    fn();
+  }
 };
 
 self.onmessage = (e) => {
@@ -226,13 +231,13 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'setBlocks') {
-    const invocation = <Invocation<{ start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean }>>e.data;
+    const invocation = <Invocation<SetBlocksArgs>>e.data;
 
     return setBlocks(invocation);
   }
 
   if (invocation.action === 'addBlock') {
-    const invocation = <Invocation<{ position: com.IntVector3, side: number, type: number }>>e.data;
+    const invocation = <Invocation<AddBlockArgs>>e.data;
 
     return addBlock(invocation);
   }

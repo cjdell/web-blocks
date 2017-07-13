@@ -1,20 +1,27 @@
-"use strict";
 /// <reference path="../typings/index.d.ts" />
 import THREE = require('three');
+import com                          from '../common/WorldInfo';
+import { PartitionGeometryResult }  from '../worker/WorldGeometry';
 
-import com from '../common/WorldInfo';
-import { Movement, SetBlockArgs, SetBlocksArgs } from '../common/Types';
-import { PartitionGeometryResult } from '../worker/WorldGeometry';
+import {
+  Movement,
+  AddBlockArgs,
+  SetBlocksArgs,
+  PlayerPositionChangeListener,
+  BoundScriptsChangeListener
+} from '../common/Types';
 
 export default class WorkerInterface {
   geoWorker: Worker;
-  callbacks: { [id: number]: Function } = {};
+  callbacks: { [id: number]: (data: any) => void } = {};
 
   changeListener: (data: { changes: number[] }) => void = null;
-  print: Function = null;
-  playerPositionListener: ((position: THREE.Vector3) => void);
+  print: (msg: string) => void = null;
   lastId = 0;
   jumping: boolean = false;
+
+  private playerPositionChangeListener: PlayerPositionChangeListener;
+  private boundScriptsChangeListener: BoundScriptsChangeListener;
 
   constructor() {
     this.geoWorker = new Worker('build/worker.js');
@@ -29,15 +36,27 @@ export default class WorkerInterface {
       }
 
       if (e.data.action === 'update') {
-        if (this.changeListener) this.changeListener(e.data);
+        if (this.changeListener) {
+          this.changeListener(e.data);
+        }
       }
 
-      if (e.data.action === 'updatePlayerPosition') {
-        if (this.playerPositionListener) this.playerPositionListener(e.data.data);
+      if (e.data.action === 'playerPositionChange') {
+        if (this.playerPositionChangeListener) {
+          this.playerPositionChangeListener(e.data.data);
+        }
+      }
+
+      if (e.data.action === 'boundScriptsChange') {
+        if (this.boundScriptsChangeListener) {
+          this.boundScriptsChangeListener(e.data.data);
+        }
       }
 
       if (e.data.action === 'print') {
-        if (this.print) this.print(e.data.data);
+        if (this.print) {
+          this.print(e.data.data);
+        }
       }
     };
   }
@@ -86,7 +105,13 @@ export default class WorkerInterface {
     });
   }
 
-  setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number, update: boolean) {
+  setBlocks(
+    start: com.IntVector3,
+    end: com.IntVector3,
+    type: number,
+    colour: number,
+    update: boolean
+  ) {
     const args: SetBlocksArgs = {
       start,
       end,
@@ -99,7 +124,7 @@ export default class WorkerInterface {
   }
 
   addBlock(position: com.IntVector3, side: number, type: number) {
-    const args: SetBlockArgs = {
+    const args: AddBlockArgs = {
       position,
       side,
       type
@@ -147,5 +172,13 @@ export default class WorkerInterface {
 
   executeBoundScript(index: number) {
     this.invoke<Object>('executeBoundScript', { index });
+  }
+
+  onPlayerPositionChange(listener: PlayerPositionChangeListener) {
+    this.playerPositionChangeListener = listener;
+  }
+
+  onBoundScriptsChange(listener: BoundScriptsChangeListener) {
+    this.boundScriptsChangeListener = listener;
   }
 }
