@@ -87,9 +87,13 @@ class CodeEditor extends React.Component<CodeEditorProps, any> {
     }
   }
 
-  addLine(line: string, type: string) {
+  addLine(text: string, type: string) {
     const lines = this.state.lines;
-    lines.push({ line, type, index: this.state.lines.length });
+
+    text.split('\n').forEach(line => {
+      lines.push({ line, type, index: this.state.lines.length });
+    });
+
     this.setState({ lines });
   }
 
@@ -181,14 +185,16 @@ class CodeEditor extends React.Component<CodeEditorProps, any> {
 
   linesClick(e: any) {
     const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
-    
-    // Give focus back to the textarea after 5 seconds.
-    // Delay is so we can allow selection for copy/paste.
-    setTimeout(() => {
-      consoleTextarea.focus();
-    }, 5000);
-    
+
+    consoleTextarea.focus();
+
     e.preventDefault();
+  }
+
+  onLineClick(line: string) {
+    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
+
+    consoleTextarea.value += line;
   }
 
   componentDidMount() {
@@ -231,7 +237,7 @@ class CodeEditor extends React.Component<CodeEditorProps, any> {
 
   render() {
     const items = this.state.lines.map((line: { type: string, line: string }, index: number) => {
-      return <li key={index} className={line.type}>{line.line}</li>;
+      return <li key={index} className={line.type} onClick={() => this.onLineClick(line.line) }>{line.line}</li>;
     });
 
     const scriptPickerCustomActions = [

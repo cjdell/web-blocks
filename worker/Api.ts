@@ -8,6 +8,8 @@ export default class Api {
   world: World;
   player: Player;
 
+  lastBlockPos: com.IntVector3;
+
   get BlockType() {
     return BlockTypeIds;
   };
@@ -36,14 +38,29 @@ export default class Api {
       'Not sure what to type? Here\'s some you can try:',
       '  setPosition(100,12,110)',
       '  setBlock(100,5,100,Grass)',
+      '  showMe()',
       '  setBlock(100,5,100,Colour,100)',
       '  setBlocks(100,5,100,100,20,100,Stone)',
+      '  setGravity(1.0)',
       'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
     ].join('\n');
   }
 
   get hi() {
     return 'Hi there!';
+  }
+
+  showMe() {
+    if (this.lastBlockPos) {
+      const { x, y, z } = this.lastBlockPos;
+
+      this.player.setDirection(new THREE.Vector2(0, 180));
+      this.player.setPosition(new THREE.Vector3(x, y, z + 5));
+
+      return `Here is your block. It is at ${x}, ${y}, ${z}`;
+    }
+
+    return 'I couldn\'t find your block';
   }
 
   print(msg: any) {
@@ -84,7 +101,9 @@ export default class Api {
     x: number, y: number, z: number,
     type: number, colour: number
   ): void {
-    this.world.setBlocks(x, y, z, x, y, z, type, colour);
+    this.lastBlockPos = new com.IntVector3(x, y, z);
+
+    this.world.setBlocks(x, y, z, x, y, z, type || BlockTypeIds.Stone, colour);
   }
 
   setBlocks(
@@ -92,7 +111,9 @@ export default class Api {
     x2: number, y2: number, z2: number,
     type: number, colour: number
   ): void {
-    this.world.setBlocks(x1, y1, z1, x2, y2, z2, type, colour);
+    this.lastBlockPos = new com.IntVector3(x1, y1, z1);
+
+    this.world.setBlocks(x1, y1, z1, x2, y2, z2, type || BlockTypeIds.Stone, colour);
   }
 
   getBlock(x: number, y: number, z: number): number {
