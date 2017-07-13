@@ -11,8 +11,7 @@
     "preserveConstEnums": true,
     "suppressImplicitAnyIndexErrors": true,
     "jsx": "react",
-    "inlineSourceMap": true,
-    "inlineSources": true
+    "sourceMap": true
   },
   "filesGlob": [
     "./**/*.ts",

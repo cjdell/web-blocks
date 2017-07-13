@@ -35,11 +35,6 @@ const samples = [
     modified: new Date(2015, 5, 2),
     code: fs.readFileSync('./samples/Rings.js')
   }, {
-    name: 'Stargate',
-    sample: true,
-    modified: new Date(2015, 9, 17),
-    code: fs.readFileSync('./samples/Stargate.js')
-  }, {
     name: 'Trail',
     sample: true,
     modified: new Date(2015, 5, 4),
@@ -60,11 +55,6 @@ const samples = [
     modified: new Date(2015, 5, 7),
     code: fs.readFileSync('./samples/Palette.js')
   }, {
-    name: 'Bound Pillar',
-    sample: true,
-    modified: new Date(2016, 5, 30),
-    code: fs.readFileSync('./samples/BoundPillar.js')
-  }, {
     name: 'Pong',
     sample: true,
     modified: new Date(2016, 8, 21),
@@ -75,11 +65,6 @@ const samples = [
     modified: new Date(2016, 5, 30),
     code: fs.readFileSync('./samples/MouseBlock.js')
   }, {
-    name: 'Bound House',
-    sample: true,
-    modified: new Date(2016, 8, 28),
-    code: fs.readFileSync('./samples/BoundHouse.js')
-  }, {
     name: 'Tunnel Digger',
     sample: true,
     modified: new Date(2016, 9, 17),
@@ -89,6 +74,21 @@ const samples = [
     sample: true,
     modified: new Date(2016, 8, 28),
     code: fs.readFileSync('./samples/UFO.js')
+  }, {
+    name: 'Button Activated Pillar',
+    sample: true,
+    modified: new Date(2017, 1, 1),
+    code: fs.readFileSync('./samples/BoundPillar.js')
+  }, {
+    name: 'Button Activated House',
+    sample: true,
+    modified: new Date(2017, 1, 2),
+    code: fs.readFileSync('./samples/BoundHouse.js')
+  }, {
+    name: 'Button Activated Stargate',
+    sample: true,
+    modified: new Date(2017, 1, 3),
+    code: fs.readFileSync('./samples/Stargate.js')
   }
 ];
 

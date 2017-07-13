@@ -35,9 +35,9 @@ export default class Api {
       'Here you can type JavaScript commands!',
       'Not sure what to type? Here\'s some you can try:',
       '  setPosition(100,12,110)',
-      '  setBlock(100,5,100,BlockType.Grass)',
-      '  setBlock(100,5,100,BlockType.Colour,100)',
-      '  setBlocks(100,5,100,100,20,100,BlockType.Stone)',
+      '  setBlock(100,5,100,Grass)',
+      '  setBlock(100,5,100,Colour,100)',
+      '  setBlocks(100,5,100,100,20,100,Stone)',
       'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
     ].join('\n');
   }
