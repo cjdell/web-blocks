@@ -1,6 +1,6 @@
 import THREE = require('three');
 import com from '../common/WorldInfo';
-import { BlockTypeIds }  from '../common/BlockTypeList';
+import { BlockTypeIds } from '../common/BlockTypeList';
 import World from './World';
 import Player from './Player';
 
@@ -103,7 +103,11 @@ export default class Api {
   ): void {
     this.lastBlockPos = new com.IntVector3(x, y, z);
 
-    this.world.setBlocks(x, y, z, x, y, z, type || BlockTypeIds.Stone, colour);
+    if (typeof type !== 'number') {
+      type = BlockTypeIds.Stone;
+    }
+
+    this.world.setBlocks(x, y, z, x, y, z, type, colour);
   }
 
   setBlocks(
@@ -113,7 +117,11 @@ export default class Api {
   ): void {
     this.lastBlockPos = new com.IntVector3(x1, y1, z1);
 
-    this.world.setBlocks(x1, y1, z1, x2, y2, z2, type || BlockTypeIds.Stone, colour);
+    if (typeof type !== 'number') {
+      type = BlockTypeIds.Stone;
+    }
+
+    this.world.setBlocks(x1, y1, z1, x2, y2, z2, type, colour);
   }
 
   getBlock(x: number, y: number, z: number): number {
