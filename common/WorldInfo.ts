@@ -1,7 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
+import * as THREE from 'three';
 
-module Common {
+namespace Common {
   export interface PartitionBoundaries {
     partitionIndex: number;
     points: THREE.Vector3[];

@@ -1,5 +1,5 @@
-import React = require('react');
-import CodeEditor = require('./CodeEditor');
+import React from 'react';
+import CodeEditor from './CodeEditor';
 import ScriptStorage  from '../app/ScriptStorage';
 import Game           from '../app/Game';
 
@@ -143,4 +143,4 @@ const ToolBox = React.createClass<{ game: Game }, any>({
   }
 });
 
-export = ToolBox;
+export default ToolBox;

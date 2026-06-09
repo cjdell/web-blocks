@@ -1,5 +1,5 @@
-import React = require('react');
-import mui = require('material-ui');
+import React from 'react';
+import * as mui from 'material-ui';
 
 const { List, ListItem } = mui;
 
@@ -35,4 +35,4 @@ class ScriptPicker extends React.Component<ScriptPickerProps, any> {
   }
 }
 
-export = ScriptPicker;
+export default ScriptPicker;

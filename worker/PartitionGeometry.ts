@@ -26,7 +26,7 @@ export interface VertexData {
   normal: Float32Array;
   uv: Float32Array;
   data: Float32Array;
-  offset: Float32Array;
+  offset: Uint32Array;
 }
 
 export default class PartitionGeometry {
@@ -34,16 +34,16 @@ export default class PartitionGeometry {
   partition: Partition;
   world: World;
 
-  position: Float32Array;
-  normal: Float32Array;
-  uv: Float32Array;
-  data: Float32Array;
-  offset: Float32Array;
+  position!: Float32Array;
+  normal!: Float32Array;
+  uv!: Float32Array;
+  data!: Float32Array;
+  offset!: Uint32Array;
 
-  dimX: number;
-  dimY: number;
-  dimZ: number;
-  dimXY: number;
+  dimX!: number;
+  dimY!: number;
+  dimZ!: number;
+  dimXY!: number;
 
   constructor(worldInfo: com.WorldInfo, partition: Partition, world: World) {
     this.worldInfo = worldInfo;

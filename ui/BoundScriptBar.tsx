@@ -1,4 +1,4 @@
-import React = require('react');
+import React from 'react';
 import { BoundScripts } from '../common/Types';
 
 interface BoundScriptBarProps {
@@ -26,4 +26,4 @@ class BoundScriptBar extends React.Component<BoundScriptBarProps, any> {
   }
 }
 
-export = BoundScriptBar;
+export default BoundScriptBar;

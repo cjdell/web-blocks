@@ -1,5 +1,5 @@
 /// <reference path="../../typings/index.d.ts" />
-import THREE = require('three');
+import * as THREE from 'three';
 // import fs = require('fs');
 import com from '../../common/WorldInfo';
 import { Geometry } from './Geometry';

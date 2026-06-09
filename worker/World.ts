@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
-import _ = require('underscore');
+import * as THREE from 'three';
+import _ from 'underscore';
 import com                    from '../common/WorldInfo';
 import Partition              from './Partition';
 import Command                from './Commands/Command';

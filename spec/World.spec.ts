@@ -1,4 +1,4 @@
-import chai = require('chai');
+import chai from 'chai';
 import com from '../common/WorldInfo';
 import World from '../worker/World';
 

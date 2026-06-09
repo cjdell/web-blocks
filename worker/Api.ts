@@ -1,4 +1,4 @@
-import THREE = require('three');
+import * as THREE from 'three';
 import com from '../common/WorldInfo';
 import { BlockTypeIds } from '../common/BlockTypeList';
 import World from './World';
@@ -166,5 +166,5 @@ export default class Api {
 }
 
 Object.keys(BlockTypeIds).forEach(blockTypeName => {
-  Api.prototype[blockTypeName] = BlockTypeIds[blockTypeName];
+  (Api.prototype as any)[blockTypeName] = BlockTypeIds[blockTypeName as keyof typeof BlockTypeIds];
 });

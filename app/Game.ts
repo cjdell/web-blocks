@@ -1,4 +1,4 @@
-import THREE = require('three');
+import * as THREE from 'three';
 import com                from '../common/WorldInfo';
 import Culling            from './Culling';
 import Interaction        from './Interaction';
@@ -171,7 +171,7 @@ export default class Game {
       this.vertexShader = data[0];
       this.fragmentShader = data[1];
 
-      return null;
+      return null as any;
     });
   }
 

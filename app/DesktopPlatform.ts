@@ -1,5 +1,5 @@
 /// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
+import * as THREE from 'three';
 import UserInterface from '../ui';
 import com from '../common/WorldInfo';
 import DesktopViewPoint from './DesktopViewPoint';

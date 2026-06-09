@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
-import _ = require('underscore');
-import THREE = require('three');
+import _ from 'underscore';
+import * as THREE from 'three';
 
 import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
@@ -64,13 +64,7 @@ export default class CardboardViewPoint {
     const fullscreen = () => {
       if (viewPort.requestFullscreen) {
         viewPort.requestFullscreen();
-        // } else if (viewPort.msRequestFullscreen) {
-        //   viewPort.msRequestFullscreen();
-        // } else if (viewPort.mozRequestFullScreen) {
-        //   viewPort.mozRequestFullScreen();
-      } else if (viewPort.webkitRequestFullscreen) {
-        viewPort.webkitRequestFullscreen();
-      }
+      } 
     }
 
     const setOrientationControls = (e: any) => {

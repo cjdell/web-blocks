@@ -1,17 +1,17 @@
 {
-  "version": "1.8.10",
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "es2015",
+    "module": "esnext",
     "declaration": false,
     "noImplicitAny": true,
     "removeComments": true,
     "noLib": false,
     "preserveConstEnums": true,
-    "suppressImplicitAnyIndexErrors": true,
     "jsx": "react",
-    "sourceMap": true
+    "sourceMap": true,
+    "strict": false,
+    "types": ["node"]
   },
   "filesGlob": [
     "./**/*.ts",
@@ -22,8 +22,5 @@
   "exclude": [
     "node_modules",
     "bower_components"
-  ],
-  "awesomeTypescriptLoaderOptions": {
-    
-  }
+  ]
 }

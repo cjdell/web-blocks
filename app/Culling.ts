@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
-import _ = require('underscore');
-import THREE = require('three');
+import _ from 'underscore';
+import * as THREE from 'three';
 import com from '../common/WorldInfo';
 
 export default class Culling {

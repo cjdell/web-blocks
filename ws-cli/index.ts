@@ -1,8 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
-import ws = require('ws');
-import readline = require('readline');
+import { WebSocketServer } from 'ws';
+import readline from 'node:readline';
 
-const WebSocketServer = ws.Server;
 const wss = new WebSocketServer({ port: 8001 });
 
 console.log('Awaiting incoming connection...');

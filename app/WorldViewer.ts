@@ -1,5 +1,5 @@
-import THREE = require('three');
-import _ = require('underscore');
+import * as THREE from 'three';
+import _ from 'underscore';
 import WorkerInterface from './WorkerInterface';
 import com from '../common/WorldInfo';
 import { PartitionGeometryResult } from '../worker/WorldGeometry';

@@ -1,7 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
 const _self = <any>self;
 
-import _ = require('underscore');
+import _ from 'underscore';
 import com            from '../common/WorldInfo';
 import World          from './World';
 import WorldGeometry  from './WorldGeometry';

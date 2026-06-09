@@ -1,5 +1,5 @@
 /// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
+import * as THREE from 'three';
 
 require('../lib/StereoEffect');
 require('../lib/DeviceOrientationControls');

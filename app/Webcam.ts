@@ -1,4 +1,4 @@
-import THREE = require('three');
+import * as THREE from 'three';
 
 export default class Webcam {
   video: HTMLVideoElement;

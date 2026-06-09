@@ -1,94 +1,112 @@
-import fs = require('fs');
-import _ = require('underscore');
+import _ from 'underscore';
+
+import Cube from '../samples/Cube.js' with { type: "text" };
+import Pyramid from '../samples/Pyramid.js' with { type: "text" };
+import Circle from '../samples/Circle.js' with { type: "text" };
+import MagicBridge from '../samples/MagicBridge.js' with { type: "text" };
+import Rings from '../samples/Rings.js' with { type: "text" };
+import Trail from '../samples/Trail.js' with { type: "text" };
+import Dizzy from '../samples/Dizzy.js' with { type: "text" };
+import House from '../samples/House.js' with { type: "text" };
+import Palette from '../samples/Palette.js' with { type: "text" };
+import Pong from '../samples/Pong.js' with { type: "text" };
+import MouseBlock from '../samples/MouseBlock.js' with { type: "text" };
+import TunnelDigger from '../samples/TunnelDigger.js' with { type: "text" };
+import UFO from '../samples/UFO.js' with { type: "text" };
+import BoundPillar from '../samples/BoundPillar.js' with { type: "text" };
+import BoundHouse from '../samples/BoundHouse.js' with { type: "text" };
+import Stargate from '../samples/Stargate.js' with { type: "text" };
 
 interface Script {
   name: string;
   sample: boolean;
   modified: Date;
-  code: string | Buffer;
+  code: string;
 }
+
+console.log('Cube', Cube)
 
 const samples = [
   {
     name: 'Cube',
     sample: true,
     modified: new Date(2015, 5, 1),
-    code: fs.readFileSync('./samples/Cube.js')
+    code: Cube.toString(),
   }, {
     name: 'Pyramid',
     sample: true,
     modified: new Date(2015, 5, 1),
-    code: fs.readFileSync('./samples/Pyramid.js')
+    code: Pyramid.toString(),
   }, {
     name: 'Circle',
     sample: true,
     modified: new Date(2015, 5, 1),
-    code: fs.readFileSync('./samples/Circle.js')
+    code: Circle.toString(),
   }, {
     name: 'Magic Bridge',
     sample: true,
     modified: new Date(2016, 9, 11),
-    code: fs.readFileSync('./samples/MagicBridge.js')
+    code: MagicBridge.toString(),
   }, {
     name: 'Rings',
     sample: true,
     modified: new Date(2015, 5, 2),
-    code: fs.readFileSync('./samples/Rings.js')
+    code: Rings.toString(),
   }, {
     name: 'Trail',
     sample: true,
     modified: new Date(2015, 5, 4),
-    code: fs.readFileSync('./samples/Trail.js')
+    code: Trail.toString(),
   }, {
     name: 'Dizzy',
     sample: true,
     modified: new Date(2015, 5, 7),
-    code: fs.readFileSync('./samples/Dizzy.js')
+    code: Dizzy.toString(),
   }, {
     name: 'House',
     sample: true,
     modified: new Date(2015, 5, 7),
-    code: fs.readFileSync('./samples/House.js')
+    code: House.toString(),
   }, {
     name: 'Palette',
     sample: true,
     modified: new Date(2015, 5, 7),
-    code: fs.readFileSync('./samples/Palette.js')
+    code: Palette.toString(),
   }, {
     name: 'Pong',
     sample: true,
     modified: new Date(2016, 8, 21),
-    code: fs.readFileSync('./samples/Pong.js')
+    code: Pong.toString(),
   }, {
     name: 'Mouse Block',
     sample: true,
     modified: new Date(2016, 5, 30),
-    code: fs.readFileSync('./samples/MouseBlock.js')
+    code: MouseBlock.toString(),
   }, {
     name: 'Tunnel Digger',
     sample: true,
     modified: new Date(2016, 9, 17),
-    code: fs.readFileSync('./samples/TunnelDigger.js')
+    code: TunnelDigger.toString(),
   }, {
     name: 'UFO',
     sample: true,
     modified: new Date(2016, 8, 28),
-    code: fs.readFileSync('./samples/UFO.js')
+    code: UFO.toString(),
   }, {
     name: 'Button Activated Pillar',
     sample: true,
     modified: new Date(2017, 1, 1),
-    code: fs.readFileSync('./samples/BoundPillar.js')
+    code: BoundPillar.toString(),
   }, {
     name: 'Button Activated House',
     sample: true,
     modified: new Date(2017, 1, 2),
-    code: fs.readFileSync('./samples/BoundHouse.js')
+    code: BoundHouse.toString(),
   }, {
     name: 'Button Activated Stargate',
     sample: true,
     modified: new Date(2017, 1, 3),
-    code: fs.readFileSync('./samples/Stargate.js')
+    code: Stargate.toString(),
   }
 ];
 

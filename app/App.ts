@@ -1,6 +1,4 @@
 /// <reference path="../typings/index.d.ts" />
-require('whatwg-fetch');
-require('es6-promise').polyfill();
 
 import DesktopPlatform from './DesktopPlatform';
 import CardboardPlatform from './CardboardPlatform';
@@ -41,4 +39,4 @@ const App = () => {
   };
 };
 
-export = (window as any).App = App;
+export default (globalThis as any).App = App;

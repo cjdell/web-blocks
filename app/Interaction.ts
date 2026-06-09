@@ -1,5 +1,5 @@
 /// <reference path="../typings/index.d.ts" />
-import THREE = require('three');
+import * as THREE from 'three';
 import com                from '../common/WorldInfo';
 import constants          from '../common/Constants';
 import { BlockTypeIds }   from '../common/BlockTypeList';
