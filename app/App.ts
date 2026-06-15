@@ -1,8 +1,8 @@
 /// <reference path="../typings/index.d.ts" />
 
-import DesktopPlatform from './DesktopPlatform';
-import CardboardPlatform from './CardboardPlatform';
-import Game from './Game';
+import DesktopPlatform from "./DesktopPlatform";
+import CardboardPlatform from "./CardboardPlatform";
+import Game from "./Game";
 
 const App = () => {
   let platform: CardboardPlatform | DesktopPlatform;
@@ -10,20 +10,20 @@ const App = () => {
 
   const detectmob = () => {
     // return true;
-    return navigator.userAgent.match(/Android/i)
-      || navigator.userAgent.match(/webOS/i)
-      || navigator.userAgent.match(/iPhone/i)
-      || navigator.userAgent.match(/iPod/i)
-      || navigator.userAgent.match(/BlackBerry/i)
-      || navigator.userAgent.match(/Windows Phone/i);
+    return navigator.userAgent.match(/Android/i) ||
+      navigator.userAgent.match(/webOS/i) ||
+      navigator.userAgent.match(/iPhone/i) ||
+      navigator.userAgent.match(/iPod/i) ||
+      navigator.userAgent.match(/BlackBerry/i) ||
+      navigator.userAgent.match(/Windows Phone/i);
   };
 
   const init = (container: HTMLDivElement) => {
-    if (detectmob()) {
-      platform = new CardboardPlatform(container);
-    } else {
-      platform = new DesktopPlatform(container);
-    }
+    // if (detectmob()) {
+    // platform = new CardboardPlatform(container);
+    // } else {
+    platform = new DesktopPlatform(container);
+    // }
 
     game = new Game(platform);
 
@@ -35,7 +35,7 @@ const App = () => {
   };
 
   return {
-    init
+    init,
   };
 };
 
