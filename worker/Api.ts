@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { IntVector3 } from '../common/WorldInfo';
+import type { PlainVector3 } from '../common/Types';
 import { BlockTypeIds } from '../common/BlockTypeList';
 import World from './World';
 import Player from './Player';
@@ -14,8 +15,8 @@ export default class Api {
     return BlockTypeIds;
   };
 
-  intervalRefs = <number[]>[];
-  timeoutRefs = <number[]>[];
+  intervalRefs: number[] = [];
+  timeoutRefs: number[] = [];
 
   constructor(world: World, player: Player) {
     this.world = world;
@@ -81,7 +82,7 @@ export default class Api {
     this.player.print(msg);
   }
 
-  bindRightClick(fn: Function) {
+  bindRightClick(fn: () => void) {
     this.player.rightClick = fn;
   }
 
@@ -93,7 +94,7 @@ export default class Api {
     this.player.gravity = gravity;
   }
 
-  getMousePosition(): { pos: IntVector3, side: number } {
+  getMousePosition(): { pos: PlainVector3; side: number } {
     return this.player.mousePosition;
   }
 
@@ -144,7 +145,7 @@ export default class Api {
     this.player.setDirection(new THREE.Vector2(x, y));
   }
 
-  setInterval(func: Function, interval: number): void {
+  setInterval(func: () => void, interval: number): void {
     const ref = self.setInterval(func, interval);
     this.intervalRefs.push(ref);
   }
@@ -154,7 +155,7 @@ export default class Api {
     this.intervalRefs.length = 0;
   }
 
-  setTimeout(func: Function, timeout: number): void {
+  setTimeout(func: () => void, timeout: number): void {
     const ref = self.setTimeout(func, timeout);
     this.timeoutRefs.push(ref);
   }

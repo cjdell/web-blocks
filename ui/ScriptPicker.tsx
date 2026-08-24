@@ -3,7 +3,7 @@ import { List } from './widgets';
 
 interface ScriptPickerProps {
   visible: boolean;
-  onScriptChosen: Function;
+  onScriptChosen: (name: string) => void;
   scriptStorage: any;
 }
 

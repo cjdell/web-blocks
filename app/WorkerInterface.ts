@@ -1,22 +1,29 @@
 /// <reference path="../typings/index.d.ts" />
-import * as THREE from 'three';
-import type { WorldInfo, IntVector3, ChangeHandlerOptions } from '../common/WorldInfo';
-import { PartitionGeometryResult }  from '../worker/WorldGeometry';
+import type {
+  RequestFor,
+  WorkerMessage,
+  WorkerRequest,
+  WorldInfoData
+} from '../common/WorkerProtocol';
 
-import {
-  Movement,
+import type {
   AddBlockArgs,
-  SetBlocksArgs,
+  BoundScriptsChangeListener,
+  Movement,
   PlayerPositionChangeListener,
-  BoundScriptsChangeListener
+  PlainVector3,
+  SetBlocksArgs
 } from '../common/Types';
+
+import type { ChangeHandlerOptions } from '../common/WorldInfo';
+import type { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 export default class WorkerInterface {
   geoWorker: Worker;
-  callbacks: { [id: number]: (data: any) => void } = {};
+  callbacks: { [id: number]: (data: unknown) => void } = {};
 
-  changeListener: (data: { changes: number[] }) => void = null;
-  print: (msg: string) => void = null;
+  changeListener: ((data: { changes: number[] }) => void) | null = null;
+  print: ((msg: string) => void) | null = null;
   lastId = 0;
   jumping: boolean = false;
 
@@ -27,92 +34,107 @@ export default class WorkerInterface {
     this.geoWorker = new Worker('build/worker.js');
 
     this.geoWorker.onmessage = e => {
-      if (typeof e.data.id === 'number') {
-        const callback = this.callbacks[e.data.id];
+      const message = e.data as WorkerMessage;
 
-        delete this.callbacks[e.data.id];
+      // Responses carry a request id; events don't.
+      if ('id' in message) {
+        const callback = this.callbacks[message.id];
 
-        return callback(e.data.data);
+        delete this.callbacks[message.id];
+
+        if (callback) callback(message.data);
+
+        return;
       }
 
-      if (e.data.action === 'update') {
-        if (this.changeListener) {
-          this.changeListener(e.data);
-        }
-      }
+      switch (message.action) {
+        case 'update':
+          if (this.changeListener) {
+            this.changeListener(message);
+          }
+          break;
 
-      if (e.data.action === 'playerPositionChange') {
-        if (this.playerPositionChangeListener) {
-          this.playerPositionChangeListener(e.data.data);
-        }
-      }
+        case 'playerPositionChange':
+          if (this.playerPositionChangeListener) {
+            this.playerPositionChangeListener(message.data);
+          }
+          break;
 
-      if (e.data.action === 'boundScriptsChange') {
-        if (this.boundScriptsChangeListener) {
-          this.boundScriptsChangeListener(e.data.data);
-        }
-      }
+        case 'boundScriptsChange':
+          if (this.boundScriptsChangeListener) {
+            this.boundScriptsChangeListener(message.data);
+          }
+          break;
 
-      if (e.data.action === 'print') {
-        if (this.print) {
-          this.print(e.data.data);
-        }
+        case 'print':
+          if (this.print) {
+            this.print(message.data);
+          }
+          break;
       }
     };
   }
 
-  invoke<ReturnType>(action: string, data: object) {
-    // Note: the worker has no error path, so the promise can never reject.
-    return new Promise<ReturnType>((resolve, _reject) => {
-      const invocation = {
-        action: action,
-        id: this.lastId++,
-        data: data
-      };
+  /**
+   * Send a request to the worker and await its response.
+   *
+   * The action pins the payload type (via the WorkerRequest union) and the
+   * generic pins the response type at the call site. Note: the worker has
+   * no error path, so the promise can never reject — and the worker never
+   * type-checks its own responses, so the data is only as trustworthy as
+   * the pairing declared at the call site.
+   */
+  invoke<ReturnType, Action extends WorkerRequest['action']>(
+    action: Action,
+    data: RequestFor<Action>['data']
+  ): Promise<ReturnType> {
+    return new Promise<ReturnType>(resolve => {
+      const id = this.lastId++;
 
-      this.callbacks[invocation.id] = resolve;
+      this.callbacks[id] = data => resolve(data as ReturnType);
 
-      this.geoWorker.postMessage(invocation);
+      this.geoWorker.postMessage({ id, action, data });
     });
   }
 
+  /**
+   * Fire-and-forget variant of invoke() for actions whose response is not
+   * typed in the WorkerRequest union. (Currently only used by
+   * registerChangeHandler, which the worker does not implement yet.)
+   */
   invokeCallback<ReturnType>(action: string, data: object, callback: (r: ReturnType) => void) {
-    const invocation = {
-      action: action,
-      id: this.lastId++,
-      data: data
-    };
+    const id = this.lastId++;
 
-    this.callbacks[invocation.id] = callback;
+    this.callbacks[id] = data => callback(data as ReturnType);
 
-    this.geoWorker.postMessage(invocation);
+    this.geoWorker.postMessage({ id, action, data });
   }
 
-  init() {
-    return this.invoke<WorldInfo>('init', null);
+  init(): Promise<WorldInfoData> {
+    return this.invoke<WorldInfoData, 'init'>('init', null);
   }
 
-  runScript(code: string, expr: boolean) {
-    return this.invoke<{ result: any }>('runScript', { code, expr });
+  runScript(code: string, expr: boolean): Promise<{ result: unknown }> {
+    return this.invoke('runScript', { code, expr });
   }
 
-  undo() {
-    return this.invoke<void>('undo', null);
+  undo(): Promise<void> {
+    return this.invoke('undo', null);
   }
 
-  getBlock(pos: THREE.Vector3) {
-    return this.invoke<{ type: number }>('getBlock', { pos: pos }).then((result) => {
+  getBlock(pos: PlainVector3): Promise<number> {
+    return this.invoke<{ type: number }, 'getBlock'>('getBlock', { pos }).then(result => {
       return result.type;
     });
   }
 
   setBlocks(
-    start: IntVector3,
-    end: IntVector3,
+    start: PlainVector3,
+    end: PlainVector3,
     type: number,
     colour: number,
     update: boolean
-  ) {
+  ): Promise<unknown> {
     const args: SetBlocksArgs = {
       start,
       end,
@@ -121,58 +143,58 @@ export default class WorkerInterface {
       update
     };
 
-    return this.invoke<object>('setBlocks', args);
+    return this.invoke('setBlocks', args);
   }
 
-  addBlock(position: IntVector3, side: number, type: number) {
+  addBlock(position: PlainVector3, side: number, type: number): Promise<unknown> {
     const args: AddBlockArgs = {
       position,
       side,
       type
     };
 
-    return this.invoke<object>('addBlock', args);
+    return this.invoke('addBlock', args);
   }
 
-  move(movement: Movement) {
-    return this.invoke<object>('move', movement);
+  move(movement: Movement): Promise<unknown> {
+    return this.invoke('move', movement);
   }
 
-  jump() {
+  jump(): Promise<unknown> {
     this.jumping = true;
-    return this.invoke<object>('action', { action: 'jump' });
+    return this.invoke('action', { action: 'jump' });
   }
 
-  setGravity(gravity: number) {
-    return this.invoke<object>('setGravity', { gravity });
+  setGravity(gravity: number): Promise<unknown> {
+    return this.invoke('setGravity', { gravity });
   }
 
-  getPartition(index: number) {
-    return this.invoke<{ geo: PartitionGeometryResult }>('getPartition', { index });
+  getPartition(index: number): Promise<{ index: number; geo: PartitionGeometryResult }> {
+    return this.invoke('getPartition', { index });
   }
 
-  registerChangeHandler(changeHandlerOptions: ChangeHandlerOptions, callback: (Change: any) => void) {
-    return this.invokeCallback<object>('registerChangeHandler', changeHandlerOptions, callback);
+  registerChangeHandler(changeHandlerOptions: ChangeHandlerOptions, callback: (change: unknown) => void) {
+    return this.invokeCallback<unknown>('registerChangeHandler', changeHandlerOptions, callback);
   }
 
   addChangeListener(listener: (data: { changes: number[] }) => void) {
     this.changeListener = listener;
   }
 
-  rightClick() {
-    return this.invoke<object>('rightClick', null);
+  rightClick(): Promise<unknown> {
+    return this.invoke('rightClick', null);
   }
 
-  getMousePosition() {
-    return this.invoke<object>('getMousePosition', null);
+  getMousePosition(): Promise<unknown> {
+    return this.invoke('getMousePosition', null);
   }
 
-  setMousePosition(position: { pos: IntVector3, side: number }) {
-    return this.invoke<object>('setMousePosition', position);
+  setMousePosition(position: { pos: PlainVector3; side: number }): Promise<unknown> {
+    return this.invoke('setMousePosition', position);
   }
 
   executeBoundScript(index: number) {
-    this.invoke<object>('executeBoundScript', { index });
+    this.invoke('executeBoundScript', { index });
   }
 
   onPlayerPositionChange(listener: PlayerPositionChangeListener) {

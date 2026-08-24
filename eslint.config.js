@@ -23,12 +23,6 @@ module.exports = tseslint.config(
       // don't fail on it while it is migrated away piece by piece.
       "@typescript-eslint/no-explicit-any": "off",
 
-      // `Object` (empty object type) and `Function` are used throughout the
-      // worker protocol. Replace with concrete types as the protocol gets
-      // typed (see modernisation report).
-      "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/no-unsafe-function-type": "off",
-
       // Triple-slash references are what pull the vendored typings snapshot
       // into the compilation; they go away once the project moves to @types.
       "@typescript-eslint/triple-slash-reference": "off",

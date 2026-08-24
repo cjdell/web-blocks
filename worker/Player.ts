@@ -1,13 +1,13 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import World            from './World';
-import type { IntVector3 } from '../common/WorldInfo';
 import { BlockTypeIds } from '../common/BlockTypeList';
 
 import {
   Movement,
   PlayerPositionChangeListener,
-  BoundScriptsChangeListener
+  BoundScriptsChangeListener,
+  PlainVector3
 } from '../common/Types';
 
 const FPS = 60;
@@ -16,7 +16,7 @@ export default class Player {
   gravity = 0.0;
   print: ((msg: string) => void);
   rightClicked: boolean = false;
-  mousePosition: { pos: IntVector3, side: number };
+  mousePosition: { pos: PlainVector3, side: number };
 
   private world: World;
   private boundScripts: { [key: number]: () => void } = {};
@@ -34,7 +34,7 @@ export default class Player {
   private playerPositionChangeListener: PlayerPositionChangeListener;
   private boundScriptsChangeListener: BoundScriptsChangeListener;
 
-  rightClick: Function = () => console.log("Right clicked!");
+  rightClick: () => void = () => console.log("Right clicked!");
 
   constructor(world: World) {
     this.world = world;

@@ -3,10 +3,14 @@ import type { PlainVector3 } from './Types';
 
 /**
  * The two corners of a partition's bounding box, in world coordinates.
+ *
+ * The corners are structural `{x, y, z}` (a THREE.Vector3 satisfies this
+ * shape) so the type stays honest when the boundaries cross the worker
+ * boundary, where they arrive as plain objects.
  */
 export interface PartitionBoundaries {
   partitionIndex: number;
-  points: THREE.Vector3[];
+  points: PlainVector3[];
 }
 
 /**

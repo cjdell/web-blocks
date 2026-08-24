@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import WorkerInterface from './WorkerInterface';
-import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
-import { PartitionGeometryResult } from '../worker/WorldGeometry';
+import type { WorldInfo } from '../common/WorldInfo';
+import type { PlainVector3 } from '../common/Types';
+import type { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 interface PartitionCacheItem {
   mesh: THREE.Mesh;
@@ -52,7 +53,7 @@ export default class WorldViewer {
     // }, 1000);
   }
 
-  getMesh(bufferGeometry: THREE.BufferGeometry, offset: IntVector3): THREE.Mesh {
+  getMesh(bufferGeometry: THREE.BufferGeometry, offset: PlainVector3): THREE.Mesh {
     const mesh = new THREE.Mesh(bufferGeometry, this.shaderMaterial);
 
     mesh.position.x += offset.x;

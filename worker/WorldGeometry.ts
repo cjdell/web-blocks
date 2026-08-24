@@ -1,12 +1,15 @@
 /// <reference path="../typings/index.d.ts" />
-import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
+import type { WorldInfo } from '../common/WorldInfo';
+import type { PlainVector3 } from '../common/Types';
 import PartitionGeometry from './PartitionGeometry';
 import { VertexData } from './PartitionGeometry';
 import World from './World';
 
 export interface PartitionGeometryResult {
   data: VertexData;
-  offset: IntVector3;
+  // The offset is an IntVector3 on the worker, but it crosses the boundary
+  // as plain {x, y, z} data.
+  offset: PlainVector3;
 }
 
 export default class WorldGeometry {
@@ -17,7 +20,7 @@ export default class WorldGeometry {
   constructor(worldInfo: WorldInfo, world: World) {
     this.worldInfo = worldInfo;
     this.world = world;
-    this.partitionGeometries = <PartitionGeometry[]>new Array(world.getPartitionCapacity());
+    this.partitionGeometries = new Array<PartitionGeometry>(world.getPartitionCapacity());
   }
 
   getPartitionGeometry(partitionIndex: number): PartitionGeometryResult {

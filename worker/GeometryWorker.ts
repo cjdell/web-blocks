@@ -1,20 +1,21 @@
 /// <reference path="../typings/index.d.ts" />
-const _self = <any>self;
+// The DOM lib types `self` as a Window (whose postMessage requires a
+// targetOrigin); the real geometry-worker global is a Worker scope.
+const _self = self as unknown as Worker;
 
 import { IntVector3, WorldInfo } from '../common/WorldInfo';
-import { throttle }   from '../common/Throttle';
-import World          from './World';
-import WorldGeometry  from './WorldGeometry';
-import Player         from './Player';
-import Api            from './Api';
-import ScriptRunner   from './ScriptRunner';
-import { Loader }     from './Geometry/Loader';
+import { throttle }              from '../common/Throttle';
+import World                     from './World';
+import WorldGeometry             from './WorldGeometry';
+import Player                    from './Player';
+import Api                       from './Api';
+import ScriptRunner              from './ScriptRunner';
+import { Loader }                from './Geometry/Loader';
 
-import {
-  Movement,
-  AddBlockArgs,
-  SetBlocksArgs
-} from '../common/Types';
+import type {
+  RequestFor,
+  WorkerRequest
+} from '../common/WorkerProtocol';
 
 console.log('GeometryWorker: online');
 
@@ -23,12 +24,6 @@ let worldGeometry: WorldGeometry;
 let player: Player;
 let api: Api;
 let scriptRunner: ScriptRunner;
-
-interface Invocation<DataType> {
-  id: number;
-  action: string;
-  data: DataType;
-}
 
 const checkForChangedPartitions = throttle(() => {
   const dirty = world.getDirtyPartitions();
@@ -39,7 +34,7 @@ const checkForChangedPartitions = throttle(() => {
   });
 }, 100);
 
-const init = (invocation: Invocation<void>): void => {
+const init = (invocation: RequestFor<'init'>): void => {
   const worldInfo = new WorldInfo({
     worldDimensionsInPartitions: new IntVector3(32, 1, 32),
     partitionDimensionsInBlocks: new IntVector3(32, 128, 32),
@@ -93,7 +88,7 @@ const init = (invocation: Invocation<void>): void => {
   }, 1000 / 60);
 };
 
-const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {
+const runScript = (invocation: RequestFor<'runScript'>): void => {
   const result = scriptRunner.run(invocation.data.code, invocation.data.expr);
 
   _self.postMessage({
@@ -102,7 +97,7 @@ const runScript = (invocation: Invocation<{ code: string, expr: boolean }>) => {
   });
 };
 
-const undo = (invocation: Invocation<void>) => {
+const undo = (invocation: RequestFor<'undo'>): void => {
   world.undo();
 
   _self.postMessage({
@@ -111,7 +106,7 @@ const undo = (invocation: Invocation<void>) => {
   });
 };
 
-const getPartition = (invocation: Invocation<{ index: number }>) => {
+const getPartition = (invocation: RequestFor<'getPartition'>): void => {
   const geo = worldGeometry.getPartitionGeometry(invocation.data.index);
 
   if (!geo.data.position) {
@@ -136,7 +131,7 @@ const getPartition = (invocation: Invocation<{ index: number }>) => {
   );
 };
 
-const getBlock = (invocation: Invocation<{ pos: IntVector3 }>) => {
+const getBlock = (invocation: RequestFor<'getBlock'>): void => {
   const { x, y, z } = invocation.data.pos;
 
   const type = world.getBlock(x, y, z);
@@ -150,25 +145,27 @@ const getBlock = (invocation: Invocation<{ pos: IntVector3 }>) => {
   });
 };
 
-const setBlocks = (invocation: Invocation<SetBlocksArgs>) => {
+const setBlocks = (invocation: RequestFor<'setBlocks'>): void => {
   const { start, end, type, colour } = invocation.data;
 
   world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, type, colour);
 };
 
-const addBlock = (invocation: Invocation<AddBlockArgs>) => {
+const addBlock = (invocation: RequestFor<'addBlock'>): void => {
   world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
 };
 
-const move = (invocation: Invocation<Movement>) => {
+const move = (invocation: RequestFor<'move'>): void => {
   player.move(invocation.data);
 };
 
-const action = (_invocation: Invocation<{ type: string }>) => {
+const action = (): void => {
+  // The only action payload is { action: 'jump' }; the worker treats every
+  // 'action' request as a jump.
   player.jump();
 };
 
-const setGravity = (invocation: Invocation<{ gravity: number }>) => {
+const setGravity = (invocation: RequestFor<'setGravity'>): void => {
   player.gravity = invocation.data.gravity;
 };
 
@@ -176,7 +173,7 @@ const getMousePosition = () => {
   return player.mousePosition;
 };
 
-const setMousePosition = (invocation: Invocation<{ pos: IntVector3, side: number }>) => {
+const setMousePosition = (invocation: RequestFor<'setMousePosition'>): void => {
   player.mousePosition = invocation.data;
 };
 
@@ -190,7 +187,7 @@ const rightClick = () => {
   }
 };
 
-const executeBoundScript = (invocation: Invocation<{ index: number }>) => {
+const executeBoundScript = (invocation: RequestFor<'executeBoundScript'>): void => {
   const fn = player.getBoundScript(invocation.data.index);
 
   if (fn) {
@@ -198,62 +195,37 @@ const executeBoundScript = (invocation: Invocation<{ index: number }>) => {
   }
 };
 
-self.onmessage = (e) => {
-  const invocation = e.data as Invocation<void>;
+self.onmessage = (e: MessageEvent) => {
+  const invocation = e.data as WorkerRequest;
 
-  if (invocation.action === 'init') {
-    return init(invocation);
-  }
-
-  if (invocation.action === 'runScript') {
-    return runScript(e.data as Invocation<{ code: string, expr: boolean }>);
-  }
-
-  if (invocation.action === 'undo') {
-    return undo(invocation);
-  }
-
-  if (invocation.action === 'getPartition') {
-    return getPartition(e.data as Invocation<{ index: number }>);
-  }
-
-  if (invocation.action === 'getBlock') {
-    return getBlock(e.data as Invocation<{ pos: IntVector3 }>);
-  }
-
-  if (invocation.action === 'setBlocks') {
-    return setBlocks(e.data as Invocation<SetBlocksArgs>);
-  }
-
-  if (invocation.action === 'addBlock') {
-    return addBlock(e.data as Invocation<AddBlockArgs>);
-  }
-
-  if (invocation.action === 'move') {
-    return move(e.data as Invocation<Movement>);
-  }
-
-  if (invocation.action === 'action') {
-    return action(e.data as Invocation<{ type: string }>);
-  }
-
-  if (invocation.action === 'setGravity') {
-    return setGravity(e.data as Invocation<{ gravity: number }>);
-  }
-
-  if (invocation.action === 'getMousePosition') {
-    return getMousePosition();
-  }
-
-  if (invocation.action === 'setMousePosition') {
-    return setMousePosition(e.data as Invocation<{ pos: IntVector3, side: number }>);
-  }
-
-  if (invocation.action === 'rightClick') {
-    return rightClick();
-  }
-
-  if (invocation.action === 'executeBoundScript') {
-    return executeBoundScript(e.data as Invocation<{ index: number }>);
+  switch (invocation.action) {
+    case 'init':
+      return init(invocation);
+    case 'runScript':
+      return runScript(invocation);
+    case 'undo':
+      return undo(invocation);
+    case 'getPartition':
+      return getPartition(invocation);
+    case 'getBlock':
+      return getBlock(invocation);
+    case 'setBlocks':
+      return setBlocks(invocation);
+    case 'addBlock':
+      return addBlock(invocation);
+    case 'move':
+      return move(invocation);
+    case 'action':
+      return action();
+    case 'setGravity':
+      return setGravity(invocation);
+    case 'getMousePosition':
+      return getMousePosition();
+    case 'setMousePosition':
+      return setMousePosition(invocation);
+    case 'rightClick':
+      return rightClick();
+    case 'executeBoundScript':
+      return executeBoundScript(invocation);
   }
 };

@@ -1,6 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import { IntVector3, type WorldInfo, type PartitionBoundaries } from '../common/WorldInfo';
+import type { PlainVector3 } from '../common/Types';
 import Partition              from './Partition';
 import Command                from './Commands/Command';
 import { CuboidOperation }    from './Operations/CuboidOperation';
@@ -213,7 +214,8 @@ export default class World {
     return this.applyCommand(command);
   }
 
-  addBlock(wpos: IntVector3, side: number, type: number): void {
+  // wpos is plain {x, y, z} data (it may have crossed the worker boundary).
+  addBlock(wpos: PlainVector3, side: number, type: number): void {
     let { x: wx, y: wy, z: wz } = wpos;
 
     if (type === 0) {
