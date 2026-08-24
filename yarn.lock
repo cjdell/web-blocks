@@ -1165,6 +1165,15 @@ fast-uri@^3.0.1:
   resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.1.2.tgz#8af3d4fc9d3e71b11572cc2673b514a7d1a8c8ec"
   integrity sha512-rVjf7ArG3LTk+FS6Yw81V1DLuZl1bRbNrev6Tmd/9RaroeeRRJhAt7jg/6YFxbvAQXUCavSoZhPPj6oOx+5KjQ==
 
+fbjs@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/fbjs/-/fbjs-0.2.1.tgz#622061630a43e11f845017b9044aaa648ed3f731"
+  integrity sha512-JRGL7Dyq3p3J/rS1H0GR8OMpJm5x9bc2CyR/u1clWlTZb90wKldS3N4T7Fe4724oNSxtnXES/IYIm4ofteJHwg==
+  dependencies:
+    core-js "^1.0.0"
+    promise "^7.0.3"
+    whatwg-fetch "^0.9.0"
+
 fbjs@^0.8.0, fbjs@^0.8.1, fbjs@^0.8.4:
   version "0.8.12"
   resolved "https://registry.npmjs.org/fbjs/-/fbjs-0.8.12.tgz"
@@ -2048,7 +2057,7 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-promise@^7.1.1:
+promise@^7.0.3, promise@^7.1.1:
   version "7.3.1"
   resolved "https://registry.npmjs.org/promise/-/promise-7.3.1.tgz"
   integrity sha512-nolQXZ/4L+bP/UGlkfaIujX9BKxGwmQ9OT4mOt5yvy8iK1h3wqTEJCijzGANTCCl9nWjY41juyAn2K3Q1hLLTg==
@@ -2101,6 +2110,13 @@ react-event-listener@^0.2.1:
   integrity sha512-vT+pZ+49IpGKt+XqBBY/InO19HE2PuCZ2hX2hF23CjrZXfXfGuYH8jovATK5mAik367R1C3sVPTpnZG+IKywtQ==
   dependencies:
     fbjs "^0.8.0"
+
+react-tap-event-plugin@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-tap-event-plugin/-/react-tap-event-plugin-1.0.0.tgz#7a248505a9e9abecc352b2dab313d17685c51adf"
+  integrity sha512-EerIA+llDP1RfqclRCC/VwSZny3cYA9X4+tf6mTiJmICUV1mQIYPSBaZeDa3DErmA9CiqhNltlCJ06U9k9wyhA==
+  dependencies:
+    fbjs "^0.2.1"
 
 react@15.3.1:
   version "15.3.1"
@@ -2638,6 +2654,11 @@ whatwg-fetch@>=0.10.0:
   version "0.10.0"
   resolved "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-0.10.0.tgz"
   integrity sha512-yaEDQ/KKCrW5jAfYYAbTa0hBpgF53jEtN6IiPp9uDeu1oKP5CFhEn1WekP9lFCRxER2PUD4Q02ZAv+4s2ZnhGg==
+
+whatwg-fetch@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-0.9.0.tgz#0e3684c6cb9995b43efc9df03e4c365d95fd9cc0"
+  integrity sha512-DIuh7/cloHxHYwS/oRXGgkALYAntijL63nsgMQsNSnBj825AysosAqA2ZbYXGRqpPRiNH7335dTqV364euRpZw==
 
 which@^2.0.1:
   version "2.0.2"

@@ -6,6 +6,10 @@
 /// <reference path="globals/three/index.d.ts" />
 /// <reference path="globals/underscore/index.d.ts" />
 
+declare module 'react-tap-event-plugin' {
+  export default function(): void;
+}
+
 declare module '*.js' {
 
 }

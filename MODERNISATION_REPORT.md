@@ -21,12 +21,16 @@ All changes are non-breaking: `yarn build`, `yarn typecheck`, `yarn lint`, and
   The build now emits `.map` files.
 - **`package.json`** — added `engines: node >= 20`; new scripts
   (`typecheck`, `lint`, `profile`); removed dead dependencies
-  (`es6-promise`, `whatwg-fetch`, `react-tap-event-plugin`, and four
-  `react-addons-*` packages that nothing imported); replaced
-  `ts-node` with `tsx` (the old `mocha --require ts-node/register` script was
-  broken — `ts-node` was never even a declared dependency); bumped
-  `chai` `3 → 4`; added `eslint`, `@eslint/js`, `typescript-eslint`,
-  `globals`, `http-server`, `mocha`.
+  (`es6-promise`, `whatwg-fetch`, and four `react-addons-*` packages that
+  nothing imported); replaced `ts-node` with `tsx` (the old
+  `mocha --require ts-node/register` script was broken — `ts-node` was never
+  even a declared dependency); bumped `chai` `3 → 4`; added `eslint`,
+  `@eslint/js`, `typescript-eslint`, `globals`, `http-server`, `mocha`.
+  - Note: `react-tap-event-plugin` was initially removed as deprecated but
+    restored — material-ui 0.15's `Tabs`/buttons only react to the synthetic
+    `topTouchTap` event that this plugin generates, so without it the Script
+    tab (and all MUI buttons) stopped working. It stays until the
+    `@mui/material` upgrade (P1.2).
 - **Linting** — removed the long-defunct **tslint** config and added an
   ESLint 9 flat config (`eslint.config.js`) using `typescript-eslint`.
   Lint went from unconfigured to green; vendored 2015-era code
