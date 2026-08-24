@@ -9,6 +9,7 @@
     "test": "tsx node_modules/mocha/bin/mocha.js test.ts",
     "test:ui": "tsx test/ui/sanity.ts",
     "profile": "tsx profile.ts",
+    "size": "tsx size.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

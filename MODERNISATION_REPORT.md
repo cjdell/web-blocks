@@ -3,10 +3,10 @@
 _A surface-level modernisation pass, the full P1 dependency upgrade
 (React 19, hand-rolled UI, three 0.185), the full P2 type-safety &
 dead-weight removal (underscore out, ES-module `WorldInfo`, typed
-worker protocol, `strict: true`), and P3.8 (removal of the dead
-Cardboard platform) were completed on 2026‑08‑24. This document records
-what changed, what was deliberately left alone, and a prioritised plan
-for the deeper work that remains._
+worker protocol, `strict: true`), and P3.8 (removal of the dead Cardboard
+platform) and P3.9 (real post-gzip size budgets) were completed on
+2026‑08‑24. This document records what changed, what was deliberately
+left alone, and a prioritised plan for the deeper work that remains._
 
 ---
 
@@ -256,18 +256,36 @@ each step.
      class and binding the uniform; the block type, ID, and texture are
      already in place.
 
-9. **Bundle size.** Post-P1 the bundles shrank even though three.js grew:
-   `app.js` is ~747 KiB (was ~1.17 MB; the P3.8 Cardboard removal shaved a
-   further ~18 KiB) and `worker.js` ~155 KiB (was ~518 KB) pre-gzip —
-   modern three tree-shakes, and the 2016-era bundles shipped a lot of
-   dead code. Only `app.js` still exceeds the 244 KiB webpack budget.
-   Options:
-   - Lazy-load the code editor / UI (`React.lazy` + `import()`).
-   - Split the three.js-heavy viewer from the React UI.
-   - Confirm production minification is on (it is, via `mode: production`),
-     and measure post-gzip sizes to set a real budget.
-   - Consider `esbuild`/`swc` for faster builds and better tree-shaking of
-     the three.js import.
+9. **Bundle size.** — done, 2026‑08‑24. Post-P1 the bundles shrank even
+   though three.js grew: `app.js` is ~747 KiB (was ~1.17 MB; the P3.8
+   Cardboard removal shaved a further ~18 KiB) and `worker.js` ~139 KiB
+   (was ~518 KB) pre-gzip — modern three tree-shakes, and the 2016-era
+   bundles shipped a lot of dead code. Measured post-gzip (the size that
+   actually crosses the wire): `app.js` **195.1 KiB**, `worker.js`
+   **38.9 KiB**, `style.js` **5.7 KiB** — ~240 KiB total for first load,
+   a reasonable number for a three.js + React WebGL app. The original
+   options were then evaluated and rejected as not worth their cost:
+   - **Lazy-load the editor/UI** — rejected: the "code editor" is a
+     hand-rolled `<textarea>` component (no editor library), and the whole
+     `ui/` tree is a few KiB; code-splitting would save almost nothing
+     while adding an async chunk to the core interaction path (the
+     `test:ui` checks exercise the editor directly).
+   - **Split the three.js viewer from the React UI** — rejected: both
+     halves are needed on first paint, so splitting cannot reduce the
+     initial payload; it would only add a second request.
+   - **`esbuild`/`swc`** — not adopted: the build completes in ~3 s and
+     modern three tree-shakes well (the 0.81 → 0.185 upgrade alone shrank
+     the bundles); there is no size or speed problem left to solve.
+   Budgets are now enforced instead of advisory:
+   - `yarn size` (`size.ts`) gzips the built bundles and fails against
+     post-gzip budgets — app ≤ 230 KiB, worker ≤ 48 KiB, style ≤ 12 KiB
+     (~15–20 % headroom over the measured baseline; raise a budget
+     deliberately and note it here).
+   - `webpack.config.ts` sets `performance.maxAssetSize` /
+     `maxEntrypointSize` to 800 KiB raw, so the build's own size warning
+     only trips on genuine bloat instead of on every build (the default
+     244 KiB limit is calibrated for typical apps, not three.js bundles).
+     The production build is now warning-clean.
 
 10. [SKIP] **CI.** There is no CI. Add a GitHub Actions workflow running
     `yarn install --frozen-lockfile`, `yarn typecheck`, `yarn lint`,
@@ -298,12 +316,14 @@ yarn            # install
 yarn typecheck  # tsc --noEmit          → clean
 yarn lint       # eslint .              → clean
 yarn test       # mocha (via tsx)       → 3 passing
-yarn build      # webpack (production)  → size warnings only (app.js, see P3.9)
-yarn test:ui    # playwright headless   → 11/11 (boots, world renders, worker pipeline, no console errors)
+yarn build      # webpack (production)  → clean (P3.9 set real raw size limits)
+yarn size       # post-gzip budgets     → ok (app ≤ 230 KiB, worker ≤ 48, style ≤ 12)
+yarn test:ui    # playwright headless   → 12/12 (boots, world renders, worker pipeline, no console errors)
 ```
 
-The remaining webpack warnings are asset-size advisories for `app.js` only
-(see P3.9) and are expected given the current bundle sizes.
+The build is warning-clean: P3.9 replaced the default 244 KiB asset
+advisory with 800 KiB raw limits calibrated for a three.js bundle, and
+the real (post-gzip) budget is enforced by `yarn size`.
 
 **Standing rule (added 2026‑08‑24 after the ScriptStorage reload crash):**
 after any big operation — a dependency upgrade, a broad typing change, or a
