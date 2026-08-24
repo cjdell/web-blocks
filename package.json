@@ -7,6 +7,7 @@
     "build": "webpack",
     "start": "http-server -p 8888",
     "test": "tsx node_modules/mocha/bin/mocha.js test.ts",
+    "test:ui": "tsx test/ui/sanity.ts",
     "profile": "tsx profile.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
@@ -33,6 +34,7 @@
     "less": "^4.6.4",
     "less-loader": "^13.0.0",
     "mocha": "^11.7.5",
+    "playwright": "^1.62.1",
     "style-loader": "^4.0.0",
     "ts-loader": "^9",
     "tsx": "^4.21.0",
