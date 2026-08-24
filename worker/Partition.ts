@@ -1,10 +1,11 @@
-/// <reference path="../typings/index.d.ts" />
 import { IntVector3, type WorldInfo } from '../common/WorldInfo';
 const VALUES_PER_BLOCK = 3;
 
 export default class Partition {
   public offset: IntVector3;
-  public blocks: Uint8Array = null;
+  // null until init(); World.loadPartition() inits before any block access,
+  // so the internal reads below assert.
+  public blocks: Uint8Array | null = null;
   public index: number;
   public capacity: number;
   public occupied = 0;
@@ -45,13 +46,13 @@ export default class Partition {
   }
 
   getBlockWithIndex(rindex: number): number {
-    return this.blocks[VALUES_PER_BLOCK * rindex + 0];
+    return this.blocks![VALUES_PER_BLOCK * rindex + 0];
   }
 
   getBlock(rx: number, ry: number, rz: number): Uint8Array {
     const index = this.worldInfo.rindex(rx, ry, rz);
 
-    return new Uint8Array([this.blocks[VALUES_PER_BLOCK * index]]);
+    return new Uint8Array([this.blocks![VALUES_PER_BLOCK * index]]);
   }
 
   setBlock(px: number, py: number, pz: number, type: number, colour: number): void {
@@ -108,7 +109,7 @@ export default class Partition {
     for (let y = this.worldInfo.partitionDimensionsInBlocks.y - 1; y >= 0; y--) {
       const index = this.worldInfo.rindex(x, y, z);
 
-      if (this.blocks[VALUES_PER_BLOCK * index] !== 0) return y;
+      if (this.blocks![VALUES_PER_BLOCK * index] !== 0) return y;
     }
 
     return 0;
@@ -121,13 +122,13 @@ export default class Partition {
   private setBlockWithIndex(index: number, type: number, colour: number): void {
     const offset = VALUES_PER_BLOCK * index;
 
-    const currentType = this.blocks[offset + 0];
-    const currentColour = this.blocks[offset + 1];
+    const currentType = this.blocks![offset + 0];
+    const currentColour = this.blocks![offset + 1];
 
     if (currentType === type && currentColour === colour) return;
 
-    this.blocks[offset + 0] = type;
-    this.blocks[offset + 1] = colour | 0;
+    this.blocks![offset + 0] = type;
+    this.blocks![offset + 1] = colour | 0;
 
     if (currentType === 0) {
       this.occupied += 1;

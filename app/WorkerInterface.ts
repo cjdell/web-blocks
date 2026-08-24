@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import type {
   RequestFor,
   WorkerMessage,
@@ -27,8 +26,10 @@ export default class WorkerInterface {
   lastId = 0;
   jumping: boolean = false;
 
-  private playerPositionChangeListener: PlayerPositionChangeListener;
-  private boundScriptsChangeListener: BoundScriptsChangeListener;
+  // Set lazily via onPlayerPositionChange()/onBoundScriptsChange(); both
+  // are checked before use.
+  private playerPositionChangeListener: PlayerPositionChangeListener | null = null;
+  private boundScriptsChangeListener: BoundScriptsChangeListener | null = null;
 
   constructor() {
     this.geoWorker = new Worker('build/worker.js');

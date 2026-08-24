@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 
 import type { WorldInfo } from '../common/WorldInfo';
@@ -10,7 +9,8 @@ import DeviceOrientationControls from './DeviceOrientationControls';
 
 export default class CardboardViewPoint {
   camera: THREE.PerspectiveCamera;
-  light: THREE.Light;
+  // Callers (Game) pass null; guard the use below.
+  light: THREE.Light | null;
   viewPort: HTMLDivElement;
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -30,7 +30,7 @@ export default class CardboardViewPoint {
   //controls.noPan = true;
   //controls.autoRotate = true;
 
-  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.WebGLRenderer, scene: THREE.Scene, worldInfo: WorldInfo, workerInterface: WorkerInterface) {
+  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light | null, viewPort: HTMLDivElement, renderer: THREE.WebGLRenderer, scene: THREE.Scene, worldInfo: WorldInfo, workerInterface: WorkerInterface) {
     console.log('CardboardViewPoint');
 
     this.camera = camera;
@@ -101,9 +101,11 @@ export default class CardboardViewPoint {
   tick() {
     this.controls.update();
 
-    // Move the light
+    // Move the light (Game passes null, so guard it)
 
-    this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
+    if (this.light) {
+      this.light.position.set(this.camera.position.x, this.camera.position.y, this.camera.position.z);
+    }
 
     this.restrain(this.camera);
   }

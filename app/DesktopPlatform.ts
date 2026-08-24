@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import UserInterface from '../ui';
 import type { WorldInfo } from '../common/WorldInfo';
@@ -6,9 +5,10 @@ import DesktopViewPoint from './DesktopViewPoint';
 import WorkerInterface from './WorkerInterface';
 
 export default class DesktopPlatform {
-  renderer: THREE.WebGLRenderer = null;
-  ui: UserInterface = null;
-  viewPort: HTMLDivElement = null;
+  // Assigned in the constructor (strictPropertyInitialization).
+  renderer!: THREE.WebGLRenderer;
+  ui!: UserInterface;
+  viewPort!: HTMLDivElement;
 
   constructor(container: HTMLDivElement) {
     this.ui = new UserInterface();
@@ -29,7 +29,7 @@ export default class DesktopPlatform {
 
   getViewPoint(
     camera: THREE.PerspectiveCamera,
-    light: THREE.Light,
+    light: THREE.Light | null,
     viewPort: HTMLDivElement,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,

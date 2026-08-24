@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import Partition from '../Partition';
 import type { WorldInfo } from '../../common/WorldInfo';
 export default class Command {
@@ -12,7 +11,8 @@ export default class Command {
     this.options = options;
   }
 
-  getAffectedPartitionIndices(): number[] {
+  // null means "every partition" (the caller falls back to all of them).
+  getAffectedPartitionIndices(): number[] | null {
     throw new Error('Not implemented');
   }
 

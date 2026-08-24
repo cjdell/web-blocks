@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import type { WorldInfo } from '../common/WorldInfo';
 import type { PlainVector3 } from '../common/Types';
 import PartitionGeometry from './PartitionGeometry';

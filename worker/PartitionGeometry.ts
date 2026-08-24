@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import constants from '../common/Constants';
 import Partition from './Partition';

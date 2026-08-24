@@ -1,4 +1,3 @@
-/// <reference path="./typings/index.d.ts" />
 import { IntVector3, WorldInfo } from './common/WorldInfo';
 import World from './worker/World';
 

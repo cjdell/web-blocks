@@ -105,8 +105,9 @@ export interface BlockType {
   name: string;
   hideFromToolbox?: boolean;
   textures: {
-    top: string;
-    side: string;
+    // null for block types without textures yet (Fence is WIP).
+    top: string | null;
+    side: string | null;
   };
 }
 

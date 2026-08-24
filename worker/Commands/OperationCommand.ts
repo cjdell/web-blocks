@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import type { WorldInfo, IntVector3 } from '../../common/WorldInfo';
 import UndoableCommand from './UndoableCommand';
 import Partition from '../Partition';
@@ -20,7 +19,7 @@ export class OperationCommand extends UndoableCommand {
     this.operation = operation;
   }
 
-  getAffectedPartitionIndices(): number[] {
+  getAffectedPartitionIndices(): number[] | null {
     return this.operation.getAffectedPartitionIndices();
   }
 

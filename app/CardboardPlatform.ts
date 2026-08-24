@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 // The vendored 2015 forks in lib/ assigned onto the (no longer global)
 // THREE object; use the maintained official example instead.
@@ -9,12 +8,10 @@ import CardboardViewPoint from './CardboardViewPoint';
 import WorkerInterface from './WorkerInterface';
 
 export default class CardboardPlatform {
-  // var renderer = null;
-  // var effect = null;
-  // var viewPort = null;
-  renderer: THREE.WebGLRenderer | null = null;
+  // Assigned in the constructor (strictPropertyInitialization).
+  renderer!: THREE.WebGLRenderer;
   effect: any = null;
-  viewPort: HTMLDivElement | null = null;
+  viewPort!: HTMLDivElement;
 
   constructor(container: HTMLDivElement) {
     console.log('CardboardPlatform');
@@ -36,7 +33,7 @@ export default class CardboardPlatform {
 
   getViewPoint(
     camera: THREE.PerspectiveCamera,
-    light: THREE.Light,
+    light: THREE.Light | null,
     viewPort: HTMLDivElement,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,

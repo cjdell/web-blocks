@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import { IntVector3 } from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';

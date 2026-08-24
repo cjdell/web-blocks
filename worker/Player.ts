@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import World            from './World';
 import { BlockTypeIds } from '../common/BlockTypeList';
@@ -14,16 +13,19 @@ const FPS = 60;
 
 export default class Player {
   gravity = 0.0;
-  print: ((msg: string) => void);
+  // Assigned by GeometryWorker's init() before any script can print.
+  print!: (msg: string) => void;
   rightClicked: boolean = false;
-  mousePosition: { pos: PlainVector3, side: number };
+  // Set by the host via setMousePosition; null until the first mouse move.
+  mousePosition: { pos: PlainVector3, side: number } | null = null;
 
   private world: World;
   private boundScripts: { [key: number]: () => void } = {};
 
-  private position: THREE.Vector3;
-  private velocity: THREE.Vector3;
-  private lastMovement: Movement;
+  // resetPlayer() runs from the constructor (strictPropertyInitialization).
+  private position!: THREE.Vector3;
+  private velocity!: THREE.Vector3;
+  private lastMovement!: Movement;
 
   private lon = 0.0;
   private lat = 0.0;
@@ -31,8 +33,11 @@ export default class Player {
   private zDelta = 0.0;
   private lastFrame = Date.now();
 
-  private playerPositionChangeListener: PlayerPositionChangeListener;
-  private boundScriptsChangeListener: BoundScriptsChangeListener;
+  // Set lazily via onPlayerPositionChange()/onBoundScriptsChange() by
+  // GeometryWorker's init(); both are checked before use (addBoundScript
+  // asserts because it is only reachable after init).
+  private playerPositionChangeListener: PlayerPositionChangeListener | null = null;
+  private boundScriptsChangeListener: BoundScriptsChangeListener | null = null;
 
   rightClick: () => void = () => console.log("Right clicked!");
 
@@ -252,7 +257,7 @@ export default class Player {
 
     const scripts = Object.keys(this.boundScripts).map(str => parseInt(str, 10));
 
-    this.boundScriptsChangeListener({
+    this.boundScriptsChangeListener!({
       scripts
     });
   }

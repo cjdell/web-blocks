@@ -1,9 +1,10 @@
-/// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
 import type { WorldInfo } from '../../common/WorldInfo';
 export class Geometry {
-  worldInfo: WorldInfo = null;
-  template: THREE.BufferGeometry = null;
+  // Assigned in the constructor (strictPropertyInitialization).
+  worldInfo!: WorldInfo;
+  // Set by subclasses' init(); callers check before use.
+  template: THREE.BufferGeometry | null = null;
 
   constructor(worldInfo: WorldInfo) {
     this.worldInfo = worldInfo;

@@ -9,7 +9,8 @@ export default class Api {
   world: World;
   player: Player;
 
-  lastBlockPos: IntVector3;
+  // Set by setBlock()/setBlocks(); read (after a null check) by showMe().
+  lastBlockPos: IntVector3 | null = null;
 
   get BlockType() {
     return BlockTypeIds;
@@ -94,7 +95,8 @@ export default class Api {
     this.player.gravity = gravity;
   }
 
-  getMousePosition(): { pos: PlainVector3; side: number } {
+  // null until the host has sent a setMousePosition.
+  getMousePosition(): { pos: PlainVector3; side: number } | null {
     return this.player.mousePosition;
   }
 

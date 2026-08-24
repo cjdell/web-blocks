@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import type { WorldInfo } from '../../common/WorldInfo';
 export interface OperationResult {
   buffer: Uint8Array;
@@ -12,7 +11,8 @@ export class Operation {
     this.worldInfo = worldInfo;
   }
 
-  getAffectedPartitionIndices(): number[] {
+  // null means "every partition" (the caller falls back to all of them).
+  getAffectedPartitionIndices(): number[] | null {
     throw new Error('Not implemented');
   }
 

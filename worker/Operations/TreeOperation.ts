@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import { IntVector3, type WorldInfo } from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 

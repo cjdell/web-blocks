@@ -29,25 +29,29 @@ export default class Game {
 
   log = false;
 
-  workerInterface: WorkerInterface = null;
+  // workerInterface/renderer/effect/viewPort/camera/scene/blockTypeList are
+  // assigned in the constructor; the rest in init() before the render loop
+  // starts (strictPropertyInitialization).
+  workerInterface!: WorkerInterface;
   renderer: any = null;
   effect: any = null;
-  viewPort: HTMLDivElement = null;
-  camera: THREE.PerspectiveCamera = null;
-  scene: THREE.Scene = null;
-  blockTypeList: BlockTypeList = null;
-  worldViewer: WorldViewer = null;
-  viewPoint: DesktopViewPoint | CardboardViewPoint = null;
-  culling: Culling = null;
-  interaction: Interaction = null;
-  webcam: Webcam = null;
-  textRenderer: TextRenderer = null;
+  viewPort!: HTMLDivElement;
+  camera!: THREE.PerspectiveCamera;
+  scene!: THREE.Scene;
+  blockTypeList!: BlockTypeList;
+  worldViewer!: WorldViewer;
+  viewPoint!: DesktopViewPoint | CardboardViewPoint;
+  culling!: Culling;
+  interaction!: Interaction;
+  webcam!: Webcam;
+  textRenderer!: TextRenderer;
 
-  uniforms: any = null;
+  uniforms!: any;
   frame = 0;
 
-  vertexShader: string = null;
-  fragmentShader: string = null;
+  // Loaded via loadShaders(), which init() awaits before first use.
+  vertexShader!: string;
+  fragmentShader!: string;
 
   constructor(platform: DesktopPlatform | CardboardPlatform) {
     this.platform = platform;
@@ -183,7 +187,7 @@ export default class Game {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
     const blockTypePromises = blockTypes.map((blockType, index) => {
-      if (blockType.textures.top === null) return null;
+      if (blockType.textures.top === null || blockType.textures.side === null) return null;
 
       const top = this.getImage(blockType.textures.top);
       const side = this.getImage(blockType.textures.side);

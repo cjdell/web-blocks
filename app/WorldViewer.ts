@@ -5,7 +5,8 @@ import type { PlainVector3 } from '../common/Types';
 import type { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 interface PartitionCacheItem {
-  mesh: THREE.Mesh;
+  // null when the partition's geometry has been evicted or not fetched.
+  mesh: THREE.Mesh | null;
   index: number;
   visible: boolean;
   used: number;
@@ -18,7 +19,8 @@ export default class WorldViewer {
   private worldInfo: WorldInfo;
   private shaderMaterial: THREE.Material;
   private workerInterface: WorkerInterface;
-  private partitionCaches: PartitionCacheItem[] = null;
+  // Assigned in the constructor (strictPropertyInitialization).
+  private partitionCaches!: PartitionCacheItem[];
   private loading = false;
 
   constructor(
@@ -70,7 +72,7 @@ export default class WorldViewer {
       this.scene.add(partitionCache.mesh);
       partitionCache.visible = true;
       partitionCache.used = Date.now();
-      return Promise.resolve(null);
+      return Promise.resolve();
     } else {
       return this.workerInterface.getPartition(pindex).then(data => {
         // console.log('Generating partition', pindex);
@@ -124,7 +126,7 @@ export default class WorldViewer {
 
     this.partitionCaches[pindex] = partitionCache;
 
-    this.scene.add(partitionCache.mesh);
+    this.scene.add(mesh);
 
     // // console.log('Visible Partitions:', this.getVisiblePartitionIndices().length);
   }
@@ -134,7 +136,7 @@ export default class WorldViewer {
 
     if (!partitionCache) return;
 
-    this.scene.remove(partitionCache.mesh);
+    if (partitionCache.mesh) this.scene.remove(partitionCache.mesh);
 
     partitionCache.visible = false;
 

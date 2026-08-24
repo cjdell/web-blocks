@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import { WebSocketServer } from 'ws';
 import readline from 'node:readline';
 

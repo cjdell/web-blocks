@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
 import type { IntVector3 } from '../../common/WorldInfo';
 import { Context } from './ToolBase';
@@ -6,13 +5,15 @@ import { Context } from './ToolBase';
 export default class CuboidTool {
   context: Context;
 
+  // The state machine (select-start -> select-end -> select-height) fills
+  // these in as it progresses; each is only read after its state has set it.
   state = 'select-start';
-  startPos: IntVector3 = null;
-  endPos: IntVector3 = null;
-  heightPos: IntVector3 = null;
-  initialMouseHeight: number = null;
-  relMouseHeight: number = null;
-  cube: THREE.Mesh = null;
+  startPos: IntVector3 | null = null;
+  endPos: IntVector3 | null = null;
+  heightPos: IntVector3 | null = null;
+  initialMouseHeight: number | null = null;
+  relMouseHeight: number | null = null;
+  cube: THREE.Mesh | null = null;
 
   constructor(context: Context) {
     this.context = context;
@@ -25,10 +26,11 @@ export default class CuboidTool {
       this.state = 'select-end';
 
     } else if (this.state === 'select-end' && pos) {
+      // select-end is only reachable after select-start set startPos/cube.
       this.endPos = pos.clone();
-      this.endPos.y = this.startPos.y;
+      this.endPos.y = this.startPos!.y;
       this.heightPos = pos.clone();
-      this.scaleCube(this.cube, this.startPos, this.endPos);
+      this.scaleCube(this.cube!, this.startPos!, this.endPos);
       const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(this.endPos.x, this.endPos.z).y;
       this.initialMouseHeight = currentMouseHeight;
       this.relMouseHeight = 0;
@@ -36,8 +38,8 @@ export default class CuboidTool {
 
     } else if (this.state === 'select-height') {
       this.context.finished();
-      this.heightPos.y = this.endPos.y + this.relMouseHeight;
-      this.context.workerInterface.setBlocks(this.startPos, this.heightPos, this.context.type, 0, true);
+      this.heightPos!.y = this.endPos!.y + this.relMouseHeight!;
+      this.context.workerInterface.setBlocks(this.startPos!, this.heightPos!, this.context.type, 0, true);
       this.removeCube(this.cube);
     }
   }
@@ -45,14 +47,14 @@ export default class CuboidTool {
   onMouseMove(mouse: THREE.Vector2, pos: IntVector3): void {
     if (this.state === 'select-end' && pos) {
       this.endPos = pos.clone();
-      this.endPos.y = this.startPos.y;
-      this.scaleCube(this.cube, this.startPos, this.endPos);
+      this.endPos.y = this.startPos!.y;
+      this.scaleCube(this.cube!, this.startPos!, this.endPos);
 
     } else if (this.state === 'select-height') {
-      const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(this.endPos.x, this.endPos.z).y;
-      this.relMouseHeight = currentMouseHeight - this.initialMouseHeight;
-      this.heightPos.y = this.endPos.y + this.relMouseHeight;
-      this.scaleCube(this.cube, this.startPos, this.heightPos);
+      const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(this.endPos!.x, this.endPos!.z).y;
+      this.relMouseHeight = currentMouseHeight - this.initialMouseHeight!;
+      this.heightPos!.y = this.endPos!.y + this.relMouseHeight;
+      this.scaleCube(this.cube!, this.startPos!, this.heightPos!);
     }
   }
 
@@ -117,7 +119,9 @@ export default class CuboidTool {
     cube.scale.y = size.z + 0.1;
   }
 
-  removeCube(cube: THREE.Mesh) {
-    this.context.scene.remove(cube);
+  removeCube(cube: THREE.Mesh | null) {
+    // A null cube (cancel before the first click) is a no-op, as
+    // scene.remove(null) was.
+    if (cube) this.context.scene.remove(cube);
   }
 }

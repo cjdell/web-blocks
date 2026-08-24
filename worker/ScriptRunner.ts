@@ -56,7 +56,9 @@ export default class ScriptRunner {
 
       console.error('parse error', err);
 
-      return err.message;
+      // err is unknown under strict; non-Error throws (e.g. `throw 42`
+      // from a learner script) used to yield undefined here.
+      return err instanceof Error ? err.message : String(err);
     }
 
     return '';

@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import type { WorldInfo } from '../../common/WorldInfo';
 import { BlockTypeIds } from '../../common/BlockTypeList';
 import { Geometry } from './Geometry';

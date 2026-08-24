@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
 
 import type { IntVector3 } from '../../common/WorldInfo';
@@ -19,11 +18,11 @@ export default class BlockTool {
     this.context.finished();
   }
 
-  onMouseMove(_mouse: THREE.Vector2, _pos: IntVector3, _side: number): void {
-    return null;
+  onMouseMove(_mouse: THREE.Vector2, _pos: IntVector3 | null, _side: number | null): void {
+    // No-op
   }
 
   cancel(): void {
-    return null;
+    // No-op
   }
 }

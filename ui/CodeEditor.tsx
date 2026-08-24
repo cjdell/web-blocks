@@ -85,10 +85,8 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
     if (!consoleTextarea) return;
 
     if (e.which === 38 || e.which === 40) {
-      let dir: number;
-
-      if (e.which === 38) dir = 1;
-      if (e.which === 40) dir = -1;
+      // The outer guard ensures which is 38 (up) or 40 (down).
+      const dir = e.which === 38 ? 1 : -1;
 
       const newLineBack = lineBack + dir;
 

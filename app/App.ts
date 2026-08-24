@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 
 import DesktopPlatform from "./DesktopPlatform";
 import Game from "./Game";

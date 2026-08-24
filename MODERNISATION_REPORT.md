@@ -1,7 +1,9 @@
 # Web Blocks — Modernisation Report
 
-_A surface-level modernisation pass and the full P1 dependency upgrade
-(React 19, hand-rolled UI, three 0.185) were completed on 2026‑08‑24. This
+_A surface-level modernisation pass, the full P1 dependency upgrade
+(React 19, hand-rolled UI, three 0.185), and the full P2 type-safety &
+dead-weight removal (underscore out, ES-module `WorldInfo`, typed
+worker protocol, `strict: true`) were completed on 2026‑08‑24. This
 document records what changed, what was deliberately left alone, and a
 prioritised plan for the deeper work that remains._
 
@@ -74,14 +76,15 @@ All changes are non-breaking: `yarn build`, `yarn typecheck`, `yarn lint`, and
 ## 2. What was deliberately NOT changed
 
 These are the parts that need a real migration, not a surface pass. Each is
-covered in the plan below.
+covered in the plan below. (The first four rows below were resolved during
+P2 and are kept for history; only Cardboard remains.)
 
 | Area | Current | Why it stays for now |
 |------|---------|----------------------|
-| `underscore` | 1.8.3 | Still imported in ~7 files; removal is a small but real refactor (see P2). |
-| `typings/globals/*` (chai, mocha, underscore) | 2015 DefinitelyTyped snapshot | The react/react-dom/material-ui/three ones were deleted with their P1 upgrades. These three declare the test tooling and go away with the P2 test migration. |
-| `common/WorldInfo.ts` `namespace Common` pattern | legacy | Converting to ES module exports touches ~20 import sites (see P2). |
-| `worker/` `Object` / `Function` typing | untyped protocol | Needs a deliberate typing effort (see P2). Note `PlayerPositionChangeArgs` now uses `PlainVector3` (see P1.3) — the first step in telling the truth about what crosses the worker boundary. |
+| ~~`underscore`~~ | ~~1.8.3~~ — **removed in P2.4** | Replaced by native ES2022 / a 12-line `common/Throttle.ts`. |
+| ~~`typings/globals/*` (chai, mocha, underscore)~~ | ~~2015 DefinitelyTyped snapshot~~ — **deleted in P2.4/P2.7** | Replaced by `@types/chai` and `@types/mocha`. The whole 2015 snapshot is now gone. |
+| ~~`common/WorldInfo.ts` `namespace Common` pattern~~ | ~~legacy~~ — **ES module exports since P2.5** | `@typescript-eslint/no-namespace` re-enabled. |
+| ~~`worker/` `Object` / `Function` typing~~ | ~~untyped protocol~~ — **typed in P2.6** | `common/WorkerProtocol.ts` discriminated unions; `no-empty-object-type` and `no-unsafe-function-type` re-enabled. |
 | Google Cardboard support | disabled | Non-functional; needs a product decision (see P3). Its code now compiles against three 0.185 (ported `DeviceOrientationControls`, official `StereoEffect`), so option (b) is cheaper than it was. |
 
 ---
@@ -147,30 +150,62 @@ gate (typecheck, lint, test, build, test:ui) green after each step.
    ~155 KiB (pre-gzip) — modern three tree-shakes, and the 2016-era bundles
    shipped a lot of dead code.
 
-### P2 — Type-safety & dead-weight removal
+### P2 — Type-safety & dead-weight removal — DONE
 
-4. **Remove `underscore`.** Only ~7 files import it. Replace the handful of
-   `_.` helpers in use (`sortBy`, `throttle`, `map`, etc.) with native ES2022
-   (`Array.prototype.toSorted`, a tiny `throttle`, `Array.from`, etc.) or with
-   `lodash-es` if the surface grows. This shrinks the worker bundle and
-   removes a 2016 dependency.
+Completed 2026‑08‑24 in separate commits, with the full gate green after
+each step.
+
+4. **Remove `underscore`.** — done. Replaced the `_.` helpers in use with
+   native ES2022: `sortBy` → `Array.prototype.toSorted`, `map`/`values` →
+   `Array.from`/object spread, and a tiny hand-rolled `throttle`/`debounce`
+   in `common/Throttle.ts`. The dependency, its 2015 typings, and the last
+   `require()` in the tree are gone; the worker bundle shrank further.
 
 5. **Convert `common/WorldInfo.ts` from a `namespace` to ES module exports.**
-   `namespace Common { … } export = Common` is a legacy pattern; ~20 files
-   do `import com from '…/WorldInfo'` and reference `com.WorldInfo`,
-   `com.IntVector3`, etc. Convert to named exports and update import sites.
-   This also lets `@typescript-eslint/no-namespace` be re-enabled globally.
+   — done. ~20 import sites updated to named imports;
+   `@typescript-eslint/no-namespace` re-enabled globally.
 
-6. **Type the worker protocol.** `worker/GeometryWorker.ts` and
-   `app/WorkerInterface.ts` pass `Object` / `Function` and cast
-   `e.data` with `as Invocation<…>` in a long if/else chain. Define proper
-   discriminated-union message types (or use a small schema lib) so the
-   host↔worker boundary is type-checked end to end. Re-enable
-   `no-empty-object-type` and `no-unsafe-function-type` as the types land.
+6. **Type the worker protocol.** — done. `common/WorkerProtocol.ts` now
+   declares the host↔worker boundary as discriminated unions
+   (`WorkerRequest`/`WorkerMessage`, `RequestFor<Action>`), so
+   `WorkerInterface.invoke<Return, Action>()` pins the payload type per
+   action and `GeometryWorker`'s `onmessage` is an exhaustive switch. No
+   schema lib needed — the protocol is small. `no-empty-object-type` and
+   `no-unsafe-function-type` re-enabled.
 
-7. **Adopt `strict: true`** in `tsconfig.json` once the above are done, and
-   add `@types/chai`/`@types/mocha` (or move to `vitest`, which is
-   zero-config for TS) to retire the last of the 2015 typings snapshot.
+7. **Adopt `strict: true` + modern test typings.** — done.
+   - `@types/chai` and `@types/mocha` added; `typings/globals/{chai,mocha}`
+     and `typings/index.d.ts` deleted — the 2015 DefinitelyTyped snapshot is
+     fully retired. `types: ["node", "mocha"]` in `tsconfig.json`.
+   - `strict: false` + `noImplicitAny: true` → `strict: true`. The resulting
+     69 errors were almost all the legacy `field: T = null` pattern; fix
+     policy (behaviour-preserving):
+     - **Truly-nullable state** → widen to `T | null` (e.g.
+       `Interaction.tool`, `CuboidTool`'s state-machine fields,
+       `Partition.blocks` until `init()`, the lazy listener fields on
+       `Player`/`WorkerInterface`, `CliServer.cliSocket`,
+       `BlockType.textures` — the Fence block type has no textures yet).
+     - **Assigned-before-use** (constructor or the `init()` that runs before
+       first use) → definite-assignment `!` (`Game`'s fields,
+       `World.partitions`, `Player.position`/`velocity`, …).
+     - **State-machine-guaranteed reads** → `!` at the use site with a
+       comment explaining the invariant (`CuboidTool` reads after the state
+       that set them, `World.blocks` reads after `loadPartition` inits).
+     - **Honest nullability in signatures** → `Tool.onMouseClick/Move` now
+       take `pos: IntVector3 | null, side: number | null` (they always were
+       passed null for non-block hovers); `getAffectedPartitionIndices()`
+       returns `number[] | null` (null = every partition — the callers
+       already checked it); `light: THREE.Light | null` (Game passes null;
+       the desktop light uses are commented out).
+     - Two small latent bugs surfaced and fixed: `ScriptRunner`'s catch used
+       `err.message` on an `unknown` (non-Error throws from learner scripts
+       yielded `undefined`) → now `err instanceof Error ? err.message :
+       String(err)`; `Game.getBlockTexture` only null-checked `top`, now
+       checks `side` too (no behaviour change — only Fence is null and both
+       of its textures are null).
+   - `shims.d.ts` added: the 2015 typings snapshot had declared the raw-text
+     `*.js` sample imports; a 12-line ambient shim replaces it (webpack
+     inlines `samples/*.js` with `type: "text"`).
 
 ### P3 — Product & architecture decisions
 

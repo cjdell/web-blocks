@@ -66,7 +66,8 @@ class App extends React.Component<AppProps, object> {
 }
 
 class UserInterface {
-  private container: HTMLDivElement;
+  // Assigned in init() before render() can run (strictPropertyInitialization).
+  private container!: HTMLDivElement;
   private root: Root | null = null;
   private viewPort: HTMLDivElement | null = null;
 
@@ -104,11 +105,14 @@ class UserInterface {
   render() {
     if (!this.root) {
       // Flush the initial mount synchronously: DesktopPlatform reads the
-      // viewPort DOM node immediately after init() returns.
-      this.root = createRoot(this.container);
+      // viewPort DOM node immediately after init() returns. The closure
+      // captures the root locally because property narrowing doesn't cross
+      // function boundaries.
+      const root = createRoot(this.container);
+      this.root = root;
 
       flushSync(() => {
-        this.root.render(
+        root.render(
           <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />
         );
       });

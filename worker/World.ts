@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import { IntVector3, type WorldInfo, type PartitionBoundaries } from '../common/WorldInfo';
 import type { PlainVector3 } from '../common/Types';
@@ -33,7 +32,8 @@ export default class World {
   // changeHandlers = Array<ChangeHandler>();
   // recentChanges = Array<Change>();
 
-  partitions: Partition[];
+  // Assigned in init(), which GeometryWorker runs before any partition use.
+  partitions!: Partition[];
 
   constructor(worldInfo: WorldInfo) {
     this.worldInfo = worldInfo;
@@ -152,7 +152,8 @@ export default class World {
     const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
     const partition = this.getPartitionByIndex(pindex);
 
-    return partition.blocks[rindex * VALUES_PER_BLOCK];
+    // getPartitionByIndex() loads (and inits) the partition first.
+    return partition.blocks![rindex * VALUES_PER_BLOCK];
   }
 
   applyCommand(command: Command): void {
@@ -175,7 +176,8 @@ export default class World {
   undo(): void {
     if (this.commands.length === (0 | 0)) return;
 
-    const command = this.commands.pop();
+    // The length check above guarantees pop() returns a command.
+    const command = this.commands.pop()!;
 
     const indices = command.getAffectedPartitionIndices();
     let partitionsToApply = this.partitions;
@@ -351,7 +353,7 @@ export default class World {
           } else {
             // otherwise, just read directly from partiton buffer (faster)
             const rindex = this.worldInfo.rindex(rx, ry, rz) | 0;
-            block = partition.blocks[VALUES_PER_BLOCK * rindex];
+            block = partition.blocks![VALUES_PER_BLOCK * rindex];
           }
 
           if (block !== (0 | 0)) sides |= (1 << i);
@@ -423,8 +425,9 @@ export default class World {
       const offset = VALUES_PER_BLOCK * rindex | 0;
       const voffset = VALUES_PER_VBLOCK * id | 0;
 
-      const type = partition.blocks[offset + 0];
-      const colour = partition.blocks[offset + 1];
+      // getPartitionByIndex() loaded (and inited) the partition first.
+      const type = partition.blocks![offset + 0];
+      const colour = partition.blocks![offset + 1];
 
       if (type === (0 | 0)) continue;
 

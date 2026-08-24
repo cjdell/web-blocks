@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import type { WorldInfo } from '../../common/WorldInfo';
 import Command from './Command';
 import Partition from '../Partition';

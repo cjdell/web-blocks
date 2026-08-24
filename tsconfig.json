@@ -7,10 +7,9 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "strict": false,
-    "noImplicitAny": true,
+    "strict": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node", "mocha"]
   },
   "exclude": [
     "node_modules",

@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 // The DOM lib types `self` as a Window (whose postMessage requires a
 // targetOrigin); the real geometry-worker global is a Worker scope.
 const _self = self as unknown as Worker;

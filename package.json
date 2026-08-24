@@ -22,6 +22,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@types/chai": "^4.3.20",
+    "@types/mocha": "^10",
     "@types/node": "^25.9.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",

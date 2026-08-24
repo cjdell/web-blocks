@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
 import type { IntVector3 } from '../../common/WorldInfo';
 import WorkerInterface from '../WorkerInterface';
@@ -12,7 +11,8 @@ export interface Context {
 }
 
 export interface Tool {
-  onMouseClick(mouse: THREE.Vector2, pos: IntVector3, side: number): void;
-  onMouseMove(mouse: THREE.Vector2, pos: IntVector3, side: number): void;
+  // pos/side are null when the mouse is not over a block.
+  onMouseClick(mouse: THREE.Vector2, pos: IntVector3 | null, side: number | null): void;
+  onMouseMove(mouse: THREE.Vector2, pos: IntVector3 | null, side: number | null): void;
   cancel(): void;
 }

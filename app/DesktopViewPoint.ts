@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import type { WorldInfo } from '../common/WorldInfo';
 import WorkerInterface  from './WorkerInterface';
@@ -9,7 +8,9 @@ import { Movement, PlayerPositionChangeArgs } from '../common/Types';
 
 export default class DesktopViewPoint {
   private camera: THREE.PerspectiveCamera;
-  private light: THREE.Light;
+  // The light is currently unused (its only uses are commented out), so
+  // callers are free to pass null.
+  private light: THREE.Light | null;
   private viewPort: HTMLDivElement;
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -30,7 +31,7 @@ export default class DesktopViewPoint {
 
   constructor(
     camera: THREE.PerspectiveCamera,
-    light: THREE.Light,
+    light: THREE.Light | null,
     viewPort: HTMLDivElement,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,

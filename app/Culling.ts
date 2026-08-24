@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import type { WorldInfo } from '../common/WorldInfo';
 export default class Culling {

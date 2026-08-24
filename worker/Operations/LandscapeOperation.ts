@@ -1,4 +1,3 @@
-/// <reference path="../../typings/index.d.ts" />
 import type { WorldInfo } from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 import ImprovedNoise from '../ImprovedNoise';
@@ -17,7 +16,8 @@ export class LandscapeOperation extends Operation {
     this.options = options;
   }
 
-  getAffectedPartitionIndices(): number[] {
+  // null = every partition (the landscape affects the whole world).
+  getAffectedPartitionIndices(): number[] | null {
     return null;
   }
 

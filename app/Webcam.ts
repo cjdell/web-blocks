@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 
 export default class Webcam {
-  video: HTMLVideoElement;
-  videoImageContext: CanvasRenderingContext2D;
+  // Assigned in init() before render() can observe them (render() is gated
+  // on inited, which init()'s getUserMedia callback sets after this).
+  video!: HTMLVideoElement;
+  videoImageContext!: CanvasRenderingContext2D;
   videoTexture: THREE.Texture;
   videoImage: HTMLCanvasElement;
   inited = false;
@@ -33,7 +35,7 @@ export default class Webcam {
       getUserMedia({ video: true }, gotStream.bind(this), noStream);
     }
 
-    function gotStream(stream: any) {
+    function gotStream(this: Webcam, stream: any) {
       console.log('gotStream');
 
       if (URL) {

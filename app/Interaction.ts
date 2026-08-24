@@ -1,4 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import constants          from '../common/Constants';
@@ -23,7 +22,7 @@ export default class Interaction {
   down = false;
   type = 1;
   selectedTool = 'block';
-  tool: Tool = null;
+  tool: Tool | null = null;
 
   isDesktop = true; // TODO: Detect mobile
 
@@ -155,13 +154,13 @@ export default class Interaction {
     this.tool = null;
   }
 
-  private getBlockPositionOfMouse(): { pos: IntVector3, side: number } {
+  private getBlockPositionOfMouse(): { pos: IntVector3, side: number } | null {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     const intersects = this.raycaster.intersectObjects(this.scene.children);
 
     if (intersects.length > 0) {
-      let hitBlock: THREE.Intersection = null;
+      let hitBlock: THREE.Intersection | null = null;
 
       let i = 0;
 
@@ -169,12 +168,15 @@ export default class Interaction {
       while (intersects[i].object.name === 'selection-cube') {
         i++;
 
-        if (i >= intersects.length) return;
+        if (i >= intersects.length) return null;
       }
 
       hitBlock = intersects[i];
 
-      const vertexIndex = hitBlock.face.a;
+      // Ray hits on a Mesh always carry a face (only triangles produce
+      // intersections here); the assertion is safe and keeps the hot path
+      // free of a branch.
+      const vertexIndex = hitBlock.face!.a;
 
       const offset = this.getOffset(<THREE.Mesh>hitBlock.object, vertexIndex);
 
@@ -228,7 +230,7 @@ export default class Interaction {
     this.scene.add(cube);
   }
 
-  private getOffset(mesh: THREE.Mesh, vertexIndex: number): number {
+  private getOffset(mesh: THREE.Mesh, vertexIndex: number): number | null {
     const geo: any = mesh.geometry;
 
     if (!geo.attributes || !geo.attributes.offset) return null;
