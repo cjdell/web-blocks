@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import _ from 'underscore';
 import WorkerInterface from './WorkerInterface';
 import com from '../common/WorldInfo';
 import { PartitionGeometryResult } from '../worker/WorldGeometry';
@@ -36,7 +35,7 @@ export default class WorldViewer {
       const changeIndices = data.changes;
       const loadedIndices = this.getLoadedPartitionIndices();
 
-      const toUpdate = _.intersection(changeIndices, loadedIndices);
+      const toUpdate = changeIndices.filter(index => loadedIndices.includes(index));
 
       toUpdate.forEach(index => this.updatePartition(index));
     });
@@ -160,7 +159,7 @@ export default class WorldViewer {
         const loadedPartition = this.partitionCaches.filter(c => !!c.mesh);
 
         if (loadedPartition.length > MaxLoadedPartitions) {
-          _.sortBy(loadedPartition, 'used').forEach((partitionCache, i) => {
+          loadedPartition.toSorted((a, b) => a.used - b.used).forEach((partitionCache, i) => {
             if (i < loadedPartition.length - MaxLoadedPartitions && !partitionCache.visible) {
               partitionCache.mesh = null;
               // console.log('Cleaned', partitionCache.index, i);

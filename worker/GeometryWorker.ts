@@ -1,8 +1,8 @@
 /// <reference path="../typings/index.d.ts" />
 const _self = <any>self;
 
-import _ from 'underscore';
 import com            from '../common/WorldInfo';
+import { throttle }   from '../common/Throttle';
 import World          from './World';
 import WorldGeometry  from './WorldGeometry';
 import Player         from './Player';
@@ -30,7 +30,7 @@ interface Invocation<DataType> {
   data: DataType;
 }
 
-const checkForChangedPartitions = _.throttle(() => {
+const checkForChangedPartitions = throttle(() => {
   const dirty = world.getDirtyPartitions();
 
   _self.postMessage({

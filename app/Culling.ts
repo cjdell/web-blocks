@@ -1,5 +1,4 @@
 /// <reference path="../typings/index.d.ts" />
-import _ from 'underscore';
 import * as THREE from 'three';
 import com from '../common/WorldInfo';
 
@@ -61,8 +60,8 @@ export default class Culling {
   getNewlyVisiblePartitions() {
     const visiblePartitions = this.getVisiblePartitions();
 
-    const toBeAdded = _.difference(visiblePartitions, this.active);
-    const toBeRemoved = _.difference(this.active, visiblePartitions);
+    const toBeAdded = visiblePartitions.filter(index => !this.active.includes(index));
+    const toBeRemoved = this.active.filter(index => !visiblePartitions.includes(index));
 
     this.active = visiblePartitions;
 

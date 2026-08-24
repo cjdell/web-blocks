@@ -1,8 +1,8 @@
 /// <reference path="../typings/index.d.ts" />
-import _ from 'underscore';
 import * as THREE from 'three';
 
 import com from '../common/WorldInfo';
+import { debounce } from '../common/Throttle';
 import WorkerInterface from './WorkerInterface';
 // Ported from the removed lib/DeviceOrientationControls.js fork; three's
 // own example was dropped upstream (see app/DeviceOrientationControls.ts).
@@ -93,7 +93,7 @@ export default class CardboardViewPoint {
       }
     }
 
-    window.addEventListener('resize', _.debounce(onWindowResize, 500), false);
+    window.addEventListener('resize', debounce(onWindowResize, 500), false);
 
     onWindowResize();
   }

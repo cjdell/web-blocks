@@ -1,9 +1,9 @@
 /// <reference path="../typings/index.d.ts" />
-import _ from 'underscore';
 import * as THREE from 'three';
 import com              from '../common/WorldInfo';
 import WorkerInterface  from './WorkerInterface';
 import MiniConsole      from "./MiniConsole";
+import { debounce }     from '../common/Throttle';
 
 import { Movement, PlayerPositionChangeArgs } from '../common/Types';
 
@@ -67,7 +67,7 @@ export default class DesktopViewPoint {
   }
 
   setupEventListeners() {
-    window.addEventListener('resize', _.debounce(() => this.onWindowResize(), 500), false);
+    window.addEventListener('resize', debounce(() => this.onWindowResize(), 500), false);
 
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);

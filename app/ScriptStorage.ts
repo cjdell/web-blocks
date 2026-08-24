@@ -1,5 +1,3 @@
-import _ from 'underscore';
-
 import Cube from '../samples/Cube.js' with { type: "text" };
 import Pyramid from '../samples/Pyramid.js' with { type: "text" };
 import Circle from '../samples/Circle.js' with { type: "text" };
@@ -123,16 +121,16 @@ export default class ScriptStorage {
     const scripts = window.localStorage.getItem('scripts');
 
     if (scripts) {
-      loaded = <Script[]>JSON.parse(scripts);
+      loaded = JSON.parse(scripts) as Script[];
     }
 
     loaded = loaded.concat(samples);
 
-    this.scripts = _.sortBy(loaded, 'modified');
+    this.scripts = loaded.toSorted((a, b) => a.modified.getTime() - b.modified.getTime());
   }
 
   save() {
-    const scriptsToSave = _.filter(this.scripts, s => {
+    const scriptsToSave = this.scripts.filter(s => {
       return !s.sample;
     });
 
@@ -140,7 +138,7 @@ export default class ScriptStorage {
   }
 
   getScriptNames() {
-    return _.pluck(this.scripts, 'name');
+    return this.scripts.map(s => s.name);
   }
 
   getScripts() {

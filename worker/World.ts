@@ -1,6 +1,5 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import _ from 'underscore';
 import com                    from '../common/WorldInfo';
 import Partition              from './Partition';
 import Command                from './Commands/Command';
@@ -310,7 +309,7 @@ export default class World {
       }
     }
 
-    return _.unique(dirty);
+    return [...new Set(dirty)];
   }
 
   // ========
