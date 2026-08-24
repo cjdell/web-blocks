@@ -8,6 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
+  mode: process.env.NODE_ENV === "development" ? "development" : "production",
+  devtool: "source-map",
   entry: {
     app: "./app/App.ts",
     worker: "./worker/GeometryWorker.ts",
@@ -40,5 +42,6 @@ export default {
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "build"),
+    clean: true,
   },
 };

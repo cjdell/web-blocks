@@ -19,7 +19,7 @@ export default class BlockTool {
     this.context.finished();
   }
 
-  onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3, side: number): void {
+  onMouseMove(_mouse: THREE.Vector2, _pos: com.IntVector3, _side: number): void {
     return null;
   }
 

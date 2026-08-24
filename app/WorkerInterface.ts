@@ -61,8 +61,9 @@ export default class WorkerInterface {
     };
   }
 
-  invoke<ReturnType>(action: string, data: Object) {
-    return new Promise<ReturnType>((resolve, reject) => {
+  invoke<ReturnType>(action: string, data: object) {
+    // Note: the worker has no error path, so the promise can never reject.
+    return new Promise<ReturnType>((resolve, _reject) => {
       const invocation = {
         action: action,
         id: this.lastId++,
@@ -75,7 +76,7 @@ export default class WorkerInterface {
     });
   }
 
-  invokeCallback<ReturnType>(action: string, data: Object, callback: (r: ReturnType) => void) {
+  invokeCallback<ReturnType>(action: string, data: object, callback: (r: ReturnType) => void) {
     const invocation = {
       action: action,
       id: this.lastId++,
@@ -120,7 +121,7 @@ export default class WorkerInterface {
       update
     };
 
-    return this.invoke<Object>('setBlocks', args);
+    return this.invoke<object>('setBlocks', args);
   }
 
   addBlock(position: com.IntVector3, side: number, type: number) {
@@ -130,20 +131,20 @@ export default class WorkerInterface {
       type
     };
 
-    return this.invoke<Object>('addBlock', args);
+    return this.invoke<object>('addBlock', args);
   }
 
   move(movement: Movement) {
-    return this.invoke<Object>('move', movement);
+    return this.invoke<object>('move', movement);
   }
 
   jump() {
     this.jumping = true;
-    return this.invoke<Object>('action', { action: 'jump' });
+    return this.invoke<object>('action', { action: 'jump' });
   }
 
   setGravity(gravity: number) {
-    return this.invoke<Object>('setGravity', { gravity });
+    return this.invoke<object>('setGravity', { gravity });
   }
 
   getPartition(index: number) {
@@ -151,7 +152,7 @@ export default class WorkerInterface {
   }
 
   registerChangeHandler(changeHandlerOptions: com.ChangeHandlerOptions, callback: (Change: any) => void) {
-    return this.invokeCallback<Object>('registerChangeHandler', changeHandlerOptions, callback);
+    return this.invokeCallback<object>('registerChangeHandler', changeHandlerOptions, callback);
   }
 
   addChangeListener(listener: (data: { changes: number[] }) => void) {
@@ -159,19 +160,19 @@ export default class WorkerInterface {
   }
 
   rightClick() {
-    return this.invoke<Object>('rightClick', null);
+    return this.invoke<object>('rightClick', null);
   }
 
   getMousePosition() {
-    return this.invoke<Object>('getMousePosition', null);
+    return this.invoke<object>('getMousePosition', null);
   }
 
   setMousePosition(position: { pos: com.IntVector3, side: number }) {
-    return this.invoke<Object>('setMousePosition', position);
+    return this.invoke<object>('setMousePosition', position);
   }
 
   executeBoundScript(index: number) {
-    this.invoke<Object>('executeBoundScript', { index });
+    this.invoke<object>('executeBoundScript', { index });
   }
 
   onPlayerPositionChange(listener: PlayerPositionChangeListener) {

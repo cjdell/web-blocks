@@ -76,7 +76,7 @@ export default class Interaction {
     if (event.keyCode === 26 && event.ctrlKey) {
       this.workerInterface.undo();
 
-    } else if (!(<any>window).blockMovement && event.keyCode >= 48 && event.keyCode <= 57) {
+    } else if (!((window as any).blockMovement) && event.keyCode >= 48 && event.keyCode <= 57) {
       this.workerInterface.executeBoundScript(event.keyCode - 48);
     }
   }
@@ -121,7 +121,7 @@ export default class Interaction {
 
     if (this.tool) {
       if (this.tool instanceof CuboidTool) {
-        (<CuboidTool>this.tool).context.type = this.type;
+        this.tool.context.type = this.type;
       }
 
       this.tool.onMouseClick(this.mouse, pos ? pos.pos : null, pos ? pos.side : null);

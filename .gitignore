@@ -1,10 +1,9 @@
-.idea
-.DS_Store
 node_modules
 build
-upload.sh
 tmp
-*.js
-!samples/*.js
+.idea
+.DS_Store
 *.log
+yarn-error.log
+upload.sh
 models

@@ -2,13 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import BoundScriptBar from './BoundScriptBar';
 import ToolBox from './ToolBox';
-import injectTapEventPlugin from 'react-tap-event-plugin';
 import MuiThemeProvider   from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme        from 'material-ui/styles/getMuiTheme';
 import { lightBaseTheme } from 'material-ui/styles';
 import Game               from '../app/Game';
-
-injectTapEventPlugin();
 
 class ViewPort extends React.Component<{ ref: string }, any> {
   render() {

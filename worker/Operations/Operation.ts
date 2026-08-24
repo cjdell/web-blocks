@@ -17,7 +17,7 @@ export class Operation {
     throw new Error('Not implemented');
   }
 
-  getBlocks(pindex: number): OperationResult {
+  getBlocks(_pindex: number): OperationResult {
     throw new Error('Not implemented');
   }
 }

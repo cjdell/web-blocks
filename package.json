@@ -1,41 +1,48 @@
 {
   "name": "web-blocks",
   "version": "1.0.0",
-  "description": "",
+  "description": "A WebGL application for building worlds and learning programming",
+  "private": true,
   "scripts": {
     "build": "webpack",
     "start": "http-server -p 8888",
-    "test": "mocha --require ts-node/register test.ts"
+    "test": "tsx node_modules/mocha/bin/mocha.js test.ts",
+    "profile": "tsx profile.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "es6-promise": "3.0.2",
     "material-ui": "0.15.4",
     "react": "15.3.1",
-    "react-addons-create-fragment": "15.3.1",
-    "react-addons-pure-render-mixin": "15.3.1",
-    "react-addons-transition-group": "15.3.1",
-    "react-addons-update": "15.3.1",
     "react-dom": "15.3.1",
-    "react-tap-event-plugin": "1.0.0",
     "three": "0.81.0",
-    "underscore": "1.8.3",
-    "whatwg-fetch": "0.10.0"
+    "underscore": "1.8.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/node": "^25.9.2",
     "@types/ws": "^8.18.1",
-    "chai": "3.4.0",
+    "chai": "^4.5.0",
     "css-loader": "^7.1.4",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "http-server": "^14.1.1",
     "less": "^4.6.4",
     "less-loader": "^13.0.0",
+    "mocha": "^11.7.5",
     "style-loader": "^4.0.0",
     "ts-loader": "^9",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.54.0",
     "webpack": "^5",
     "webpack-cli": "^7.0.3",
     "ws": "^8"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "repository": {
     "type": "git",

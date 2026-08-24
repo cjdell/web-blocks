@@ -1,26 +1,17 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es2022",
     "module": "esnext",
-    "declaration": false,
-    "noImplicitAny": true,
-    "removeComments": true,
-    "noLib": false,
-    "preserveConstEnums": true,
+    "moduleResolution": "bundler",
     "jsx": "react",
-    "sourceMap": true,
+    "skipLibCheck": true,
     "strict": false,
+    "noImplicitAny": true,
+    "sourceMap": true,
     "types": ["node"]
   },
-  "filesGlob": [
-    "./**/*.ts",
-    "./**/*.tsx",
-    "./**/*.d.ts",
-    "!./node_modules/**/*.ts"
-  ],
   "exclude": [
     "node_modules",
-    "bower_components"
+    "build"
   ]
 }

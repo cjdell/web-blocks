@@ -17,17 +17,17 @@ export default class Command {
     throw new Error('Not implemented');
   }
 
-  redo(partition: Partition): void {
+  redo(_partition: Partition): void {
     throw new Error('Not implemented');
   }
 
-  undo(partition: Partition): void {
+  undo(_partition: Partition): void {
     throw new Error('Not implemented');
   }
 
   toJSON(): any {
     return {
-      name: (<any>this.constructor).name,
+      name: (this.constructor as any).name,
       options: this.options
     };
   }

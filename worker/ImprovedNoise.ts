@@ -28,25 +28,25 @@ export default class ImprovedNoise {
   }
 
   grad(hash: number, x: number, y: number, z: number): number {
-    let h = hash & 15;
-    let u = h < 8 ? x : y, v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+    const h = hash & 15;
+    const u = h < 8 ? x : y, v = h < 4 ? y : h == 12 || h == 14 ? x : z;
     return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
   }
 
   noise(x: number, y: number, z: number): number {
-    let floorX = ~~x, floorY = ~~y, floorZ = ~~z;
+    const floorX = ~~x, floorY = ~~y, floorZ = ~~z;
 
-    let X = floorX & 255, Y = floorY & 255, Z = floorZ & 255;
+    const X = floorX & 255, Y = floorY & 255, Z = floorZ & 255;
 
     x -= floorX;
     y -= floorY;
     z -= floorZ;
 
-    let xMinus1 = x - 1, yMinus1 = y - 1, zMinus1 = z - 1;
+    const xMinus1 = x - 1, yMinus1 = y - 1, zMinus1 = z - 1;
 
-    let u = this.fade(x), v = this.fade(y), w = this.fade(z);
+    const u = this.fade(x), v = this.fade(y), w = this.fade(z);
 
-    let A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z, B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
+    const A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z, B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
 
     return this.lerp(w, this.lerp(v, this.lerp(u, this.grad(this.p[AA], x, y, z),
       this.grad(this.p[BA], xMinus1, y, z)),

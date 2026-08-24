@@ -70,7 +70,7 @@ export default class Webcam {
     this.videoImage.width = 640;
     this.videoImage.height = 480;
 
-    this.videoImageContext = <CanvasRenderingContext2D>this.videoImage.getContext('2d');
+    this.videoImageContext = this.videoImage.getContext('2d') as CanvasRenderingContext2D;
 
     // background color if no video present
     this.videoImageContext.fillStyle = '#0000ff';

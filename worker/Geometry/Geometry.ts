@@ -17,15 +17,15 @@ export class Geometry {
   getVertexCount(): number {
     if (!this.template) return 0;
 
-    return (<any>this.template.attributes).position.length / 3;
+    return (this.template.attributes as any).position.length / 3;
   }
 
-  generateGeometry(position: Float32Array, normal: Float32Array, uv: Float32Array, data: Float32Array, offset: number, rindex: number, type: number, colour: number) {
+  generateGeometry(position: Float32Array, normal: Float32Array, uv: Float32Array, data: Float32Array, offset: number, rindex: number, _type: number, _colour: number) {
     if (!this.template) return;
 
     const { x, y, z } = this.worldInfo.rpos(rindex);
 
-    const attributes = (<any>this.template.attributes);
+    const attributes = this.template.attributes as any;
 
     const vertexCount = attributes.position.length / 3;
 
@@ -54,7 +54,6 @@ export class Geometry {
 
     for (let i = 0; i < vertexCount; i += 1) {
       const p1 = (offset + i) * 4;
-      const p2 = i * 4;
 
       data[p1 + 0] = 1;
     }

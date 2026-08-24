@@ -46,8 +46,8 @@ export class CuboidOperation extends Operation {
     const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new com.IntVector3(1, 1, 1));
 
     // We only want the start and end that exists within the boundaries of this partition
-    let start = this.options.start.clamp(pstart, pend);
-    let end = this.options.end.clamp(pstart, pend);
+    const start = this.options.start.clamp(pstart, pend);
+    const end = this.options.end.clamp(pstart, pend);
 
     const blocks =
       (1 + end.x - start.x) *

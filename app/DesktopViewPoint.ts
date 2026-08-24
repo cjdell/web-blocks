@@ -72,7 +72,7 @@ export default class DesktopViewPoint {
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);
     document.addEventListener('pointerlockchange', (e: any) => this.onPointerLockChange(e), false);
-    document.addEventListener('visibilitychange', (e: any) => this.refreshPointerLock(), false);
+    document.addEventListener('visibilitychange', () => this.refreshPointerLock(), false);
 
     this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
   }
@@ -108,7 +108,7 @@ export default class DesktopViewPoint {
     this.handleTabKey(event);
 
     if (this.miniConsole.isShown()) this.handleEnterKey(event);
-    if ((<any>window).blockMovement) return;
+    if ((window as any).blockMovement) return;
 
     this.handleEnterKey(event);
 
@@ -156,14 +156,14 @@ export default class DesktopViewPoint {
   escape() {
     if (this.miniConsole.isShown()) {
       this.miniConsole.toggle(true);
-      (<any>window).blockMovement = true;
+      (window as any).blockMovement = true;
     } else {
       this.refreshPointerLock();
     }
   }
 
   mouseMove(event: any) {
-    if (((<any>window).blockMovement && !this.miniConsole.isShown())
+    if ((((window as any).blockMovement) && !this.miniConsole.isShown())
       || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
       return;
     }
@@ -235,7 +235,7 @@ export default class DesktopViewPoint {
       this.pointerLock = false;
     }
 
-    if (!(<any>window).blockMovement
+    if (!((window as any).blockMovement)
       && this.viewPort
       && this.pointerLock
       && this.trusted) {
@@ -247,11 +247,14 @@ export default class DesktopViewPoint {
     if (event.keyCode === 9 || event.which === 9) {
       event.preventDefault();
 
-      if ((<any>window).blockMovement) {
+      if ((window as any).blockMovement) {
         if (document.activeElement instanceof HTMLTextAreaElement) {
-          const event: any = document.createEvent('TextEvent');
-          event.initTextEvent('textInput', true, true, null, "  ", 9, "en-US");
-          (<HTMLTextAreaElement>document.activeElement).dispatchEvent(event);
+          const textEvent = new InputEvent('textInput', {
+            data: '  ',
+            bubbles: true,
+            cancelable: true,
+          });
+          document.activeElement.dispatchEvent(textEvent);
         }
       }
     }

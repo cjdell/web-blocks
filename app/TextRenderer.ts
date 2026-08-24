@@ -16,7 +16,7 @@ export default class TextRenderer {
     canvas.width = 256;
     canvas.height = 16;
 
-    const ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
+    const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);

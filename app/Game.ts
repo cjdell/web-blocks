@@ -161,7 +161,7 @@ export default class Game {
     return this.workerInterface.setGravity(gravity);
   }
 
-  loadShaders(): Promise<Object> {
+  loadShaders(): Promise<object> {
     return Promise.all([
       win.fetch('shaders/block.vertex.glsl'),
       win.fetch('shaders/block.fragment.glsl')
@@ -181,7 +181,7 @@ export default class Game {
     canvas.width = MAX_TYPE_COUNT * 16;
     canvas.height = MAX_TYPE_COUNT * 16;
 
-    const ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
     const blockTypePromises = blockTypes.map((blockType, index) => {
       if (blockType.textures.top === null) return null;

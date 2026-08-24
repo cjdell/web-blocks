@@ -1,9 +1,9 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 
-require('../lib/StereoEffect');
-require('../lib/DeviceOrientationControls');
-require('../lib/OrbitControls');
+import '../lib/StereoEffect';
+import '../lib/DeviceOrientationControls';
+import '../lib/OrbitControls';
 
 import com from '../common/WorldInfo';
 import CardboardViewPoint from './CardboardViewPoint';
@@ -13,9 +13,9 @@ export default class CardboardPlatform {
   // var renderer = null;
   // var effect = null;
   // var viewPort = null;
-  renderer: THREE.WebGLRenderer = null;
+  renderer: THREE.WebGLRenderer | null = null;
   effect: any = null;
-  viewPort: HTMLDivElement = null;
+  viewPort: HTMLDivElement | null = null;
 
   constructor(container: HTMLDivElement) {
     console.log('CardboardPlatform');
@@ -23,7 +23,8 @@ export default class CardboardPlatform {
     this.renderer = new THREE.WebGLRenderer();
     this.viewPort = container;
 
-    var width = window.innerWidth, height = window.innerHeight;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
     this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
     this.renderer.setSize(width, height);

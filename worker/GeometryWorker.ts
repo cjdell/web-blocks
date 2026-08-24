@@ -8,7 +8,6 @@ import WorldGeometry  from './WorldGeometry';
 import Player         from './Player';
 import Api            from './Api';
 import ScriptRunner   from './ScriptRunner';
-import CliServer      from './Cli/CliServer';
 import { Loader }     from './Geometry/Loader';
 
 import {
@@ -24,7 +23,6 @@ let worldGeometry: WorldGeometry;
 let player: Player;
 let api: Api;
 let scriptRunner: ScriptRunner;
-let cliServer: CliServer;
 
 interface Invocation<DataType> {
   id: number;
@@ -53,11 +51,10 @@ const init = (invocation: Invocation<void>): void => {
   player = new Player(world);
   api = new Api(world, player);
   scriptRunner = new ScriptRunner(api);
-  // cliServer = new CliServer(scriptRunner);
 
   world.init();
 
-  world.onWorldChanged(world => {
+  world.onWorldChanged(_world => {
     checkForChangedPartitions();
   });
 
@@ -167,7 +164,7 @@ const move = (invocation: Invocation<Movement>) => {
   player.move(invocation.data);
 };
 
-const action = (invocation: Invocation<{ type: string }>) => {
+const action = (_invocation: Invocation<{ type: string }>) => {
   player.jump();
 };
 
@@ -202,16 +199,14 @@ const executeBoundScript = (invocation: Invocation<{ index: number }>) => {
 };
 
 self.onmessage = (e) => {
-  const invocation = <Invocation<void>>e.data;
+  const invocation = e.data as Invocation<void>;
 
   if (invocation.action === 'init') {
     return init(invocation);
   }
 
   if (invocation.action === 'runScript') {
-    const invocation = <Invocation<{ code: string, expr: boolean }>>e.data;
-
-    return runScript(invocation);
+    return runScript(e.data as Invocation<{ code: string, expr: boolean }>);
   }
 
   if (invocation.action === 'undo') {
@@ -219,45 +214,31 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'getPartition') {
-    const invocation = <Invocation<{ index: number }>>e.data;
-
-    return getPartition(invocation);
+    return getPartition(e.data as Invocation<{ index: number }>);
   }
 
   if (invocation.action === 'getBlock') {
-    const invocation = <Invocation<{ pos: com.IntVector3 }>>e.data;
-
-    return getBlock(invocation);
+    return getBlock(e.data as Invocation<{ pos: com.IntVector3 }>);
   }
 
   if (invocation.action === 'setBlocks') {
-    const invocation = <Invocation<SetBlocksArgs>>e.data;
-
-    return setBlocks(invocation);
+    return setBlocks(e.data as Invocation<SetBlocksArgs>);
   }
 
   if (invocation.action === 'addBlock') {
-    const invocation = <Invocation<AddBlockArgs>>e.data;
-
-    return addBlock(invocation);
+    return addBlock(e.data as Invocation<AddBlockArgs>);
   }
 
   if (invocation.action === 'move') {
-    const invocation = <Invocation<Movement>>e.data;
-
-    return move(invocation);
+    return move(e.data as Invocation<Movement>);
   }
 
   if (invocation.action === 'action') {
-    const invocation = <Invocation<{ type: string }>>e.data;
-
-    return action(invocation);
+    return action(e.data as Invocation<{ type: string }>);
   }
 
   if (invocation.action === 'setGravity') {
-    const invocation = <Invocation<{ gravity: number }>>e.data;
-
-    return setGravity(invocation);
+    return setGravity(e.data as Invocation<{ gravity: number }>);
   }
 
   if (invocation.action === 'getMousePosition') {
@@ -265,9 +246,7 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'setMousePosition') {
-    const invocation = <Invocation<{ pos: com.IntVector3, side: number }>>e.data;
-
-    return setMousePosition(invocation);
+    return setMousePosition(e.data as Invocation<{ pos: com.IntVector3, side: number }>);
   }
 
   if (invocation.action === 'rightClick') {
@@ -275,8 +254,6 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'executeBoundScript') {
-    const invocation = <Invocation<{ index: number }>>e.data;
-
-    return executeBoundScript(invocation);
+    return executeBoundScript(e.data as Invocation<{ index: number }>);
   }
 };

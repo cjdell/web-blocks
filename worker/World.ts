@@ -6,7 +6,6 @@ import Partition              from './Partition';
 import Command                from './Commands/Command';
 import { CuboidOperation }    from './Operations/CuboidOperation';
 import { LandscapeOperation } from './Operations/LandscapeOperation';
-import { TreeOperation }      from './Operations/TreeOperation';
 import { OperationCommand }   from './Commands/OperationCommand';
 
 // export interface ChangeHandler {
@@ -381,7 +380,7 @@ export default class World {
           const ppos = this.worldInfo.pposw(partition.offset.x + x, 0, partition.offset.z + z);
 
           if (this.worldInfo.vppos(ppos.x, ppos.y, ppos.z)) {
-            const { x: rx2, y: ry2, z: rz2 } = this.worldInfo.rposw(partition.offset.x + x, 0, partition.offset.z + z);
+            const { x: rx2, z: rz2 } = this.worldInfo.rposw(partition.offset.x + x, 0, partition.offset.z + z);
             const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
             const index = rz2 * pdib.x + rx2;
 

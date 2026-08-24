@@ -63,7 +63,8 @@ export default class Partition {
     this.setBlockWithIndex(this.worldInfo.rindex(px, py, pz), type, colour);
   }
 
-  setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, colour: number): void {
+  // Note: the caller's colour is intentionally ignored (blocks get colour 0).
+  setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, _colour: number): void {
     this.rangeCheck(start.x, start.y, start.z);
     this.rangeCheck(end.x, end.y, end.z);
 

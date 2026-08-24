@@ -1,5 +1,4 @@
 /// <reference path="./typings/index.d.ts" />
-import * as THREE from 'three';
 import com from './common/WorldInfo';
 import World from './worker/World';
 
@@ -16,5 +15,5 @@ world.init();
 console.timeEnd('init');
 
 console.time('getVisibleBlocks');
-const result = world.getVisibleBlocks(5);
+world.getVisibleBlocks(5);
 console.timeEnd('getVisibleBlocks');

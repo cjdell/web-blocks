@@ -90,13 +90,6 @@ export class TreeOperation extends Operation {
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
     const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new com.IntVector3(1, 1, 1));
 
-    let start = this.options.pos.sub(new com.IntVector3(2, 0, 2));
-    let end = this.options.pos.add(new com.IntVector3(2, 0, 2));
-
-    // We only want the start and end that exists within the boundaries of this partition
-    // start = start.clamp(pstart, pend);
-    // end = end.clamp(pstart, pend);
-
     const blocks = 5 * 6 * 5;
 
     let buffer = new Uint8Array(blocks * 2);

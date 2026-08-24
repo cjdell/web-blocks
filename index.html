@@ -1,33 +1,28 @@
 <!doctype html>
-<html lang="">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Web Blocks</title>
 
     <meta name="description" content="Learn to code in this Minecraft-like world" />
     <meta name="keywords" content="Minecraft,JavaScript,Learning,Teaching,WebGL" />
+</head>
+<body>
+    <div id="body"></div>
 
     <script src="build/style.js"></script>
     <script src="build/app.js"></script>
 
     <script>
-        'use strict';
-
         window.blockMovement = false;
 
-        window.addEventListener('load', function() {
-            bootstrap(document.querySelector("#body"));
+        window.addEventListener('load', () => {
+            const app = App();
+
+            app.init(document.querySelector("#body"));
         });
-
-        function bootstrap(container) {
-            var app = App();
-
-            app.init(container);
-        }
     </script>
-</head>
-<body>
-    <div id="body"></div>
 </body>
 </html>

@@ -28,7 +28,6 @@ export class LandscapeOperation extends Operation {
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
-    const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new com.IntVector3(1, 1, 1));
 
     const blocks = this.worldInfo.partitionCapacity;
 
@@ -68,7 +67,7 @@ export class LandscapeOperation extends Operation {
 
     for (let x = 0; x < width; x++) {
       for (let z = 0; z < height; z++ , index++) {
-        let y2 = Math.min(Math.abs(data[index] * 0.2), this.worldInfo.partitionDimensionsInBlocks.y) | 0;
+        const y2 = Math.min(Math.abs(data[index] * 0.2), this.worldInfo.partitionDimensionsInBlocks.y) | 0;
 
         if (y2 >= 3) {
           for (let y = 0; y <= Math.min(this.worldInfo.partitionDimensionsInBlocks.y - 1, y2); y++) {

@@ -26,10 +26,16 @@ Includes experimental support for Google Cardboard!
 Building
 --------
 
-Requires NodeJS. Once installed, run these commands.
+Requires Node.js 20.11 or newer. Once installed, run these commands.
 
   - yarn
   - yarn build
   - yarn start
 
 Then point your browser at: http://localhost:8888/
+
+Other scripts:
+
+  - yarn typecheck — type-check the project without emitting
+  - yarn test — run the world simulation tests
+  - yarn lint — run ESLint

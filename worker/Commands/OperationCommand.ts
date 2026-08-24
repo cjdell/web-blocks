@@ -11,15 +11,6 @@ export interface CuboidCommandOptions {
   colour: number;
 }
 
-interface PartitionSnapshot {
-  indices: Int32Array;
-  blockData: Uint8Array;
-}
-
-interface PartitionSnapshots {
-  [index: number]: PartitionSnapshot;
-}
-
 export class OperationCommand extends UndoableCommand {
   operation: Operation;
 

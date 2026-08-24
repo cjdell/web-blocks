@@ -156,11 +156,6 @@ export default class WorldViewer {
       return Promise.all(changes.toBeRemoved.map(pindex => this.removePartition(pindex)));
     }).then(() => {
       if (changes.toBeAdded.length || changes.toBeRemoved.length) {
-        const loaded = this.partitionCaches.filter(partitionCache => !!partitionCache.mesh);
-        const visible = this.partitionCaches.filter(partitionCache => partitionCache.visible);
-
-        // console.log('loaded', loaded.length, 'visible', visible.length);
-
         const loadedPartition = this.partitionCaches.filter(c => !!c.mesh);
 
         if (loadedPartition.length > MaxLoadedPartitions) {

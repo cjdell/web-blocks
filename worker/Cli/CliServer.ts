@@ -17,21 +17,21 @@ export default class CliServer {
 
     this.cliSocket = new WebSocket("ws://localhost:8001/", []);
 
-    this.cliSocket.onopen = e => {
+    this.cliSocket.onopen = _e => {
       console.log('CLI: Client connected');
       console.time('CLI: Client connected duration');
 
       // this.cliSocket.send('hello cli');
     };
 
-    this.cliSocket.onerror = e => {
+    this.cliSocket.onerror = _e => {
       this.cliSocket.close();
       this.cliSocket = null;
 
       setTimeout(() => this.retryConnection, 1000);
     };
 
-    this.cliSocket.onclose = e => {
+    this.cliSocket.onclose = _e => {
       console.timeEnd('CLI: Client connected duration');
 
       this.cliSocket = null;

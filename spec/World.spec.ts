@@ -31,14 +31,14 @@ describe('World', () => {
     world.getPartitionByIndex(10);
 
     console.time('getVisibleBlocks');
-    const result = world.getVisibleBlocks(5);
+    world.getVisibleBlocks(5);
     console.timeEnd('getVisibleBlocks');
 
     console.time('getBlock');
     for (let z = 0; z < worldInfo.partitionDimensionsInBlocks.z; z += 1) {
       for (let y = 0; y < worldInfo.partitionDimensionsInBlocks.y; y += 1) {
         for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1) {
-          const type = world.getBlock(x, y, z);
+          world.getBlock(x, y, z);
         }
       }
     }
@@ -60,7 +60,7 @@ describe('World', () => {
     for (let z = 0; z < worldInfo.partitionDimensionsInBlocks.z; z += 1) {
       for (let y = 0; y < worldInfo.partitionDimensionsInBlocks.y; y += 1) {
         for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1, i += 1) {
-          let index = worldInfo.rindex(x, y, z);
+          const index = worldInfo.rindex(x, y, z);
 
           if (index !== i) errors += 1;
         }

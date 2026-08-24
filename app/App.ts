@@ -1,29 +1,15 @@
 /// <reference path="../typings/index.d.ts" />
 
 import DesktopPlatform from "./DesktopPlatform";
-import CardboardPlatform from "./CardboardPlatform";
 import Game from "./Game";
 
 const App = () => {
-  let platform: CardboardPlatform | DesktopPlatform;
+  let platform: DesktopPlatform;
   let game: Game;
 
-  const detectmob = () => {
-    // return true;
-    return navigator.userAgent.match(/Android/i) ||
-      navigator.userAgent.match(/webOS/i) ||
-      navigator.userAgent.match(/iPhone/i) ||
-      navigator.userAgent.match(/iPod/i) ||
-      navigator.userAgent.match(/BlackBerry/i) ||
-      navigator.userAgent.match(/Windows Phone/i);
-  };
-
   const init = (container: HTMLDivElement) => {
-    // if (detectmob()) {
-    // platform = new CardboardPlatform(container);
-    // } else {
+    // Note: the Cardboard platform is currently disabled (non-functional).
     platform = new DesktopPlatform(container);
-    // }
 
     game = new Game(platform);
 

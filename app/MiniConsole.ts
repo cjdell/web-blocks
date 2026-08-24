@@ -5,7 +5,7 @@ export default class MiniConsole {
   private input: HTMLInputElement;
   private output: HTMLUListElement;
   private outputCount: number;
-  private hider: NodeJS.Timer;
+  private hider: number | null;
   private history: Array<string>;
   private historyIndex: number;
   private currentText: string;
@@ -13,8 +13,8 @@ export default class MiniConsole {
 
   constructor(worker: WorkerInterface) {
     this.shown = false;
-    this.input = <HTMLInputElement>document.querySelector('.miniConsoleInput');
-    this.output = <HTMLUListElement>document.querySelector('.miniConsoleOutput ul');
+    this.input = document.querySelector('.miniConsoleInput') as HTMLInputElement;
+    this.output = document.querySelector('.miniConsoleOutput ul') as HTMLUListElement;
     this.outputCount = 0;
     this.hider = null;
     this.history = [];
@@ -49,7 +49,7 @@ export default class MiniConsole {
   }
 
   toggle(clearBeforeToggle?: boolean) {
-    if ((<any>window).blockMovement && !this.shown) {
+    if ((window as any).blockMovement && !this.shown) {
       return;
     }
 
@@ -63,7 +63,7 @@ export default class MiniConsole {
 
       this.output.style.display = "block";
       this.input.focus();
-      (<any>window).blockMovement = true;
+      (window as any).blockMovement = true;
       this.shown = true;
 
     } else {
@@ -72,7 +72,7 @@ export default class MiniConsole {
       this.input.value = "";
       this.input.blur();
       this.shown = false;
-      (<any>window).blockMovement = false;
+      (window as any).blockMovement = false;
 
       if (script.length > 0) {
         this.history.unshift(script);
@@ -101,7 +101,7 @@ export default class MiniConsole {
 
     const line = document.createElement("li");
     line.innerText = result;
-    if (!this.output) this.output = <HTMLUListElement>document.querySelector('.miniConsoleOutput ul');
+    if (!this.output) this.output = document.querySelector('.miniConsoleOutput ul') as HTMLUListElement;
     this.output.appendChild(line);
 
     // Hide output after 5 seconds
@@ -109,13 +109,13 @@ export default class MiniConsole {
       clearTimeout(this.hider);
     }
 
-    this.hider = setTimeout(() => {
+    this.hider = window.setTimeout(() => {
       this.output.style.display = "none";
-    }, 5000) as any;
+    }, 5000);
 
     // If we have more than 6 outputs, remove the top one
     if (this.outputCount++ > 5) {
-      const oldestChild: HTMLLIElement = <HTMLLIElement>this.output.querySelector("li");
+      const oldestChild = this.output.querySelector("li") as HTMLLIElement;
       this.output.removeChild(oldestChild);
       this.outputCount--;
     }

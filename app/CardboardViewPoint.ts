@@ -49,10 +49,9 @@ export default class CardboardViewPoint {
 
       //console.log(controls.alpha, controls.beta, controls.gamma);
 
-      var theta = this.controls.alpha + (Math.PI * 0.5);
-      var phi = 0;
+      const theta = this.controls.alpha + (Math.PI * 0.5);
 
-      var movement = { x: 0, y: 0, z: -0.1 };
+      const movement = { x: 0, y: 0, z: -0.1 };
 
       camera.position.x -= (movement.z * -0.5) * Math.cos(theta) - (movement.x * 0.5) * Math.sin(theta);
       camera.position.z += (movement.z * -0.5) * Math.sin(theta) + (movement.x * 0.5) * Math.cos(theta);
@@ -67,7 +66,7 @@ export default class CardboardViewPoint {
       } 
     }
 
-    const setOrientationControls = (e: any) => {
+    const setOrientationControls = (_e: any) => {
       this.controls = new (THREE as any).DeviceOrientationControls(camera, true);
       this.controls.connect();
       this.controls.update();
@@ -78,7 +77,8 @@ export default class CardboardViewPoint {
     setOrientationControls(null);
 
     const onWindowResize = () => {
-      var width = window.innerWidth, height = window.innerHeight;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
 
       console.log('onWindowResize', width, height);
 
