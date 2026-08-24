@@ -1,31 +1,21 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { flushSync } from 'react-dom';
+import { createRoot, type Root } from 'react-dom/client';
 import BoundScriptBar from './BoundScriptBar';
 import ToolBox from './ToolBox';
-import injectTapEventPlugin from 'react-tap-event-plugin';
-import MuiThemeProvider   from 'material-ui/styles/MuiThemeProvider';
-import getMuiTheme        from 'material-ui/styles/getMuiTheme';
-import { lightBaseTheme } from 'material-ui/styles';
-import Game               from '../app/Game';
+import Game from '../app/Game';
 
-// Required by material-ui 0.15: its Tabs/FlatButton/RaisedButton components
-// only fire on the synthetic topTouchTap event, which this plugin generates
-// from mouse/touch input. Remove it together with the @mui/material upgrade.
-injectTapEventPlugin();
-
-class ViewPort extends React.Component<{ ref: string }, any> {
+class ViewPort extends React.Component<{ onViewPort: (el: HTMLDivElement | null) => void }, object> {
   render() {
     return (
-      <MuiThemeProvider>
-        <div className="viewPort">
-          <div className="miniConsole">
-            <div className="miniConsoleOutput">
-              <ul></ul>
-            </div>
-            <input className="miniConsoleInput" />
+      <div className="viewPort" ref={el => { this.props.onViewPort(el); }}>
+        <div className="miniConsole">
+          <div className="miniConsoleOutput">
+            <ul></ul>
           </div>
+          <input className="miniConsoleInput" />
         </div>
-      </MuiThemeProvider>
+      </div>
     );
   }
 }
@@ -33,34 +23,27 @@ class ViewPort extends React.Component<{ ref: string }, any> {
 interface AppProps {
   game?: Game;
   scripts: number[];
+  onViewPort: (el: HTMLDivElement | null) => void;
 }
 
-class App extends React.Component<AppProps, any> {
-  static childContextTypes = {
-    muiTheme: React.PropTypes.object
-  };
-
-  constructor() {
-    super();
+class App extends React.Component<AppProps, object> {
+  constructor(props: AppProps) {
+    super(props);
 
     this.executeBoundScript = this.executeBoundScript.bind(this);
   }
 
-  getChildContext() {
-    return {
-      muiTheme: getMuiTheme(lightBaseTheme)
-    };
-  }
-
   executeBoundScript(key: number) {
-    this.props.game.workerInterface.executeBoundScript(key);
+    const game = this.props.game;
+
+    if (game) game.workerInterface.executeBoundScript(key);
   }
 
   render() {
     return (
       <div className="app">
         <ViewPort
-          ref="viewPort" />
+          onViewPort={this.props.onViewPort} />
 
         <BoundScriptBar
           scripts={this.props.scripts}
@@ -83,11 +66,16 @@ class App extends React.Component<AppProps, any> {
 }
 
 class UserInterface {
-  container: HTMLDivElement;
-  app: any;
+  private container: HTMLDivElement;
+  private root: Root | null = null;
+  private viewPort: HTMLDivElement | null = null;
 
-  game: Game;
-  scripts: number[] = [];
+  private game: Game | null = null;
+  private scripts: number[] = [];
+
+  private onViewPort = (el: HTMLDivElement | null) => {
+    this.viewPort = el;
+  };
 
   init(_container: HTMLDivElement) {
     this.container = _container;
@@ -96,7 +84,9 @@ class UserInterface {
   }
 
   getViewPort() {
-    return ReactDOM.findDOMNode(this.app.refs.viewPort) as HTMLDivElement;
+    // The first render is flushed synchronously (see render), so the view
+    // port node is available as soon as init() returns.
+    return this.viewPort as HTMLDivElement;
   }
 
   setGame(game: Game) {
@@ -112,9 +102,22 @@ class UserInterface {
   }
 
   render() {
-    this.app = ReactDOM.render(
-      <App game={this.game} scripts={this.scripts} />,
-      this.container
+    if (!this.root) {
+      // Flush the initial mount synchronously: DesktopPlatform reads the
+      // viewPort DOM node immediately after init() returns.
+      this.root = createRoot(this.container);
+
+      flushSync(() => {
+        this.root.render(
+          <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />
+        );
+      });
+
+      return;
+    }
+
+    this.root.render(
+      <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />
     );
   }
 }

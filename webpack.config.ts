@@ -19,7 +19,14 @@ export default {
     rules: [
       {
         test: /\.tsx?$/,
-        use: "ts-loader",
+        use: {
+          loader: "ts-loader",
+          options: {
+            // Only type-check files that are actually bundled; the whole
+            // project (including test/) is still checked by `yarn typecheck`.
+            onlyCompileBundledFiles: true,
+          },
+        },
         exclude: /node_modules/,
       },
       {

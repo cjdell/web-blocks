@@ -20,57 +20,82 @@ const MoveTypes = [
   }
 ];
 
-const ToolBox = React.createClass<{ game: Game }, any>({
-  getInitialState() {
-    return {
+interface ToolBoxState {
+  blockTypeIndex: number;
+  codeEditorVisible: boolean;
+  toolType: string;
+  moveType: string;
+}
+
+class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
+  constructor(props: { game?: Game }) {
+    super(props);
+
+    this.state = {
       blockTypeIndex: 1,
       codeEditorVisible: false,
       toolType: 'block',
       moveType: 'walk'
     };
-  },
+
+    this.blockTypeClick = this.blockTypeClick.bind(this);
+    this.toggleCodeEditor = this.toggleCodeEditor.bind(this);
+    this.switchTool = this.switchTool.bind(this);
+    this.switchMove = this.switchMove.bind(this);
+  }
 
   blockTypeClick(blockTypeIndex: number) {
     this.setState({ blockTypeIndex: blockTypeIndex });
 
-    (this.props.game as Game).setBlockType(blockTypeIndex);
-  },
+    if (this.props.game) this.props.game.setBlockType(blockTypeIndex);
+  }
 
   toggleCodeEditor() {
     this.setState({ codeEditorVisible: !this.state.codeEditorVisible });
-  },
+  }
 
   switchTool(toolType: string) {
     this.setState({ toolType });
 
-    (this.props.game as Game).setTool(toolType);
-  },
+    if (this.props.game) this.props.game.setTool(toolType);
+  }
 
   switchMove(moveType: string) {
     this.setState({ moveType });
 
-    const mt = MoveTypes.filter(mt => mt.type === moveType)[0];
+    const mt = MoveTypes.filter(m => m.type === moveType)[0];
 
-    (this.props.game as Game).setGravity(mt.gravity);
-  },
+    if (this.props.game) this.props.game.setGravity(mt.gravity);
+  }
 
   componentDidMount() {
-    document.addEventListener('keyup', (event) => {
+    const onKeyUp = (event: KeyboardEvent) => {
       // Toggle code editor on escape key
-      if (event.keyCode === 27) this.toggleCodeEditor();
-    }, false);
-  },
+      if (event.key === 'Escape' || event.keyCode === 27) this.toggleCodeEditor();
+    };
+
+    document.addEventListener('keyup', onKeyUp, false);
+
+    // Store for potential cleanup; ToolBox lives for the whole app lifetime.
+    this.cleanup = () => document.removeEventListener('keyup', onKeyUp, false);
+  }
+
+  cleanup?: () => void;
+
+  componentWillUnmount() {
+    if (this.cleanup) this.cleanup();
+  }
 
   componentDidUpdate() {
     (window as any).blockMovement = this.state.codeEditorVisible;
-  },
+  }
 
   render() {
-    const game = this.props.game as Game;
+    const game = this.props.game;
 
-    let blockTypeLis = [] as JSX.Element[];
-    let toolTypeLis = [] as JSX.Element[];
-    let moveTypeLis = [] as JSX.Element[];
+    let blockTypeLis: React.ReactNode[] = [];
+    let toolTypeLis: React.ReactNode[] = [];
+    let moveTypeLis: React.ReactNode[] = [];
 
     if (game) {
       const blockTypes = game.getBlockTypes();
@@ -81,9 +106,9 @@ const ToolBox = React.createClass<{ game: Game }, any>({
         return (
           <li key={index}
             title={blockType.name}
-            onClick={this.blockTypeClick.bind(this, index) }
+            onClick={() => this.blockTypeClick(index)}
             className={index === this.state.blockTypeIndex ? 'selected' : ''}
-            style={ blockType.textures.side ? { 'backgroundImage': "url('" + blockType.textures.side + "')" } : {} }>
+            style={blockType.textures.side ? { backgroundImage: "url('" + blockType.textures.side + "')" } : {}}>
           </li>
         );
       });
@@ -94,20 +119,20 @@ const ToolBox = React.createClass<{ game: Game }, any>({
         return (
           <li key={index}
             title={toolType.name}
-            onClick={this.switchTool.bind(this, toolType.type) }
+            onClick={() => this.switchTool(toolType.type)}
             className={toolType.type === this.state.toolType ? 'selected' : ''}
-            style={ { 'backgroundImage': "url('" + toolType.icon + "')" } }>
+            style={{ backgroundImage: "url('" + toolType.icon + "')" }}>
           </li>
         );
       });
 
-      moveTypeLis = MoveTypes.map((moveType, index) => {
+      moveTypeLis = MoveTypes.map(moveType => {
         return (
-          <li key={index}
+          <li key={moveType.type}
             title={moveType.name}
-            onClick={this.switchMove.bind(this, moveType.type) }
+            onClick={() => this.switchMove(moveType.type)}
             className={moveType.type === this.state.moveType ? 'selected' : ''}
-            style={ { 'backgroundImage': "url('" + moveType.icon + "')" } }>
+            style={{ backgroundImage: "url('" + moveType.icon + "')" }}>
           </li>
         );
       });
@@ -115,7 +140,7 @@ const ToolBox = React.createClass<{ game: Game }, any>({
 
     return (
       <div className="toolBox">
-        <CodeEditor visible={this.state.codeEditorVisible} scriptStorage={scriptStorage}/>
+        <CodeEditor visible={this.state.codeEditorVisible} scriptStorage={scriptStorage} />
 
         <ul className="large">
           <li
@@ -141,6 +166,6 @@ const ToolBox = React.createClass<{ game: Game }, any>({
       </div>
     );
   }
-});
+}
 
 export default ToolBox;

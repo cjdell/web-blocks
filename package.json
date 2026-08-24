@@ -15,16 +15,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "material-ui": "0.15.4",
-    "react": "15.3.1",
-    "react-dom": "15.3.1",
-    "react-tap-event-plugin": "1.0.0",
+    "react": "^19",
+    "react-dom": "^19",
     "three": "0.81.0",
     "underscore": "1.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/node": "^25.9.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "@types/ws": "^8.18.1",
     "chai": "^4.5.0",
     "css-loader": "^7.1.4",

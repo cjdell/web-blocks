@@ -1,7 +1,5 @@
 import React from 'react';
-import * as mui from 'material-ui';
-
-const { List, ListItem } = mui;
+import { List } from './widgets';
 
 interface ScriptPickerProps {
   visible: boolean;
@@ -10,8 +8,8 @@ interface ScriptPickerProps {
 }
 
 class ScriptPicker extends React.Component<ScriptPickerProps, any> {
-  constructor() {
-    super();
+  constructor(props: ScriptPickerProps) {
+    super(props);
 
     this.state = { visible: false };
   }
@@ -21,15 +19,13 @@ class ScriptPicker extends React.Component<ScriptPickerProps, any> {
   }
 
   render() {
-    const lis = this.props.scriptStorage.getScripts().map((script: { name: string }, index: number) => {
-      return <ListItem key={index} primaryText={script.name} onTouchTap={this.scriptClick.bind(this, script.name) } />
-    });
+    const scripts: string[] = this.props.scriptStorage.getScripts().map((script: { name: string }) => script.name);
 
     return (
       <div className={'scriptPicker ' + (this.props.visible ? 'show' : 'hide') }>
-        <List>
-          {lis}
-        </List>
+        <List
+          items={scripts.map((name, index) => ({ key: String(index), text: name }))}
+          onItemClick={index => this.scriptClick(scripts[index])} />
       </div>
     );
   }

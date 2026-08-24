@@ -1,9 +1,7 @@
 import React from 'react';
-import * as mui from 'material-ui';
+import { Button, Dialog, Tabs, Toolbar } from './widgets';
 import ScriptPicker from './ScriptPicker';
 import ScriptStorage from '../app/ScriptStorage';
-
-const { Dialog, FlatButton, RaisedButton, Toolbar, ToolbarGroup, Tabs, Tab, TextField } = mui;
 
 const introMessage = 'Hello there, here you can write JavaScript! For more info type: help';
 
@@ -25,8 +23,12 @@ interface State {
 }
 
 class CodeEditor extends React.Component<CodeEditorProps, State> {
-  constructor() {
-    super();
+  private consoleTextarea: HTMLTextAreaElement | null = null;
+  private scriptTextarea: HTMLTextAreaElement | null = null;
+  private linesUl: HTMLUListElement | null = null;
+
+  constructor(props: CodeEditorProps) {
+    super(props);
 
     this.state = {
       mode: 'console',
@@ -38,7 +40,7 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
       saveAsDialogOpen: false
     };
 
-    this.keyPress = this.keyPress.bind(this);
+    this.keyDown = this.keyDown.bind(this);
     this.keyUp = this.keyUp.bind(this);
     this.linesClick = this.linesClick.bind(this);
     this.loadClicked = this.loadClicked.bind(this);
@@ -50,10 +52,10 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
     this.scriptPickerDialogClosing = this.scriptPickerDialogClosing.bind(this);
   }
 
-  keyPress(e: any) {
-    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
+  keyDown(e: React.KeyboardEvent) {
+    const consoleTextarea = this.consoleTextarea;
 
-    if (e.which === 13) {
+    if (e.which === 13 && consoleTextarea) {
       let cmd = consoleTextarea.value;
       consoleTextarea.value = '';
 
@@ -77,8 +79,10 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
     }
   }
 
-  keyUp(e: any) {
-    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
+  keyUp(e: React.KeyboardEvent) {
+    const consoleTextarea = this.consoleTextarea;
+
+    if (!consoleTextarea) return;
 
     if (e.which === 38 || e.which === 40) {
       let dir: number;
@@ -126,7 +130,10 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
       return;
     }
 
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const scriptTextarea = this.scriptTextarea;
+
+    if (!scriptTextarea) return;
+
     const scriptCode = scriptTextarea.value;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptCode);
@@ -135,9 +142,11 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
   }
 
   newClicked() {
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const scriptTextarea = this.scriptTextarea;
 
     this.setState({ scriptName: '' } as State);
+
+    if (!scriptTextarea) return;
 
     scriptTextarea.value = '';
 
@@ -155,7 +164,9 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
       return this.saveAsClicked();
     }
 
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const scriptTextarea = this.scriptTextarea;
+
+    if (!scriptTextarea) return;
 
     this.props.scriptStorage.putScript(this.state.scriptName, scriptTextarea.value);
   }
@@ -180,54 +191,61 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
   }
 
   saveAsDialogSaveClicked() {
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const scriptTextarea = this.scriptTextarea;
 
     this.setState({
       scriptName: this.state.saveAsName,
       saveAsDialogOpen: false
     } as State);
 
-    this.props.scriptStorage.putScript(this.state.saveAsName, scriptTextarea.value);
+    if (scriptTextarea) {
+      this.props.scriptStorage.putScript(this.state.saveAsName, scriptTextarea.value);
+    }
   }
 
   tabClick(mode: 'console' | 'script') {
-    console.log('tabClick', mode);
     this.setState({ mode } as State);
   }
 
-  linesClick(e: any) {
-    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
+  linesClick(e: React.MouseEvent) {
+    const consoleTextarea = this.consoleTextarea;
 
-    consoleTextarea.focus();
+    if (consoleTextarea) consoleTextarea.focus();
 
     e.preventDefault();
   }
 
   onLineClick(line: string) {
-    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
+    const consoleTextarea = this.consoleTextarea;
 
-    consoleTextarea.value += line;
+    if (consoleTextarea) {
+      consoleTextarea.value += line;
+    }
   }
 
   componentDidMount() {
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const scriptTextarea = this.scriptTextarea;
 
-    scriptTextarea.value = this.props.scriptStorage.getScript(this.state.scriptName);
+    if (scriptTextarea) {
+      scriptTextarea.value = this.props.scriptStorage.getScript(this.state.scriptName);
+    }
   }
 
   componentDidUpdate() {
-    const consoleTextarea = this.refs['code'] as HTMLTextAreaElement;
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
-    const ul = this.refs['lines'] as HTMLUListElement;
+    const consoleTextarea = this.consoleTextarea;
+    const scriptTextarea = this.scriptTextarea;
+    const ul = this.linesUl;
 
-    if (this.state.mode === 'console') consoleTextarea.focus();
-    if (this.state.mode === 'script') scriptTextarea.focus();
+    if (this.state.mode === 'console' && consoleTextarea) consoleTextarea.focus();
+    if (this.state.mode === 'script' && scriptTextarea) scriptTextarea.focus();
 
-    ul.scrollTop = ul.scrollHeight;
+    if (ul) {
+      ul.scrollTop = ul.scrollHeight;
+    }
   }
 
   scriptChosen(name: string) {
-    const scriptTextarea = this.refs['script'] as HTMLTextAreaElement;
+    const scriptTextarea = this.scriptTextarea;
 
     this.setState({
       scriptName: name,
@@ -236,7 +254,9 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
 
     const script = this.props.scriptStorage.getScript(name);
 
-    scriptTextarea.value = script;
+    if (scriptTextarea) {
+      scriptTextarea.value = script;
+    }
   }
 
   scriptPickerDialogClosing() {
@@ -249,87 +269,80 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
 
   render() {
     const items = this.state.lines.map((line: { type: string, line: string }, index: number) => {
-      return <li key={index} className={line.type} onClick={() => this.onLineClick(line.line) }>{line.line}</li>;
+      return <li key={index} className={line.type} onClick={() => this.onLineClick(line.line)}>{line.line}</li>;
     });
 
-    const scriptPickerCustomActions = [
-      <FlatButton
-        key="cancel"
-        label="Cancel"
-        secondary={true}
-        onTouchTap={this.scriptPickerDialogClosing} />
-    ];
+    const consoleTab = (
+      <div className="codeView console">
+        <ul ref={el => { this.linesUl = el; }} onClick={this.linesClick}>
+          {items}
+          <li><textarea
+            ref={el => { this.consoleTextarea = el; }}
+            onKeyDown={this.keyDown}
+            onKeyUp={this.keyUp} /></li>
+        </ul>
+      </div>
+    );
 
-    const saveAsCustomActions = [
-      <FlatButton
-        key="cancel"
-        label="Cancel"
-        secondary={true}
-        onTouchTap={this.saveAsDialogClosing} />,
-      <FlatButton
-        key="save"
-        label="Save"
-        onTouchTap={this.saveAsDialogSaveClicked} />
-    ];
+    const scriptTab = (
+      <div className="codeView script">
+        <Toolbar>
+          <Button raised primary label="New" onClick={this.newClicked} />
+          <Button raised primary label="Open..." onClick={this.loadClicked} />
+          <Button raised label="Save" onClick={this.saveClicked} />
+          <Button raised label="Save As..." onClick={this.saveAsClicked} />
+          <Button raised secondary label="Run ▶" onClick={this.runClicked} />
+        </Toolbar>
+
+        <h3>{this.state.scriptName || '[New Script]'}</h3>
+        <textarea ref={el => { this.scriptTextarea = el; }}></textarea>
+      </div>
+    );
 
     return (
       <div className={'codeEditor ' + (this.props.visible ? 'show' : 'hide') }>
 
-        <Tabs>
-          <Tab label="Console">
-            <div className="codeView console">
-              <ul ref="lines" onClick={this.linesClick}>
-                {items}
-                <li><textarea ref="code" onKeyPress={this.keyPress} onKeyUp={this.keyUp}></textarea></li>
-              </ul>
-            </div>
-          </Tab>
-          <Tab label="Script" onClick={() => this.tabClick('script')}>
-            <Toolbar>
-              <ToolbarGroup>
-                <RaisedButton primary={true} onTouchTap={this.newClicked} label="New" />
-                <RaisedButton primary={true} onTouchTap={this.loadClicked} label="Open..." />
-                <RaisedButton onTouchTap={this.saveClicked} label="Save" />
-                <RaisedButton onTouchTap={this.saveAsClicked} label="Save As..." />
-                <RaisedButton secondary={true} onTouchTap={this.runClicked} label="Run ▶" />
-              </ToolbarGroup>
-            </Toolbar>
-
-            <div className="codeView script">
-              <h3>{this.state.scriptName || '[New Script]'}</h3>
-              <textarea ref="script"></textarea>
-            </div>
-          </Tab>
-        </Tabs>
+        <Tabs
+          active={this.state.mode}
+          onTabClick={id => this.tabClick(id as 'console' | 'script')}
+          items={[
+            { id: 'console', label: 'Console', content: consoleTab },
+            { id: 'script', label: 'Script', content: scriptTab },
+          ]} />
 
         <Dialog
           open={this.state.scriptPickerDialogOpen}
           onRequestClose={this.scriptPickerDialogClosing}
           title="Choose a script..."
-          actions={scriptPickerCustomActions}
-          ref="scriptPickerDialog"
-          modal={false}
-          autoDetectWindowHeight={true}
-          autoScrollBodyContent={true}>
+          actions={[
+            <Button
+              key="cancel"
+              secondary
+              label="Cancel"
+              onClick={this.scriptPickerDialogClosing} />
+          ]}>
           <ScriptPicker
             visible={true}
             scriptStorage={this.props.scriptStorage}
-            onScriptChosen={this.scriptChosen}/>
+            onScriptChosen={this.scriptChosen} />
         </Dialog>
 
         <Dialog
           open={this.state.saveAsDialogOpen}
           onRequestClose={this.saveAsDialogClosing}
-          key="saveAsDialog"
           title="Save as..."
-          actions={saveAsCustomActions}
-          ref="saveAsDialog"
-          modal={false}
-          autoDetectWindowHeight={true}
-          autoScrollBodyContent={true}>
-          <TextField
-            key="saveAsNameInput"
-            id="saveAsNameInput" />
+          actions={[
+            <Button
+              key="cancel"
+              secondary
+              label="Cancel"
+              onClick={this.saveAsDialogClosing} />,
+            <Button
+              key="save"
+              label="Save"
+              onClick={this.saveAsDialogSaveClicked} />
+          ]}>
+          <input id="saveAsNameInput" className="dialogInput" type="text" />
         </Dialog>
 
       </div>

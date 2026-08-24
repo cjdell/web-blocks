@@ -275,6 +275,54 @@ async function main() {
       );
     });
 
+    await check('Save As dialog saves a script name', async () => {
+      await page.getByRole('button', { name: 'Save As...' }).first().click();
+
+      const dialog = page.locator('.dialog', { hasText: 'Save as...' });
+      await dialog.waitFor({ state: 'visible', timeout: 5000 });
+
+      const nameInput = page.locator('#saveAsNameInput');
+      await nameInput.waitFor({ state: 'visible', timeout: 5000 });
+      // The app focuses the input (and applies its initial value) in a
+      // 100ms timeout; wait for that before typing.
+      await page.waitForFunction(
+        () => document.activeElement === document.querySelector('#saveAsNameInput'),
+        undefined,
+        { timeout: 2000 },
+      );
+      await nameInput.fill('Sanity Script');
+
+      // Scope to the dialog: the Script toolbar also has a "Save" button
+      // (and it comes first in DOM order), so the dialog's Save must be
+      // addressed through the open dialog.
+      await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+
+      await page.waitForFunction(
+        () => (document.querySelector('.codeView.script h3')?.textContent ?? '').includes('Sanity Script'),
+        undefined,
+        { timeout: 5000 },
+      );
+      expect(!(await dialog.isVisible()), 'Save As dialog did not close after saving');
+    });
+
+    await check('Open dialog lists the saved script and closes with Cancel', async () => {
+      await page.getByRole('button', { name: 'Open...' }).first().click();
+
+      const dialog = page.locator('.dialog', { hasText: 'Choose a script...' });
+      await dialog.waitFor({ state: 'visible', timeout: 5000 });
+
+      const listItem = dialog.locator('.listItem', { hasText: 'Sanity Script' });
+      await listItem.waitFor({ state: 'visible', timeout: 5000 });
+
+      await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+      await page.waitForFunction(
+        () => !document.querySelector('.dialog'),
+        undefined,
+        { timeout: 5000 },
+      );
+    });
+
     await check('code editor toggles closed with ESC', async () => {
       await page.keyboard.press('Escape');
       // The editor div gets the .hide class (display: none), so wait for it
