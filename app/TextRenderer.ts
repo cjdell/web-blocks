@@ -36,7 +36,10 @@ export default class TextRenderer {
 
       const pos = new IntVector3(offset.x + x, offset.y + canvas.height - y, offset.z);
 
-      if (on === 1) this.workerInterface.setBlocks(pos, pos, on, 0, true);
+      if (on === 1)
+        this.workerInterface.setBlocks(pos, pos, on, 0, true).catch(() => {
+          /* fire-and-forget: worker crash or other transient error */
+        });
     }
 
     // window.location.href = canvas.toDataURL();

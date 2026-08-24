@@ -33,6 +33,12 @@ export default class Player {
   private zDelta = 0.0;
   private lastFrame = Date.now();
 
+  // §2.1 — last emitted values used for change detection.
+  // Only emit when position or target differs by more than EMIT_EPSILON.
+  private lastEmitPos: { x: number; y: number; z: number } | null = null;
+  private lastEmitTarget: { x: number; y: number; z: number } | null = null;
+  private static readonly EMIT_EPSILON = 1e-4;
+
   // Set lazily via onPlayerPositionChange()/onBoundScriptsChange() by
   // GeometryWorker's init(); both are checked before use (addBoundScript
   // asserts because it is only reachable after init).
@@ -141,7 +147,26 @@ export default class Player {
     const target = this.position.clone().add(this.rotateStep(targetStep, phi, theta));
 
     if (this.playerPositionChangeListener) {
-      this.playerPositionChangeListener({ position: this.position, target });
+      const curPos = { x: this.position.x, y: this.position.y, z: this.position.z };
+      const curTarget = { x: target.x, y: target.y, z: target.z };
+
+      const posChanged =
+        !this.lastEmitPos ||
+        Math.abs(curPos.x - this.lastEmitPos.x) > Player.EMIT_EPSILON ||
+        Math.abs(curPos.y - this.lastEmitPos.y) > Player.EMIT_EPSILON ||
+        Math.abs(curPos.z - this.lastEmitPos.z) > Player.EMIT_EPSILON;
+
+      const targetChanged =
+        !this.lastEmitTarget ||
+        Math.abs(curTarget.x - this.lastEmitTarget.x) > Player.EMIT_EPSILON ||
+        Math.abs(curTarget.y - this.lastEmitTarget.y) > Player.EMIT_EPSILON ||
+        Math.abs(curTarget.z - this.lastEmitTarget.z) > Player.EMIT_EPSILON;
+
+      if (posChanged || targetChanged) {
+        this.playerPositionChangeListener({ position: this.position, target });
+        this.lastEmitPos = curPos;
+        this.lastEmitTarget = curTarget;
+      }
     }
   }
 

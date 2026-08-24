@@ -40,13 +40,11 @@ export default class CuboidTool {
     } else if (this.state === 'select-height') {
       this.context.finished();
       this.heightPos!.y = this.endPos!.y + this.relMouseHeight!;
-      this.context.workerInterface.setBlocks(
-        this.startPos!,
-        this.heightPos!,
-        this.context.type,
-        0,
-        true,
-      );
+      this.context.workerInterface
+        .setBlocks(this.startPos!, this.heightPos!, this.context.type, 0, true)
+        .catch(() => {
+          /* fire-and-forget: worker crash or other transient error */
+        });
       this.removeCube(this.cube);
     }
   }

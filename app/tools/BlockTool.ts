@@ -12,7 +12,9 @@ export default class BlockTool {
 
   onMouseClick(mouse: THREE.Vector2, pos: IntVector3, side: number): void {
     if (pos) {
-      this.context.workerInterface.addBlock(pos, side, this.context.type);
+      this.context.workerInterface.addBlock(pos, side, this.context.type).catch(() => {
+        /* fire-and-forget: worker crash or other transient error */
+      });
     }
 
     this.context.finished();

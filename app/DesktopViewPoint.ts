@@ -134,7 +134,9 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 32 && !this.workerInterface.jumping) this.workerInterface.jump();
 
-    this.workerInterface.move(this.movement);
+    this.workerInterface.move(this.movement).catch(() => {
+      /* fire-and-forget: worker crash or other transient error */
+    });
   }
 
   keyUp(event: any) {
@@ -156,7 +158,9 @@ export default class DesktopViewPoint {
 
     if (event.keyCode === 27) this.escape();
 
-    this.workerInterface.move(this.movement);
+    this.workerInterface.move(this.movement).catch(() => {
+      /* fire-and-forget: worker crash or other transient error */
+    });
   }
 
   escape() {
@@ -181,7 +185,9 @@ export default class DesktopViewPoint {
     this.movement.turn.x = (100 * -event.movementX) / event.srcElement.clientWidth;
     this.movement.turn.y = (100 * event.movementY) / event.srcElement.clientHeight;
 
-    this.workerInterface.move({ move: this.movement.move, turn: this.movement.turn });
+    this.workerInterface.move({ move: this.movement.move, turn: this.movement.turn }).catch(() => {
+      /* fire-and-forget */
+    });
 
     if (!this.mouseStop) {
       this.mouseStop = true;
@@ -189,7 +195,11 @@ export default class DesktopViewPoint {
       setTimeout(() => {
         this.movement.turn.x = 0;
         this.movement.turn.y = 0;
-        this.workerInterface.move({ move: this.movement.move, turn: this.movement.turn });
+        this.workerInterface
+          .move({ move: this.movement.move, turn: this.movement.turn })
+          .catch(() => {
+            /* fire-and-forget */
+          });
         this.mouseStop = false;
       }, 10);
     }

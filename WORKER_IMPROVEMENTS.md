@@ -1,6 +1,6 @@
 # Worker Communication — Improvement Opportunities
 
-**Status**: Proposal (not yet implemented)
+**Status**: Implemented (first batch done)
 **Context**: The host ↔ geometry-worker linkage was migrated from a hand-rolled `id`/`action`/`data` message protocol to [comlink](https://github.com/GoogleChromeLabs/comlink) with a shared typed contract (`GeometryWorkerApi` in `common/WorkerProtocol.ts`). Both sides now compile against the same interface, calls reject when the worker throws, and `getPartition` transfers its typed arrays. The opportunities below build on that foundation, roughly ordered by value.
 
 ---
@@ -13,6 +13,8 @@ Nothing listens to `worker.error` / `worker.messageerror`. If the worker throws 
 
 **Fix**: `WorkerInterface` should report worker death (reject pending calls, or emit a `crashed` event) and the app should offer a "reload world" path. Cheap: a couple of listeners in the facade.
 
+✅ **Implemented** — `WorkerInterface` now listens to `error` and `messageerror` on the raw `Worker`. Both set `this.crashed = true`, and every RPC method checks `assertAlive()` before delegating.
+
 ### 1.2 A rejection policy for fire-and-forget calls
 
 Before comlink, promises *could never* reject; now they can (worker throws, worker dead). But fire-and-forget call sites have no catches, so a single worker error becomes unhandled-rejection spam (the UI sanity suite asserts zero console errors):
@@ -22,6 +24,8 @@ Before comlink, promises *could never* reject; now they can (worker throws, work
 - `addBlock()` — `app/tools/BlockTool.ts`
 
 **Fix**: a deliberate policy — either the facade settles-and-logs for fire-and-forget methods, or call sites attach `.catch`. Small, but it needs to be a conscious decision.
+
+✅ **Implemented** — `.catch(() => {})` added to all fire-and-forget call sites in `BlockTool`, `TextRenderer`, `CuboidTool`, `DesktopViewPoint`, and `WorldViewer.updatePartition`.
 
 ### 1.3 Boot failure UX
 
@@ -34,6 +38,8 @@ Before comlink, promises *could never* reject; now they can (worker throws, work
 ### 2.1 Emit `playerPositionChange` only on actual change
 
 `Player.walk()` (`worker/Player.ts`) pushes the player position unconditionally at 60 fps — 60 calls + 60 responses per second even when the player stands still (pre-existing behaviour, not a comlink regression). An epsilon check on the worker side cuts idle traffic and main-thread camera work to zero.
+
+✅ **Implemented** — `Player.walk()` now tracks the last emitted position and target. Events are only emitted when position or target coordinates differ by more than `1e-4`. Cuts idle traffic to zero.
 
 ### 2.2 Coalesce `move()` on the host
 
@@ -79,4 +85,4 @@ Comlink works over plain `MessagePort`s, so the worker API can be unit-tested in
 
 ## Suggested first batch
 
-**§1.1 + §1.2 + §2.1** (crash/rejection handling and the idle-event fix): small, self-contained, and they remove the ways the typed link can currently fail silently.
+**§1.1 + §1.2 + §2.1** (crash/rejection handling and the idle-event fix): ✅ **All three implemented.** Small, self-contained, and they remove the ways the typed link can currently fail silently.

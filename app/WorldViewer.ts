@@ -81,10 +81,15 @@ export default class WorldViewer {
   }
 
   updatePartition(pindex: number) {
-    this.workerInterface.getPartition(pindex).then((data) => {
-      // console.log('Updating partition', pindex);
-      return this.gotPartition(data.geo, pindex);
-    });
+    this.workerInterface
+      .getPartition(pindex)
+      .then((data) => {
+        // console.log('Updating partition', pindex);
+        return this.gotPartition(data.geo, pindex);
+      })
+      .catch(() => {
+        /* fire-and-forget: worker crash or other transient error */
+      });
   }
 
   getLoadedPartitionIndices() {

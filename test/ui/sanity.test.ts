@@ -404,10 +404,11 @@ describe('UI sanity (headless browser)', () => {
     // main thread through comlink listener proxies. Exercise all three
     // channels: player position (every tick), print (learner script), and
     // partition update (world change).
+    //
+    // §2.1: position events are only emitted when position or target
+    // changes beyond an epsilon, so trigger a move command first.
 
-    // 1. Position: register a counting listener through the same
-    //    registration path the app uses; the worker's 60fps tick emits one
-    //    event per tick.
+    // 1. Register the position listener.
     await page.evaluate(() => {
       const wi = (window as any).workerInterface;
       (window as any).positionEvents = 0;
@@ -416,7 +417,14 @@ describe('UI sanity (headless browser)', () => {
       });
     });
 
-    await page.waitForFunction(() => (window as any).positionEvents > 30, undefined, {
+    // 2. Move the player via the worker so the next tick emits position events.
+    await page.evaluate(() => {
+      const wi = (window as any).workerInterface;
+      wi.move({ move: { x: 0, y: 0, z: 1 }, turn: { x: 0, y: 0 } });
+    });
+
+    // Wait for position events (the tick will process the movement).
+    await page.waitForFunction(() => (window as any).positionEvents > 0, undefined, {
       timeout: 5000,
     });
 
