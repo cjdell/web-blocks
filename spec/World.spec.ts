@@ -1,8 +1,6 @@
-import chai from 'chai';
+import { describe, expect, it } from 'vitest';
 import { IntVector3, WorldInfo } from '../common/WorldInfo';
 import World from '../worker/World';
-
-const expect = chai.expect;
 
 describe('World', () => {
   it('can create an empty world', () => {

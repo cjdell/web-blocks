@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "strict": true,
     "sourceMap": true,
-    "types": ["node", "mocha"]
+    "types": ["node"]
   },
   "exclude": ["node_modules", "build"]
 }

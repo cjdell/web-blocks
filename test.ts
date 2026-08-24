@@ -1,1 +1,0 @@
-import './spec/World.spec';
