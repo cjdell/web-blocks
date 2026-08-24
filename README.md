@@ -38,10 +38,16 @@ Then point your browser at: http://localhost:8888/
 Other scripts:
 
   - yarn typecheck — type-check the project without emitting
-  - yarn test — run the world simulation tests (vitest)
-  - yarn test:ui — headless-browser sanity check (Playwright)
+  - yarn test — run the test suite (vitest): the world simulation tests
+    plus the headless-browser UI sanity checks (Playwright)
+  - yarn test:ui — run just the headless-browser UI sanity checks
   - yarn lint — run ESLint
   - yarn size — check the post-gzip bundle size budgets
   - yarn format — format the codebase with Prettier
   - yarn format:check — check Prettier formatting without writing
   - yarn profile — time world init/visibility/block reads (manual benchmark)
+
+The UI sanity checks run the built app in a headless Chromium (WebGL via
+SwiftShader), so build first (`yarn build`) before `yarn test` or
+`yarn test:ui`. If Chromium is missing, install it with
+`yarn playwright install chromium`.

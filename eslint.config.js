@@ -10,7 +10,7 @@ module.exports = tseslint.config(
     ignores: ['build/**', 'lib/**', 'typings/**', 'samples/**'],
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.mts', '**/*.tsx'],
     extends: [...tseslint.configs.recommended],
     languageOptions: {
       globals: {
