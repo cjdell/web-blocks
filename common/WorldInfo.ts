@@ -263,11 +263,6 @@ export class WorldInfo {
   }
 }
 
-export interface ChangeHandlerOptions {
-  start: THREE.Vector3;
-  end: THREE.Vector3;
-}
-
 export interface Change {
   position: THREE.Vector3;
   from: {

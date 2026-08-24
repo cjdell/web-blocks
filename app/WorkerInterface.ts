@@ -1,10 +1,12 @@
+import * as Comlink from 'comlink';
+
 import type {
-  RequestFor,
-  WorkerMessage,
-  WorkerRequest,
+  GeometryWorkerApi,
+  MousePosition,
+  PartitionGeometryData,
+  RunScriptResult,
   WorldInfoData,
 } from '../common/WorkerProtocol';
-
 import type {
   AddBlockArgs,
   BoundScriptsChangeListener,
@@ -14,119 +16,53 @@ import type {
   SetBlocksArgs,
 } from '../common/Types';
 
-import type { ChangeHandlerOptions } from '../common/WorldInfo';
-import type { PartitionGeometryResult } from '../worker/WorldGeometry';
-
+/**
+ * Typed facade over the geometry worker.
+ *
+ * All RPC goes through a comlink proxy: Comlink.wrap() hands back a proxy
+ * typed as Remote<GeometryWorkerApi>, so every call is checked end-to-end
+ * against the same shared interface the worker implements (the worker's
+ * implementation is compiled against it too). Method calls resolve with the
+ * worker's return value — or reject if the worker throws — and the worker →
+ * host events (update / playerPositionChange / boundScriptsChange / print)
+ * are delivered to listeners registered with Comlink.proxy(), which the
+ * worker invokes as callable proxies.
+ */
 export default class WorkerInterface {
-  geoWorker: Worker;
-  callbacks: { [id: number]: (data: unknown) => void } = {};
+  private worker: Worker;
+  private api: Comlink.Remote<GeometryWorkerApi>;
 
-  changeListener: ((data: { changes: number[] }) => void) | null = null;
-  print: ((msg: string) => void) | null = null;
-  lastId = 0;
-  jumping: boolean = false;
+  // Host-side state for the jump edge: the worker only sees discrete jump()
+  // requests, so key repeat is suppressed here.
+  jumping = false;
 
-  // Set lazily via onPlayerPositionChange()/onBoundScriptsChange(); both
-  // are checked before use.
-  private playerPositionChangeListener: PlayerPositionChangeListener | null = null;
-  private boundScriptsChangeListener: BoundScriptsChangeListener | null = null;
+  private printListener: ((message: string) => void) | null = null;
 
   constructor() {
-    this.geoWorker = new Worker('build/worker.js');
-
-    this.geoWorker.onmessage = (e) => {
-      const message = e.data as WorkerMessage;
-
-      // Responses carry a request id; events don't.
-      if ('id' in message) {
-        const callback = this.callbacks[message.id];
-
-        delete this.callbacks[message.id];
-
-        if (callback) callback(message.data);
-
-        return;
-      }
-
-      switch (message.action) {
-        case 'update':
-          if (this.changeListener) {
-            this.changeListener(message);
-          }
-          break;
-
-        case 'playerPositionChange':
-          if (this.playerPositionChangeListener) {
-            this.playerPositionChangeListener(message.data);
-          }
-          break;
-
-        case 'boundScriptsChange':
-          if (this.boundScriptsChangeListener) {
-            this.boundScriptsChangeListener(message.data);
-          }
-          break;
-
-        case 'print':
-          if (this.print) {
-            this.print(message.data);
-          }
-          break;
-      }
-    };
+    this.worker = new Worker('build/worker.js');
+    this.api = Comlink.wrap(this.worker);
   }
 
-  /**
-   * Send a request to the worker and await its response.
-   *
-   * The action pins the payload type (via the WorkerRequest union) and the
-   * generic pins the response type at the call site. Note: the worker has
-   * no error path, so the promise can never reject — and the worker never
-   * type-checks its own responses, so the data is only as trustworthy as
-   * the pairing declared at the call site.
-   */
-  invoke<ReturnType, Action extends WorkerRequest['action']>(
-    action: Action,
-    data: RequestFor<Action>['data'],
-  ): Promise<ReturnType> {
-    return new Promise<ReturnType>((resolve) => {
-      const id = this.lastId++;
-
-      this.callbacks[id] = (data) => resolve(data as ReturnType);
-
-      this.geoWorker.postMessage({ id, action, data });
-    });
-  }
-
-  /**
-   * Fire-and-forget variant of invoke() for actions whose response is not
-   * typed in the WorkerRequest union. (Currently only used by
-   * registerChangeHandler, which the worker does not implement yet.)
-   */
-  invokeCallback<ReturnType>(action: string, data: object, callback: (r: ReturnType) => void) {
-    const id = this.lastId++;
-
-    this.callbacks[id] = (data) => callback(data as ReturnType);
-
-    this.geoWorker.postMessage({ id, action, data });
-  }
+  // ---- RPC (host → worker) ----
 
   init(): Promise<WorldInfoData> {
-    return this.invoke<WorldInfoData, 'init'>('init', null);
+    return this.api.init();
   }
 
-  runScript(code: string, expr: boolean): Promise<{ result: unknown }> {
-    return this.invoke('runScript', { code, expr });
+  runScript(code: string, expr: boolean): Promise<RunScriptResult> {
+    return this.api.runScript(code, expr);
   }
 
   undo(): Promise<void> {
-    return this.invoke('undo', null);
+    return this.api.undo();
+  }
+
+  getPartition(index: number): Promise<{ index: number; geo: PartitionGeometryData }> {
+    return this.api.getPartition(index);
   }
 
   getBlock(pos: PlainVector3): Promise<number> {
-    return this.invoke<{ type: number }, 'getBlock'>('getBlock', { pos }).then((result) => {
-      return result.type;
-    });
+    return this.api.getBlock(pos).then((result) => result.type);
   }
 
   setBlocks(
@@ -135,7 +71,7 @@ export default class WorkerInterface {
     type: number,
     colour: number,
     update: boolean,
-  ): Promise<unknown> {
+  ): Promise<void> {
     const args: SetBlocksArgs = {
       start,
       end,
@@ -144,68 +80,75 @@ export default class WorkerInterface {
       update,
     };
 
-    return this.invoke('setBlocks', args);
+    return this.api.setBlocks(args);
   }
 
-  addBlock(position: PlainVector3, side: number, type: number): Promise<unknown> {
+  addBlock(position: PlainVector3, side: number, type: number): Promise<void> {
     const args: AddBlockArgs = {
       position,
       side,
       type,
     };
 
-    return this.invoke('addBlock', args);
+    return this.api.addBlock(args);
   }
 
-  move(movement: Movement): Promise<unknown> {
-    return this.invoke('move', movement);
+  move(movement: Movement): Promise<void> {
+    return this.api.move(movement);
   }
 
-  jump(): Promise<unknown> {
+  jump(): Promise<void> {
     this.jumping = true;
-    return this.invoke('action', { action: 'jump' });
+    return this.api.jump();
   }
 
-  setGravity(gravity: number): Promise<unknown> {
-    return this.invoke('setGravity', { gravity });
+  setGravity(gravity: number): Promise<void> {
+    return this.api.setGravity(gravity);
   }
 
-  getPartition(index: number): Promise<{ index: number; geo: PartitionGeometryResult }> {
-    return this.invoke('getPartition', { index });
+  getMousePosition(): Promise<MousePosition | null> {
+    return this.api.getMousePosition();
   }
 
-  registerChangeHandler(
-    changeHandlerOptions: ChangeHandlerOptions,
-    callback: (change: unknown) => void,
-  ) {
-    return this.invokeCallback<unknown>('registerChangeHandler', changeHandlerOptions, callback);
+  setMousePosition(position: MousePosition): Promise<void> {
+    return this.api.setMousePosition(position);
   }
 
-  addChangeListener(listener: (data: { changes: number[] }) => void) {
-    this.changeListener = listener;
+  rightClick(): Promise<void> {
+    return this.api.rightClick();
   }
 
-  rightClick(): Promise<unknown> {
-    return this.invoke('rightClick', null);
+  executeBoundScript(index: number): Promise<void> {
+    return this.api.executeBoundScript(index);
   }
 
-  getMousePosition(): Promise<unknown> {
-    return this.invoke('getMousePosition', null);
+  // ---- Worker → host events ----
+  //
+  // Listeners are wrapped in Comlink.proxy() so the worker receives a
+  // callable proxy (a plain function would be dropped by structured
+  // cloning); the worker invokes it to push events back here.
+
+  addChangeListener(listener: (changes: number[]) => void): void {
+    void this.api.onUpdate(Comlink.proxy(listener));
   }
 
-  setMousePosition(position: { pos: PlainVector3; side: number }): Promise<unknown> {
-    return this.invoke('setMousePosition', position);
+  onPlayerPositionChange(listener: PlayerPositionChangeListener): void {
+    void this.api.onPlayerPositionChange(Comlink.proxy(listener));
   }
 
-  executeBoundScript(index: number) {
-    this.invoke('executeBoundScript', { index });
+  onBoundScriptsChange(listener: BoundScriptsChangeListener): void {
+    void this.api.onBoundScriptsChange(Comlink.proxy(listener));
   }
 
-  onPlayerPositionChange(listener: PlayerPositionChangeListener) {
-    this.playerPositionChangeListener = listener;
+  get print(): ((message: string) => void) | null {
+    return this.printListener;
   }
 
-  onBoundScriptsChange(listener: BoundScriptsChangeListener) {
-    this.boundScriptsChangeListener = listener;
+  set print(listener: ((message: string) => void) | null) {
+    this.printListener = listener;
+
+    if (listener) {
+      void this.api.onPrint(Comlink.proxy(listener));
+    }
   }
 }

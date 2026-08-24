@@ -1,6 +1,4 @@
-// The DOM lib types `self` as a Window (whose postMessage requires a
-// targetOrigin); the real geometry-worker global is a Worker scope.
-const _self = self as unknown as Worker;
+import * as Comlink from 'comlink';
 
 import { IntVector3, WorldInfo } from '../common/WorldInfo';
 import { throttle } from '../common/Throttle';
@@ -11,218 +9,189 @@ import Api from './Api';
 import ScriptRunner from './ScriptRunner';
 import { Loader } from './Geometry/Loader';
 
-import type { RequestFor, WorkerRequest } from '../common/WorkerProtocol';
+import type { GeometryWorkerApi } from '../common/WorkerProtocol';
+import type { BoundScriptsChangeListener, PlayerPositionChangeListener } from '../common/Types';
 
 console.log('GeometryWorker: online');
 
 let world: World;
 let worldGeometry: WorldGeometry;
 let player: Player;
-let api: Api;
+let scriptApi: Api;
 let scriptRunner: ScriptRunner;
 
-const checkForChangedPartitions = throttle(() => {
-  const dirty = world.getDirtyPartitions();
+// Worker → host event listeners, registered by the host through the on*
+// methods below. They arrive as comlink proxies, so invoking one returns a
+// Promise that settles when the host handler finishes.
+let updateListener: ((changes: number[]) => void) | null = null;
+let playerPositionListener: PlayerPositionChangeListener | null = null;
+let boundScriptsListener: BoundScriptsChangeListener | null = null;
+let printListener: ((message: string) => void) | null = null;
 
-  _self.postMessage({
-    action: 'update',
-    changes: dirty,
-  });
+/**
+ * Push an event to a registered host listener.
+ *
+ * Calling a comlink listener proxy returns a Promise that rejects if the
+ * host handler throws. Events are fire-and-forget, so a rejected event must
+ * not become an unhandled rejection in the worker — log it and move on.
+ */
+function emit<T extends unknown[]>(listener: ((...args: T) => void) | null, ...args: T): void {
+  if (listener) {
+    void Promise.resolve(listener(...args)).catch((error: unknown) => {
+      console.error('worker event handler failed:', error);
+    });
+  }
+}
+
+const checkForChangedPartitions = throttle(() => {
+  emit(updateListener, world.getDirtyPartitions());
 }, 100);
 
-const init = (invocation: RequestFor<'init'>): void => {
-  const worldInfo = new WorldInfo({
-    worldDimensionsInPartitions: new IntVector3(32, 1, 32),
-    partitionDimensionsInBlocks: new IntVector3(32, 128, 32),
-    partitionBoundaries: null,
-  });
-
-  world = new World(worldInfo);
-  worldGeometry = new WorldGeometry(worldInfo, world);
-  player = new Player(world);
-  api = new Api(world, player);
-  scriptRunner = new ScriptRunner(api);
-
-  world.init();
-
-  world.onWorldChanged((_world) => {
-    checkForChangedPartitions();
-  });
-
-  player.onPlayerPositionChange((args) => {
-    _self.postMessage({
-      action: 'playerPositionChange',
-      data: args,
+// The object the host sees through Comlink.wrap(). It is typed against the
+// shared contract, so the compiler checks the implementation against the
+// same interface the host's typed proxy is built from.
+const workerApi: GeometryWorkerApi = {
+  init: () => {
+    const worldInfo = new WorldInfo({
+      worldDimensionsInPartitions: new IntVector3(32, 1, 32),
+      partitionDimensionsInBlocks: new IntVector3(32, 128, 32),
+      partitionBoundaries: null,
     });
-  });
 
-  player.onBoundScriptsChange((args) => {
-    _self.postMessage({
-      action: 'boundScriptsChange',
-      data: args,
+    world = new World(worldInfo);
+    worldGeometry = new WorldGeometry(worldInfo, world);
+    player = new Player(world);
+    scriptApi = new Api(world, player);
+    scriptRunner = new ScriptRunner(scriptApi);
+
+    world.init();
+
+    world.onWorldChanged((_world) => {
+      checkForChangedPartitions();
     });
-  });
 
-  player.print = (msg: string) => {
-    _self.postMessage({
-      action: 'print',
-      data: msg,
+    player.onPlayerPositionChange((args) => {
+      emit(playerPositionListener, args);
     });
-  };
 
-  Loader.Instance = new Loader(worldInfo);
-
-  Loader.Instance.init().then(() => {
-    return _self.postMessage({
-      id: invocation.id,
-      data: worldInfo,
+    player.onBoundScriptsChange((args) => {
+      emit(boundScriptsListener, args);
     });
-  });
 
-  setInterval(() => {
-    player.tick();
-  }, 1000 / 60);
-};
+    player.print = (message: string) => {
+      emit(printListener, message);
+    };
 
-const runScript = (invocation: RequestFor<'runScript'>): void => {
-  const result = scriptRunner.run(invocation.data.code, invocation.data.expr);
+    Loader.Instance = new Loader(worldInfo);
 
-  _self.postMessage({
-    id: invocation.id,
-    data: { result },
-  });
-};
+    setInterval(() => {
+      player.tick();
+    }, 1000 / 60);
 
-const undo = (invocation: RequestFor<'undo'>): void => {
-  world.undo();
+    // Resolve once the block geometry has loaded, so the host's init()
+    // promise is the world's readiness signal.
+    return Loader.Instance.init().then(() => worldInfo);
+  },
 
-  _self.postMessage({
-    id: invocation.id,
-    data: {},
-  });
-};
+  runScript: (code, expr) => {
+    return { result: scriptRunner.run(code, expr) };
+  },
 
-const getPartition = (invocation: RequestFor<'getPartition'>): void => {
-  const geo = worldGeometry.getPartitionGeometry(invocation.data.index);
+  undo: () => {
+    world.undo();
+  },
 
-  if (!geo.data.position) {
-    console.warn('Partition', invocation.data.index, 'no data');
-    return;
-  }
+  getPartition: (index) => {
+    const geo = worldGeometry.getPartitionGeometry(index);
 
-  _self.postMessage(
-    {
-      id: invocation.id,
-      data: {
-        index: invocation.data.index,
-        geo,
-      },
-    },
-    [
+    if (!geo.data.position) {
+      throw new Error(`Partition ${index} has no geometry data`);
+    }
+
+    // Transfer the typed arrays instead of cloning them: the host receives
+    // the live buffers (see VertexData) and can hand them to three.js.
+    return Comlink.transfer({ index, geo }, [
       geo.data.position.buffer,
       geo.data.normal.buffer,
       geo.data.uv.buffer,
       geo.data.data.buffer,
       geo.data.offset.buffer,
-    ],
-  );
+    ]);
+  },
+
+  getBlock: (pos) => {
+    const type = world.getBlock(pos.x, pos.y, pos.z);
+
+    return { pos, type };
+  },
+
+  setBlocks: (args) => {
+    const { start, end, type, colour } = args;
+
+    world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, type, colour);
+  },
+
+  addBlock: (args) => {
+    world.addBlock(args.position, args.side, args.type);
+  },
+
+  move: (movement) => {
+    player.move(movement);
+  },
+
+  jump: () => {
+    player.jump();
+  },
+
+  setGravity: (gravity) => {
+    player.gravity = gravity;
+  },
+
+  getMousePosition: () => {
+    return player.mousePosition;
+  },
+
+  setMousePosition: (position) => {
+    player.mousePosition = position;
+  },
+
+  rightClick: () => {
+    // mouseUp fires twice
+    if (!player.rightClicked) {
+      player.rightClick();
+      player.rightClicked = true;
+    } else {
+      player.rightClicked = false;
+    }
+  },
+
+  executeBoundScript: (index) => {
+    const fn = player.getBoundScript(index);
+
+    if (fn) {
+      fn();
+    }
+  },
+
+  // ---- Worker → host event registration ----
+
+  onUpdate: (listener) => {
+    updateListener = listener;
+  },
+
+  onPlayerPositionChange: (listener) => {
+    playerPositionListener = listener;
+  },
+
+  onBoundScriptsChange: (listener) => {
+    boundScriptsListener = listener;
+  },
+
+  onPrint: (listener) => {
+    printListener = listener;
+  },
 };
 
-const getBlock = (invocation: RequestFor<'getBlock'>): void => {
-  const { x, y, z } = invocation.data.pos;
-
-  const type = world.getBlock(x, y, z);
-
-  _self.postMessage({
-    id: invocation.id,
-    data: {
-      pos: invocation.data.pos,
-      type,
-    },
-  });
-};
-
-const setBlocks = (invocation: RequestFor<'setBlocks'>): void => {
-  const { start, end, type, colour } = invocation.data;
-
-  world.setBlocks(start.x, start.y, start.z, end.x, end.y, end.z, type, colour);
-};
-
-const addBlock = (invocation: RequestFor<'addBlock'>): void => {
-  world.addBlock(invocation.data.position, invocation.data.side, invocation.data.type);
-};
-
-const move = (invocation: RequestFor<'move'>): void => {
-  player.move(invocation.data);
-};
-
-const action = (): void => {
-  // The only action payload is { action: 'jump' }; the worker treats every
-  // 'action' request as a jump.
-  player.jump();
-};
-
-const setGravity = (invocation: RequestFor<'setGravity'>): void => {
-  player.gravity = invocation.data.gravity;
-};
-
-const getMousePosition = () => {
-  return player.mousePosition;
-};
-
-const setMousePosition = (invocation: RequestFor<'setMousePosition'>): void => {
-  player.mousePosition = invocation.data;
-};
-
-const rightClick = () => {
-  // mouseUp fires twice
-  if (!player.rightClicked) {
-    player.rightClick();
-    player.rightClicked = true;
-  } else {
-    player.rightClicked = false;
-  }
-};
-
-const executeBoundScript = (invocation: RequestFor<'executeBoundScript'>): void => {
-  const fn = player.getBoundScript(invocation.data.index);
-
-  if (fn) {
-    fn();
-  }
-};
-
-self.onmessage = (e: MessageEvent) => {
-  const invocation = e.data as WorkerRequest;
-
-  switch (invocation.action) {
-    case 'init':
-      return init(invocation);
-    case 'runScript':
-      return runScript(invocation);
-    case 'undo':
-      return undo(invocation);
-    case 'getPartition':
-      return getPartition(invocation);
-    case 'getBlock':
-      return getBlock(invocation);
-    case 'setBlocks':
-      return setBlocks(invocation);
-    case 'addBlock':
-      return addBlock(invocation);
-    case 'move':
-      return move(invocation);
-    case 'action':
-      return action();
-    case 'setGravity':
-      return setGravity(invocation);
-    case 'getMousePosition':
-      return getMousePosition();
-    case 'setMousePosition':
-      return setMousePosition(invocation);
-    case 'rightClick':
-      return rightClick();
-    case 'executeBoundScript':
-      return executeBoundScript(invocation);
-  }
-};
+// In a dedicated worker globalThis is the worker scope: comlink listens for
+// (and replies on) its message channel.
+Comlink.expose(workerApi);

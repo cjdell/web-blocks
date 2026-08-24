@@ -1,4 +1,5 @@
 import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
+import type { VertexData } from '../common/WorkerProtocol';
 import constants from '../common/Constants';
 import Partition from './Partition';
 import World from './World';
@@ -19,14 +20,6 @@ const FACES = [
 const UV = new Float32Array([0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0]);
 
 const NORMALS = new Float32Array([1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 1, 0, 0, -1]);
-
-export interface VertexData {
-  position: Float32Array;
-  normal: Float32Array;
-  uv: Float32Array;
-  data: Float32Array;
-  offset: Uint32Array;
-}
 
 export default class PartitionGeometry {
   worldInfo: WorldInfo;

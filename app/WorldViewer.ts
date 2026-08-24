@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import WorkerInterface from './WorkerInterface';
 import type { WorldInfo } from '../common/WorldInfo';
 import type { PlainVector3 } from '../common/Types';
-import type { PartitionGeometryResult } from '../worker/WorldGeometry';
+import type { PartitionGeometryData } from '../common/WorkerProtocol';
 
 interface PartitionCacheItem {
   // null when the partition's geometry has been evicted or not fetched.
@@ -34,11 +34,10 @@ export default class WorldViewer {
     this.shaderMaterial = shaderMaterial;
     this.workerInterface = workerInterface;
 
-    workerInterface.addChangeListener((data) => {
-      const changeIndices = data.changes;
+    workerInterface.addChangeListener((changes) => {
       const loadedIndices = this.getLoadedPartitionIndices();
 
-      const toUpdate = changeIndices.filter((index) => loadedIndices.includes(index));
+      const toUpdate = changes.filter((index) => loadedIndices.includes(index));
 
       toUpdate.forEach((index) => this.updatePartition(index));
     });
@@ -94,7 +93,7 @@ export default class WorldViewer {
       .map((partitionCache) => partitionCache.index);
   }
 
-  gotPartition(geo: PartitionGeometryResult, pindex: number) {
+  gotPartition(geo: PartitionGeometryData, pindex: number) {
     let partitionCache = this.partitionCaches[pindex];
 
     if (partitionCache && partitionCache.mesh) {

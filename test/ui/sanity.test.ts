@@ -399,6 +399,70 @@ describe('UI sanity (headless browser)', () => {
     await page.waitForSelector('.codeEditor.hide', { state: 'attached', timeout: 5000 });
   });
 
+  uiTest('worker→host events reach the page (position, print, update)', async () => {
+    // With the code editor closed, the worker pushes events back to the
+    // main thread through comlink listener proxies. Exercise all three
+    // channels: player position (every tick), print (learner script), and
+    // partition update (world change).
+
+    // 1. Position: register a counting listener through the same
+    //    registration path the app uses; the worker's 60fps tick emits one
+    //    event per tick.
+    await page.evaluate(() => {
+      const wi = (window as any).workerInterface;
+      (window as any).positionEvents = 0;
+      wi.onPlayerPositionChange(() => {
+        (window as any).positionEvents += 1;
+      });
+    });
+
+    await page.waitForFunction(() => (window as any).positionEvents > 30, undefined, {
+      timeout: 5000,
+    });
+
+    // 2. Update: count partition re-fetches, then mutate the world through
+    //    a learner script and wait for the change to arrive as an event
+    //    that triggers a partition update.
+    await page.evaluate(() => {
+      const wi = (window as any).workerInterface;
+      (window as any).partitionFetches = 0;
+      const original = wi.getPartition.bind(wi);
+      wi.getPartition = (...args: unknown[]) => {
+        (window as any).partitionFetches += 1;
+        return original(...args);
+      };
+    });
+
+    // The code editor is closed, so Enter toggles the in-game mini console.
+    const miniInput = page.locator('.miniConsoleInput');
+    await page.keyboard.press('Enter');
+    await miniInput.waitFor({ state: 'visible', timeout: 5000 });
+
+    // print() output crosses the boundary via the worker's print event.
+    await miniInput.fill("print('comlink print ok')");
+    await miniInput.press('Enter'); // closes the console and runs the script
+
+    await page.waitForFunction(
+      () =>
+        Array.from(document.querySelectorAll('.miniConsoleOutput li')).some((li) =>
+          (li.textContent ?? '').includes('comlink print ok'),
+        ),
+      undefined,
+      { timeout: 5000 },
+    );
+
+    // A world change must arrive as an update event, not just a response.
+    // The comma expression keeps the console's expression-mode happy while
+    // the setBlock call dirties the partition.
+    await page.keyboard.press('Enter');
+    await miniInput.fill("(setBlock(100,5,100,Stone),'set')");
+    await miniInput.press('Enter');
+
+    await page.waitForFunction(() => (window as any).partitionFetches > 0, undefined, {
+      timeout: 5000,
+    });
+  });
+
   uiTest('app remounts cleanly after reload (localStorage round-trip)', async () => {
     // Saving a script persists JSON to localStorage, where the script's
     // Date becomes an ISO string. A reload re-parses it — ScriptStorage
