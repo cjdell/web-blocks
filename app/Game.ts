@@ -4,12 +4,9 @@ import Culling            from './Culling';
 import Interaction        from './Interaction';
 import WorldViewer        from './WorldViewer';
 import WorkerInterface    from './WorkerInterface';
-import Webcam             from './Webcam';
 import TextRenderer       from './TextRenderer';
 import DesktopPlatform    from './DesktopPlatform';
-import CardboardPlatform  from './CardboardPlatform';
 import DesktopViewPoint   from './DesktopViewPoint';
-import CardboardViewPoint from './CardboardViewPoint';
 
 import {
   BlockTypeList,
@@ -25,7 +22,7 @@ const win = <any>self;
 const MAX_TYPE_COUNT = 16.0;
 
 export default class Game {
-  platform: DesktopPlatform | CardboardPlatform;
+  platform: DesktopPlatform;
 
   log = false;
 
@@ -40,10 +37,9 @@ export default class Game {
   scene!: THREE.Scene;
   blockTypeList!: BlockTypeList;
   worldViewer!: WorldViewer;
-  viewPoint!: DesktopViewPoint | CardboardViewPoint;
+  viewPoint!: DesktopViewPoint;
   culling!: Culling;
   interaction!: Interaction;
-  webcam!: Webcam;
   textRenderer!: TextRenderer;
 
   uniforms!: any;
@@ -53,7 +49,7 @@ export default class Game {
   vertexShader!: string;
   fragmentShader!: string;
 
-  constructor(platform: DesktopPlatform | CardboardPlatform) {
+  constructor(platform: DesktopPlatform) {
     this.platform = platform;
 
     this.workerInterface = new WorkerInterface();
@@ -83,7 +79,6 @@ export default class Game {
       this.uniforms = {};
 
       this.uniforms.textures = { type: 't', value: null };
-      // this.uniforms.webcam = { type: 't', value: null };
       this.uniforms.color = { type: 'f', value: 1.0 };
       this.uniforms.time = { type: 'f', value: 0.0 };
 
@@ -104,13 +99,10 @@ export default class Game {
       this.worldViewer = new WorldViewer(this.scene, worldInfo, blockMaterial, this.workerInterface);
       this.viewPoint = this.platform.getViewPoint(this.camera, null, this.viewPort, this.effect, this.scene, worldInfo, this.workerInterface);
       this.culling = new Culling(this.camera, worldInfo);
-      this.webcam = new Webcam();
-      this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo, this.webcam);
+      this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo);
       this.textRenderer = new TextRenderer(this.workerInterface);
 
       win.workerInterface = this.workerInterface;
-
-      // blockMaterial.uniforms.webcam.value = this.webcam.getTexture();
 
       this.textRenderer.renderText(new THREE.Vector3(75, 5, 90), 'Welcome!');
 
@@ -120,8 +112,6 @@ export default class Game {
 
   render() {
     requestAnimationFrame(() => this.render());
-
-    this.webcam.render();
 
     this.uniforms.time.value += 0.1;
 

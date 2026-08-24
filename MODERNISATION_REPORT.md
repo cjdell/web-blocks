@@ -1,11 +1,12 @@
 # Web Blocks — Modernisation Report
 
 _A surface-level modernisation pass, the full P1 dependency upgrade
-(React 19, hand-rolled UI, three 0.185), and the full P2 type-safety &
+(React 19, hand-rolled UI, three 0.185), the full P2 type-safety &
 dead-weight removal (underscore out, ES-module `WorldInfo`, typed
-worker protocol, `strict: true`) were completed on 2026‑08‑24. This
-document records what changed, what was deliberately left alone, and a
-prioritised plan for the deeper work that remains._
+worker protocol, `strict: true`), and P3.8 (removal of the dead
+Cardboard platform) were completed on 2026‑08‑24. This document records
+what changed, what was deliberately left alone, and a prioritised plan
+for the deeper work that remains._
 
 ---
 
@@ -76,8 +77,8 @@ All changes are non-breaking: `yarn build`, `yarn typecheck`, `yarn lint`, and
 ## 2. What was deliberately NOT changed
 
 These are the parts that need a real migration, not a surface pass. Each is
-covered in the plan below. (The first four rows below were resolved during
-P2 and are kept for history; only Cardboard remains.)
+covered in the plan below. (All rows below were resolved during P2/P3 and
+are kept for history; nothing remains in this table.)
 
 | Area | Current | Why it stays for now |
 |------|---------|----------------------|
@@ -85,7 +86,7 @@ P2 and are kept for history; only Cardboard remains.)
 | ~~`typings/globals/*` (chai, mocha, underscore)~~ | ~~2015 DefinitelyTyped snapshot~~ — **deleted in P2.4/P2.7** | Replaced by `@types/chai` and `@types/mocha`. The whole 2015 snapshot is now gone. |
 | ~~`common/WorldInfo.ts` `namespace Common` pattern~~ | ~~legacy~~ — **ES module exports since P2.5** | `@typescript-eslint/no-namespace` re-enabled. |
 | ~~`worker/` `Object` / `Function` typing~~ | ~~untyped protocol~~ — **typed in P2.6** | `common/WorkerProtocol.ts` discriminated unions; `no-empty-object-type` and `no-unsafe-function-type` re-enabled. |
-| Google Cardboard support | disabled | Non-functional; needs a product decision (see P3). Its code now compiles against three 0.185 (ported `DeviceOrientationControls`, official `StereoEffect`), so option (b) is cheaper than it was. |
+| ~~Google Cardboard support~~ | ~~disabled~~ — **removed in P3.8** | Product decision taken: option (a), remove. `CardboardPlatform`/`CardboardViewPoint`/`DeviceOrientationControls` and the dormant `Webcam` feed implementation are gone; the hidden Webcam *block type* and shader hook remain for saved-world compatibility (see P3.8). |
 
 ---
 
@@ -227,18 +228,40 @@ each step.
 
 ### P3 — Product & architecture decisions
 
-8. **Decide the fate of Google Cardboard.** The platform is disabled
-   (commit `189d058`) and its code path is dead. Either (a) remove
-   `CardboardPlatform`/`CardboardViewPoint`/`Webcam` and the related
-   `lib/` helpers, or (b) invest in making it functional on modern mobile
-   (device-orientation permissions, the Cardboard SDK, etc.). Recommend (a)
-   for now and revisiting if there's real demand.
+8. **Decide the fate of Google Cardboard.** — done, option (a), 2026‑08‑24.
+   The platform has been dead since `189d058`; it was removed:
+   - `app/CardboardPlatform.ts`, `app/CardboardViewPoint.ts`, and
+     `app/DeviceOrientationControls.ts` (its header said "kept for the
+     (currently disabled) Cardboard platform"). `CardboardPlatform` was the
+     only consumer of `three/examples/jsm/effects/StereoEffect`, so
+     `app.js` shrank a further ~18 KiB (~765 → ~747 pre-gzip).
+   - `Game`/`Interaction`/`App` cleaned of the platform union types, the
+     webcam wiring, and the stale "Cardboard disabled" comment.
+   - **Webcam nuance (the plan's list was slightly off):** `app/Webcam.ts`
+     is not Cardboard — it implements the 2015 "Webcam" *block type*
+     (commit `9b8714f`, which predates the Cardboard platform): a placed
+     Webcam block renders the user's live camera feed via the shader's
+     `webcam` sampler. It was nonetheless removed, because it was 100%
+     dead in the modern app: the block is `hideFromToolbox` so `init()`
+     was unreachable from any UI path, and the `webcam` uniform had
+     already been commented out of `Game.init()`, so even a running feed
+     would never have reached the shader.
+   - **Kept for saved-world compatibility:** the "Webcam" entry +
+     `BlockTypeIds.Webcam` in `BlockTypeList` (block-type *indices* are
+     stored in world data — renumbering would corrupt saved worlds), the
+     `textures/webcam.png` atlas tile, and the shader's `WEBCAM_ID` /
+     `uniform sampler2D webcam` hook (left untouched, so a Webcam block in
+     an old world renders exactly as it did before this change — from the
+     never-bound sampler). Reviving the feature later is re-adding the
+     class and binding the uniform; the block type, ID, and texture are
+     already in place.
 
 9. **Bundle size.** Post-P1 the bundles shrank even though three.js grew:
-   `app.js` is ~765 KiB (was ~1.17 MB) and `worker.js` ~155 KiB (was
-   ~518 KB) pre-gzip — modern three tree-shakes, and the 2016-era bundles
-   shipped a lot of dead code. Only `app.js` still exceeds the 244 KiB
-   webpack budget. Options:
+   `app.js` is ~747 KiB (was ~1.17 MB; the P3.8 Cardboard removal shaved a
+   further ~18 KiB) and `worker.js` ~155 KiB (was ~518 KB) pre-gzip —
+   modern three tree-shakes, and the 2016-era bundles shipped a lot of
+   dead code. Only `app.js` still exceeds the 244 KiB webpack budget.
+   Options:
    - Lazy-load the code editor / UI (`React.lazy` + `import()`).
    - Split the three.js-heavy viewer from the React UI.
    - Confirm production minification is on (it is, via `mode: production`),

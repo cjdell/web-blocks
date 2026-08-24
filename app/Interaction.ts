@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import constants          from '../common/Constants';
-import { BlockTypeIds }   from '../common/BlockTypeList';
 import WorkerInterface    from './WorkerInterface';
-import Webcam             from './Webcam';
 import { Context, Tool }  from './tools/ToolBase';
 import Tools              from './tools/Tools';
 import CuboidTool         from "./tools/CuboidTool";
@@ -14,7 +12,6 @@ export default class Interaction {
   camera: THREE.Camera;
   workerInterface: WorkerInterface;
   worldInfo: WorldInfo;
-  webcam: Webcam;
 
   mouse = new THREE.Vector2();
   raycaster = new THREE.Raycaster();
@@ -33,15 +30,13 @@ export default class Interaction {
     scene: THREE.Scene,
     camera: THREE.Camera,
     workerInterface: WorkerInterface,
-    worldInfo: WorldInfo,
-    webcam: Webcam
+    worldInfo: WorldInfo
   ) {
     this.viewPort = viewPort;
     this.scene = scene;
     this.camera = camera;
     this.workerInterface = workerInterface;
     this.worldInfo = worldInfo;
-    this.webcam = webcam;
 
     if (this.isDesktop) {
       viewPort.addEventListener('mousedown', (e) => this.mouseDown(e), false);
@@ -63,8 +58,6 @@ export default class Interaction {
 
   setType(_type: number) {
     this.type = _type;
-
-    if (this.type === BlockTypeIds.Webcam) this.webcam.init();
   }
 
   setToolType(toolType: string) {

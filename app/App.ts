@@ -7,7 +7,6 @@ const App = () => {
   let game: Game;
 
   const init = (container: HTMLDivElement) => {
-    // Note: the Cardboard platform is currently disabled (non-functional).
     platform = new DesktopPlatform(container);
 
     game = new Game(platform);
