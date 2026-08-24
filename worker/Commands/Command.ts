@@ -1,13 +1,12 @@
 /// <reference path="../../typings/index.d.ts" />
 import Partition from '../Partition';
-import com from '../../common/WorldInfo';
-
+import type { WorldInfo } from '../../common/WorldInfo';
 export default class Command {
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
   version: number;
   options: any;
 
-  constructor(worldInfo: com.WorldInfo, version: number, options: any) {
+  constructor(worldInfo: WorldInfo, version: number, options: any) {
     this.worldInfo = worldInfo;
     this.version = version;
     this.options = options;

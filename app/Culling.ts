@@ -1,13 +1,12 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import com from '../common/WorldInfo';
-
+import type { WorldInfo } from '../common/WorldInfo';
 export default class Culling {
   active: number[] = [];
   camera: THREE.Camera;
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
 
-  constructor(camera: THREE.Camera, worldInfo: com.WorldInfo) {
+  constructor(camera: THREE.Camera, worldInfo: WorldInfo) {
     this.camera = camera;
     this.worldInfo = worldInfo;
   }

@@ -1,5 +1,5 @@
 /// <reference path="../typings/index.d.ts" />
-import com from '../common/WorldInfo';
+import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import constants from '../common/Constants';
 import Partition from './Partition';
 import World from './World';
@@ -30,7 +30,7 @@ export interface VertexData {
 }
 
 export default class PartitionGeometry {
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
   partition: Partition;
   world: World;
 
@@ -45,7 +45,7 @@ export default class PartitionGeometry {
   dimZ!: number;
   dimXY!: number;
 
-  constructor(worldInfo: com.WorldInfo, partition: Partition, world: World) {
+  constructor(worldInfo: WorldInfo, partition: Partition, world: World) {
     this.worldInfo = worldInfo;
     this.partition = partition;
     this.world = world;
@@ -190,7 +190,7 @@ export default class PartitionGeometry {
     };
   }
 
-  getOffset(): com.IntVector3 {
+  getOffset(): IntVector3 {
     return this.partition.offset;
   }
 

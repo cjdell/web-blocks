@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import com from '../common/WorldInfo';
+import { IntVector3 } from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
 
 export default class TextRenderer {
@@ -35,7 +35,7 @@ export default class TextRenderer {
       const col = data[i + 1];
       const on = col > 192 ? 1 : 0;
 
-      const pos = new com.IntVector3(offset.x + x, offset.y + canvas.height - y, offset.z);
+      const pos = new IntVector3(offset.x + x, offset.y + canvas.height - y, offset.z);
 
       if (on === 1) this.workerInterface.setBlocks(pos, pos, on, 0, true);
     }

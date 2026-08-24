@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import com                from '../common/WorldInfo';
+import { WorldInfo } from '../common/WorldInfo';
 import Culling            from './Culling';
 import Interaction        from './Interaction';
 import WorldViewer        from './WorldViewer';
@@ -74,7 +74,7 @@ export default class Game {
       this.workerInterface.init(),
       this.loadShaders()
     ]).then(res => {
-      const worldInfo = new com.WorldInfo(<com.WorldInfo>res[0]);
+      const worldInfo = new WorldInfo(res[0]);
 
       this.uniforms = {};
 

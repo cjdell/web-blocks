@@ -1,30 +1,29 @@
 /// <reference path="../typings/index.d.ts" />
-import com from '../common/WorldInfo';
-
+import { IntVector3, type WorldInfo } from '../common/WorldInfo';
 const VALUES_PER_BLOCK = 3;
 
 export default class Partition {
-  public offset: com.IntVector3;
+  public offset: IntVector3;
   public blocks: Uint8Array = null;
   public index: number;
   public capacity: number;
   public occupied = 0;
   public heightMap: Uint8Array;
 
-  private worldInfo: com.WorldInfo;
-  private partitionPosition: com.IntVector3;
+  private worldInfo: WorldInfo;
+  private partitionPosition: IntVector3;
 
   private dirty = false;
   private edgeDirty = [false, false, false, false]; // x, x, z, z 
 
-  constructor(worldInfo: com.WorldInfo, ppos: com.IntVector3) {
+  constructor(worldInfo: WorldInfo, ppos: IntVector3) {
     this.worldInfo = worldInfo;
     this.partitionPosition = ppos;
 
     this.index = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
     this.capacity = this.worldInfo.partitionCapacity;
 
-    this.offset = new com.IntVector3(
+    this.offset = new IntVector3(
       ppos.x * this.worldInfo.partitionDimensionsInBlocks.x,
       ppos.y * this.worldInfo.partitionDimensionsInBlocks.y,
       ppos.z * this.worldInfo.partitionDimensionsInBlocks.z
@@ -64,7 +63,7 @@ export default class Partition {
   }
 
   // Note: the caller's colour is intentionally ignored (blocks get colour 0).
-  setBlocks(start: com.IntVector3, end: com.IntVector3, type: number, _colour: number): void {
+  setBlocks(start: IntVector3, end: IntVector3, type: number, _colour: number): void {
     this.rangeCheck(start.x, start.y, start.z);
     this.rangeCheck(end.x, end.y, end.z);
 

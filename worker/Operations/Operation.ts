@@ -1,15 +1,14 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
-
+import type { WorldInfo } from '../../common/WorldInfo';
 export interface OperationResult {
   buffer: Uint8Array;
   ids: Uint32Array;
 }
 
 export class Operation {
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
 
-  constructor(worldInfo: com.WorldInfo) {
+  constructor(worldInfo: WorldInfo) {
     this.worldInfo = worldInfo;
   }
 

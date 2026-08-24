@@ -4,7 +4,7 @@ import * as THREE from 'three';
 // THREE object; use the maintained official example instead.
 import { StereoEffect } from 'three/examples/jsm/effects/StereoEffect.js';
 
-import com from '../common/WorldInfo';
+import type { WorldInfo } from '../common/WorldInfo';
 import CardboardViewPoint from './CardboardViewPoint';
 import WorkerInterface from './WorkerInterface';
 
@@ -40,7 +40,7 @@ export default class CardboardPlatform {
     viewPort: HTMLDivElement,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
-    worldInfo: com.WorldInfo,
+    worldInfo: WorldInfo,
     workerInterface: WorkerInterface) {
     return new CardboardViewPoint(camera, light, viewPort, renderer, scene, worldInfo, workerInterface);
   }

@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import com                from '../common/WorldInfo';
+import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import constants          from '../common/Constants';
 import { BlockTypeIds }   from '../common/BlockTypeList';
 import WorkerInterface    from './WorkerInterface';
@@ -14,7 +14,7 @@ export default class Interaction {
   scene: THREE.Scene;
   camera: THREE.Camera;
   workerInterface: WorkerInterface;
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
   webcam: Webcam;
 
   mouse = new THREE.Vector2();
@@ -34,7 +34,7 @@ export default class Interaction {
     scene: THREE.Scene,
     camera: THREE.Camera,
     workerInterface: WorkerInterface,
-    worldInfo: com.WorldInfo,
+    worldInfo: WorldInfo,
     webcam: Webcam
   ) {
     this.viewPort = viewPort;
@@ -155,7 +155,7 @@ export default class Interaction {
     this.tool = null;
   }
 
-  private getBlockPositionOfMouse(): { pos: com.IntVector3, side: number } {
+  private getBlockPositionOfMouse(): { pos: IntVector3, side: number } {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     const intersects = this.raycaster.intersectObjects(this.scene.children);

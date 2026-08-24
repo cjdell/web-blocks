@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import com              from '../common/WorldInfo';
+import type { WorldInfo } from '../common/WorldInfo';
 import WorkerInterface  from './WorkerInterface';
 import MiniConsole      from "./MiniConsole";
 import { debounce }     from '../common/Throttle';
@@ -13,7 +13,7 @@ export default class DesktopViewPoint {
   private viewPort: HTMLDivElement;
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
-  private worldInfo: com.WorldInfo;
+  private worldInfo: WorldInfo;
   private workerInterface: WorkerInterface;
 
   private lastMousePosition: THREE.Vector2;
@@ -34,7 +34,7 @@ export default class DesktopViewPoint {
     viewPort: HTMLDivElement,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
-    worldInfo: com.WorldInfo,
+    worldInfo: WorldInfo,
     workerInterface: WorkerInterface
   ) {
     this.camera = camera;

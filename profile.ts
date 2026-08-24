@@ -1,10 +1,10 @@
 /// <reference path="./typings/index.d.ts" />
-import com from './common/WorldInfo';
+import { IntVector3, WorldInfo } from './common/WorldInfo';
 import World from './worker/World';
 
-const worldInfo = new com.WorldInfo({
-  worldDimensionsInPartitions: new com.IntVector3(4, 1, 4),
-  partitionDimensionsInBlocks: new com.IntVector3(256, 32, 256),
+const worldInfo = new WorldInfo({
+  worldDimensionsInPartitions: new IntVector3(4, 1, 4),
+  partitionDimensionsInBlocks: new IntVector3(256, 32, 256),
   partitionBoundaries: null
 });
 

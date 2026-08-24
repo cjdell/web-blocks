@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import com                    from '../common/WorldInfo';
+import { IntVector3, type WorldInfo, type PartitionBoundaries } from '../common/WorldInfo';
 import Partition              from './Partition';
 import Command                from './Commands/Command';
 import { CuboidOperation }    from './Operations/CuboidOperation';
@@ -8,8 +8,8 @@ import { LandscapeOperation } from './Operations/LandscapeOperation';
 import { OperationCommand }   from './Commands/OperationCommand';
 
 // export interface ChangeHandler {
-//   callback(change: com.Change): void;
-//   options: com.ChangeHandlerOptions;
+//   callback(change: Change): void;
+//   options: ChangeHandlerOptions;
 // }
 
 export interface WorldChangedHandler {
@@ -20,7 +20,7 @@ const VALUES_PER_BLOCK = 3 | 0;
 const VALUES_PER_VBLOCK = 7 | 0;
 
 export default class World {
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
 
   capacity: number;
   partitionCapacity: number;
@@ -30,11 +30,11 @@ export default class World {
   worldChangeHandlers = new Array<WorldChangedHandler>();
 
   // changeHandlers = Array<ChangeHandler>();
-  // recentChanges = Array<com.Change>();
+  // recentChanges = Array<Change>();
 
   partitions: Partition[];
 
-  constructor(worldInfo: com.WorldInfo) {
+  constructor(worldInfo: WorldInfo) {
     this.worldInfo = worldInfo;
 
     this.capacity = worldInfo.worldPartitionCapacity;
@@ -78,7 +78,7 @@ export default class World {
     for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
         for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
-          const ppos = new com.IntVector3(x, y, z);
+          const ppos = new IntVector3(x, y, z);
           const pindex = this.worldInfo.pindex(x, y, z);
 
           this.partitions[pindex] = new Partition(this.worldInfo, ppos);
@@ -99,7 +99,7 @@ export default class World {
     //   const x = (Math.random() * this.worldInfo.worldDimensionsInBlocks.x * 0.5 + 10) | 0;
     //   const z = (Math.random() * this.worldInfo.worldDimensionsInBlocks.z * 0.5 + 10) | 0;
 
-    //   const treeOperation = new TreeOperation(this.worldInfo, { pos: new com.IntVector3(x, 2, z) });
+    //   const treeOperation = new TreeOperation(this.worldInfo, { pos: new IntVector3(x, 2, z) });
     //   const treeCommand = new OperationCommand(this.worldInfo, this.commands.length, treeOperation);
 
     //   this.applyCommand(treeCommand);
@@ -187,16 +187,16 @@ export default class World {
   }
 
   setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {
-    const min = new com.IntVector3(0, 0, 0);
+    const min = new IntVector3(0, 0, 0);
 
-    const max = new com.IntVector3(
+    const max = new IntVector3(
       this.worldInfo.worldDimensionsInBlocks.x - 1,
       this.worldInfo.worldDimensionsInBlocks.y - 1,
       this.worldInfo.worldDimensionsInBlocks.z - 1
     );
 
-    let start = new com.IntVector3(wx1, wy1, wz1);
-    let end = new com.IntVector3(wx2, wy2, wz2);
+    let start = new IntVector3(wx1, wy1, wz1);
+    let end = new IntVector3(wx2, wy2, wz2);
 
     start = start.clamp(min, max);
     end = end.clamp(min, max);
@@ -213,7 +213,7 @@ export default class World {
     return this.applyCommand(command);
   }
 
-  addBlock(wpos: com.IntVector3, side: number, type: number): void {
+  addBlock(wpos: IntVector3, side: number, type: number): void {
     let { x: wx, y: wy, z: wz } = wpos;
 
     if (type === 0) {
@@ -244,8 +244,8 @@ export default class World {
     this.setBlocks(wx, wy, wz, wx, wy, wz, type, 0 | 0);
   }
 
-  getPartitionBoundaries(): com.PartitionBoundaries[] {
-    const partitionBoundaries = <com.PartitionBoundaries[]>[];
+  getPartitionBoundaries(): PartitionBoundaries[] {
+    const partitionBoundaries: PartitionBoundaries[] = [];
 
     for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {

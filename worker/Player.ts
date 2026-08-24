@@ -1,7 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import World            from './World';
-import com              from '../common/WorldInfo';
+import type { IntVector3 } from '../common/WorldInfo';
 import { BlockTypeIds } from '../common/BlockTypeList';
 
 import {
@@ -16,7 +16,7 @@ export default class Player {
   gravity = 0.0;
   print: ((msg: string) => void);
   rightClicked: boolean = false;
-  mousePosition: { pos: com.IntVector3, side: number };
+  mousePosition: { pos: IntVector3, side: number };
 
   private world: World;
   private boundScripts: { [key: number]: () => void } = {};

@@ -1,6 +1,6 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-import com                          from '../common/WorldInfo';
+import type { WorldInfo, IntVector3, ChangeHandlerOptions } from '../common/WorldInfo';
 import { PartitionGeometryResult }  from '../worker/WorldGeometry';
 
 import {
@@ -89,7 +89,7 @@ export default class WorkerInterface {
   }
 
   init() {
-    return this.invoke<com.WorldInfo>('init', null);
+    return this.invoke<WorldInfo>('init', null);
   }
 
   runScript(code: string, expr: boolean) {
@@ -107,8 +107,8 @@ export default class WorkerInterface {
   }
 
   setBlocks(
-    start: com.IntVector3,
-    end: com.IntVector3,
+    start: IntVector3,
+    end: IntVector3,
     type: number,
     colour: number,
     update: boolean
@@ -124,7 +124,7 @@ export default class WorkerInterface {
     return this.invoke<object>('setBlocks', args);
   }
 
-  addBlock(position: com.IntVector3, side: number, type: number) {
+  addBlock(position: IntVector3, side: number, type: number) {
     const args: AddBlockArgs = {
       position,
       side,
@@ -151,7 +151,7 @@ export default class WorkerInterface {
     return this.invoke<{ geo: PartitionGeometryResult }>('getPartition', { index });
   }
 
-  registerChangeHandler(changeHandlerOptions: com.ChangeHandlerOptions, callback: (Change: any) => void) {
+  registerChangeHandler(changeHandlerOptions: ChangeHandlerOptions, callback: (Change: any) => void) {
     return this.invokeCallback<object>('registerChangeHandler', changeHandlerOptions, callback);
   }
 
@@ -167,7 +167,7 @@ export default class WorkerInterface {
     return this.invoke<object>('getMousePosition', null);
   }
 
-  setMousePosition(position: { pos: com.IntVector3, side: number }) {
+  setMousePosition(position: { pos: IntVector3, side: number }) {
     return this.invoke<object>('setMousePosition', position);
   }
 

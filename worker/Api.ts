@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import com from '../common/WorldInfo';
+import { IntVector3 } from '../common/WorldInfo';
 import { BlockTypeIds } from '../common/BlockTypeList';
 import World from './World';
 import Player from './Player';
@@ -8,7 +8,7 @@ export default class Api {
   world: World;
   player: Player;
 
-  lastBlockPos: com.IntVector3;
+  lastBlockPos: IntVector3;
 
   get BlockType() {
     return BlockTypeIds;
@@ -93,7 +93,7 @@ export default class Api {
     this.player.gravity = gravity;
   }
 
-  getMousePosition(): { pos: com.IntVector3, side: number } {
+  getMousePosition(): { pos: IntVector3, side: number } {
     return this.player.mousePosition;
   }
 
@@ -101,7 +101,7 @@ export default class Api {
     x: number, y: number, z: number,
     type: number, colour: number
   ): void {
-    this.lastBlockPos = new com.IntVector3(x, y, z);
+    this.lastBlockPos = new IntVector3(x, y, z);
 
     if (typeof type !== 'number') {
       type = BlockTypeIds.Stone;
@@ -115,7 +115,7 @@ export default class Api {
     x2: number, y2: number, z2: number,
     type: number, colour: number
   ): void {
-    this.lastBlockPos = new com.IntVector3(x1, y1, z1);
+    this.lastBlockPos = new IntVector3(x1, y1, z1);
 
     if (typeof type !== 'number') {
       type = BlockTypeIds.Stone;

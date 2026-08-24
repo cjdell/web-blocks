@@ -46,13 +46,4 @@ module.exports = tseslint.config(
       globals: globals.node,
     },
   },
-  {
-    // Legacy `namespace Common ... export = Common` pattern. Converting to
-    // ES module exports touches ~20 import sites and is tracked as a
-    // modernisation task (see report).
-    files: ["common/WorldInfo.ts"],
-    rules: {
-      "@typescript-eslint/no-namespace": "off",
-    },
-  },
 );

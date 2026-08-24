@@ -1,9 +1,9 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
+import { IntVector3, type WorldInfo } from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 
 export interface TreeOptions {
-  pos: com.IntVector3;
+  pos: IntVector3;
 }
 
 const TREE = [
@@ -54,15 +54,15 @@ const TREE = [
 export class TreeOperation extends Operation {
   options: TreeOptions;
 
-  constructor(worldInfo: com.WorldInfo, options: TreeOptions) {
+  constructor(worldInfo: WorldInfo, options: TreeOptions) {
     super(worldInfo);
 
     this.options = options;
   }
 
   getAffectedPartitionIndices(): number[] {
-    const start = this.options.pos.sub(new com.IntVector3(2, 0, 2));
-    const end = this.options.pos.add(new com.IntVector3(2, 0, 2));
+    const start = this.options.pos.sub(new IntVector3(2, 0, 2));
+    const end = this.options.pos.add(new IntVector3(2, 0, 2));
 
     const { x: px1, y: py1, z: pz1 } = this.worldInfo.pposw(start.x, start.y, start.z);
     const { x: px2, y: py2, z: pz2 } = this.worldInfo.pposw(end.x, end.y, end.z);
@@ -88,7 +88,7 @@ export class TreeOperation extends Operation {
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
-    const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new com.IntVector3(1, 1, 1));
+    const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new IntVector3(1, 1, 1));
 
     const blocks = 5 * 6 * 5;
 
@@ -100,7 +100,7 @@ export class TreeOperation extends Operation {
     for (let z = 0; z < 5; z++) {
       for (let y = 0; y < 6; y++) {
         for (let x = 0; x < 5; x++) {
-          const wpos = this.options.pos.add(new com.IntVector3(x - 2, y - 0, z - 2));
+          const wpos = this.options.pos.add(new IntVector3(x - 2, y - 0, z - 2));
 
           if (wpos.x >= pstart.x && wpos.x <= pend.x) {
             if (wpos.y >= pstart.y && wpos.y <= pend.y) {

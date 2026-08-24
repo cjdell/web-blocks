@@ -1,20 +1,20 @@
 /// <reference path="../typings/index.d.ts" />
-import com from '../common/WorldInfo';
+import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import PartitionGeometry from './PartitionGeometry';
 import { VertexData } from './PartitionGeometry';
 import World from './World';
 
 export interface PartitionGeometryResult {
   data: VertexData;
-  offset: com.IntVector3;
+  offset: IntVector3;
 }
 
 export default class WorldGeometry {
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
   world: World;
   partitionGeometries: PartitionGeometry[];
 
-  constructor(worldInfo: com.WorldInfo, world: World) {
+  constructor(worldInfo: WorldInfo, world: World) {
     this.worldInfo = worldInfo;
     this.world = world;
     this.partitionGeometries = <PartitionGeometry[]>new Array(world.getPartitionCapacity());

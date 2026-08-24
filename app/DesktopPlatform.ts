@@ -1,7 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
 import UserInterface from '../ui';
-import com from '../common/WorldInfo';
+import type { WorldInfo } from '../common/WorldInfo';
 import DesktopViewPoint from './DesktopViewPoint';
 import WorkerInterface from './WorkerInterface';
 
@@ -33,7 +33,7 @@ export default class DesktopPlatform {
     viewPort: HTMLDivElement,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
-    worldInfo: com.WorldInfo,
+    worldInfo: WorldInfo,
     workerInterface: WorkerInterface) {
     return new DesktopViewPoint(camera, light, viewPort, renderer, scene, worldInfo, workerInterface);
   }

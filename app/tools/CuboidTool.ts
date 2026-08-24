@@ -1,15 +1,15 @@
 /// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
-import com from '../../common/WorldInfo';
+import type { IntVector3 } from '../../common/WorldInfo';
 import { Context } from './ToolBase';
 
 export default class CuboidTool {
   context: Context;
 
   state = 'select-start';
-  startPos: com.IntVector3 = null;
-  endPos: com.IntVector3 = null;
-  heightPos: com.IntVector3 = null;
+  startPos: IntVector3 = null;
+  endPos: IntVector3 = null;
+  heightPos: IntVector3 = null;
   initialMouseHeight: number = null;
   relMouseHeight: number = null;
   cube: THREE.Mesh = null;
@@ -18,7 +18,7 @@ export default class CuboidTool {
     this.context = context;
   }
 
-  onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3): void {
+  onMouseClick(mouse: THREE.Vector2, pos: IntVector3): void {
     if (this.state === 'select-start' && pos) {
       this.startPos = pos;
       this.cube = this.addCube(pos);
@@ -42,7 +42,7 @@ export default class CuboidTool {
     }
   }
 
-  onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3): void {
+  onMouseMove(mouse: THREE.Vector2, pos: IntVector3): void {
     if (this.state === 'select-end' && pos) {
       this.endPos = pos.clone();
       this.endPos.y = this.startPos.y;
@@ -60,7 +60,7 @@ export default class CuboidTool {
     this.removeCube(this.cube);
   }
 
-  addCube(pos: com.IntVector3) {
+  addCube(pos: IntVector3) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
     const cube = new THREE.Mesh(geometry, material);
@@ -78,7 +78,7 @@ export default class CuboidTool {
     return cube;
   }
 
-  scaleCube(cube: THREE.Mesh, fromPos: com.IntVector3, toPos: com.IntVector3) {
+  scaleCube(cube: THREE.Mesh, fromPos: IntVector3, toPos: IntVector3) {
     fromPos = fromPos.clone();
     toPos = toPos.clone();
 

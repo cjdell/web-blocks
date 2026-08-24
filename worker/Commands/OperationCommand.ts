@@ -1,12 +1,12 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
+import type { WorldInfo, IntVector3 } from '../../common/WorldInfo';
 import UndoableCommand from './UndoableCommand';
 import Partition from '../Partition';
 import { Operation } from '../Operations/Operation';
 
 export interface CuboidCommandOptions {
-  start: com.IntVector3;
-  end: com.IntVector3;
+  start: IntVector3;
+  end: IntVector3;
   type: number;
   colour: number;
 }
@@ -14,7 +14,7 @@ export interface CuboidCommandOptions {
 export class OperationCommand extends UndoableCommand {
   operation: Operation;
 
-  constructor(worldInfo: com.WorldInfo, version: number, operation: Operation) {
+  constructor(worldInfo: WorldInfo, version: number, operation: Operation) {
     super(worldInfo, version, null);
 
     this.operation = operation;

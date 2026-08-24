@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import WorkerInterface from './WorkerInterface';
-import com from '../common/WorldInfo';
+import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
 import { PartitionGeometryResult } from '../worker/WorldGeometry';
 
 interface PartitionCacheItem {
@@ -14,7 +14,7 @@ const MaxLoadedPartitions = 64;
 
 export default class WorldViewer {
   private scene: THREE.Scene;
-  private worldInfo: com.WorldInfo;
+  private worldInfo: WorldInfo;
   private shaderMaterial: THREE.Material;
   private workerInterface: WorkerInterface;
   private partitionCaches: PartitionCacheItem[] = null;
@@ -22,7 +22,7 @@ export default class WorldViewer {
 
   constructor(
     scene: THREE.Scene,
-    worldInfo: com.WorldInfo,
+    worldInfo: WorldInfo,
     shaderMaterial: THREE.Material,
     workerInterface: WorkerInterface) {
 
@@ -52,7 +52,7 @@ export default class WorldViewer {
     // }, 1000);
   }
 
-  getMesh(bufferGeometry: THREE.BufferGeometry, offset: com.IntVector3): THREE.Mesh {
+  getMesh(bufferGeometry: THREE.BufferGeometry, offset: IntVector3): THREE.Mesh {
     const mesh = new THREE.Mesh(bufferGeometry, this.shaderMaterial);
 
     mesh.position.x += offset.x;

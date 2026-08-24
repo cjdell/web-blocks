@@ -1,5 +1,5 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
+import type { WorldInfo } from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 import ImprovedNoise from '../ImprovedNoise';
 import { BlockTypeIds } from '../../common/BlockTypeList';
@@ -11,7 +11,7 @@ export interface LandscapeOptions {
 export class LandscapeOperation extends Operation {
   options: LandscapeOptions;
 
-  constructor(worldInfo: com.WorldInfo, options: LandscapeOptions) {
+  constructor(worldInfo: WorldInfo, options: LandscapeOptions) {
     super(worldInfo);
 
     this.options = options;

@@ -1,5 +1,5 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
+import type { WorldInfo } from '../../common/WorldInfo';
 import { BlockTypeIds } from '../../common/BlockTypeList';
 import { Geometry } from './Geometry';
 import { FenceGeometry } from './FenceGeometry';
@@ -7,11 +7,11 @@ import { FenceGeometry } from './FenceGeometry';
 export class Loader {
   static Instance: Loader;
 
-  worldInfo: com.WorldInfo;
+  worldInfo: WorldInfo;
 
   geometries: { [index: number]: Geometry } = {};
 
-  constructor(worldInfo: com.WorldInfo) {
+  constructor(worldInfo: WorldInfo) {
     this.worldInfo = worldInfo;
 
     this.geometries[BlockTypeIds.Fence] = new FenceGeometry(this.worldInfo);

@@ -1,7 +1,7 @@
 /// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
 
-import com from '../../common/WorldInfo';
+import type { IntVector3 } from '../../common/WorldInfo';
 import { Context } from './ToolBase';
 
 export default class BlockTool {
@@ -11,7 +11,7 @@ export default class BlockTool {
     this.context = context;
   }
 
-  onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3, side: number): void {
+  onMouseClick(mouse: THREE.Vector2, pos: IntVector3, side: number): void {
     if (pos) {
       this.context.workerInterface.addBlock(pos, side, this.context.type);
     }
@@ -19,7 +19,7 @@ export default class BlockTool {
     this.context.finished();
   }
 
-  onMouseMove(_mouse: THREE.Vector2, _pos: com.IntVector3, _side: number): void {
+  onMouseMove(_mouse: THREE.Vector2, _pos: IntVector3, _side: number): void {
     return null;
   }
 

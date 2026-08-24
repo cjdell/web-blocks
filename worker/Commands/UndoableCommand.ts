@@ -1,5 +1,5 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
+import type { WorldInfo } from '../../common/WorldInfo';
 import Command from './Command';
 import Partition from '../Partition';
 
@@ -17,7 +17,7 @@ interface PartitionSnapshots {
 export default class UndoableCommand extends Command {
   snapshots: PartitionSnapshots;
 
-  constructor(worldInfo: com.WorldInfo, version: number, options: any) {
+  constructor(worldInfo: WorldInfo, version: number, options: any) {
     super(worldInfo, version, options);
 
     this.snapshots = {};

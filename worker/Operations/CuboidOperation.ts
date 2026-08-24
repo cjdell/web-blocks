@@ -1,10 +1,10 @@
 /// <reference path="../../typings/index.d.ts" />
-import com from '../../common/WorldInfo';
+import { IntVector3, ensureStartEndOrder, type WorldInfo } from '../../common/WorldInfo';
 import { Operation, OperationResult } from './Operation';
 
 export interface CuboidOptions {
-  start: com.IntVector3;
-  end: com.IntVector3;
+  start: IntVector3;
+  end: IntVector3;
   type: number;
   colour: number;
 }
@@ -12,12 +12,12 @@ export interface CuboidOptions {
 export class CuboidOperation extends Operation {
   options: CuboidOptions;
 
-  constructor(worldInfo: com.WorldInfo, options: CuboidOptions) {
+  constructor(worldInfo: WorldInfo, options: CuboidOptions) {
     super(worldInfo);
 
     this.options = options;
 
-    [this.options.start, this.options.end] = com.ensureStartEndOrder(this.options.start, this.options.end);
+    [this.options.start, this.options.end] = ensureStartEndOrder(this.options.start, this.options.end);
   }
 
   getAffectedPartitionIndices(): number[] {
@@ -43,7 +43,7 @@ export class CuboidOperation extends Operation {
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
-    const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new com.IntVector3(1, 1, 1));
+    const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new IntVector3(1, 1, 1));
 
     // We only want the start and end that exists within the boundaries of this partition
     const start = this.options.start.clamp(pstart, pend);

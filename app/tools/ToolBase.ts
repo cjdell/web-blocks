@@ -1,6 +1,6 @@
 /// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
-import com from '../../common/WorldInfo';
+import type { IntVector3 } from '../../common/WorldInfo';
 import WorkerInterface from '../WorkerInterface';
 
 export interface Context {
@@ -12,7 +12,7 @@ export interface Context {
 }
 
 export interface Tool {
-  onMouseClick(mouse: THREE.Vector2, pos: com.IntVector3, side: number): void;
-  onMouseMove(mouse: THREE.Vector2, pos: com.IntVector3, side: number): void;
+  onMouseClick(mouse: THREE.Vector2, pos: IntVector3, side: number): void;
+  onMouseMove(mouse: THREE.Vector2, pos: IntVector3, side: number): void;
   cancel(): void;
 }

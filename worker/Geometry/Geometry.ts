@@ -1,12 +1,11 @@
 /// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
-import com from '../../common/WorldInfo';
-
+import type { WorldInfo } from '../../common/WorldInfo';
 export class Geometry {
-  worldInfo: com.WorldInfo = null;
+  worldInfo: WorldInfo = null;
   template: THREE.BufferGeometry = null;
 
-  constructor(worldInfo: com.WorldInfo) {
+  constructor(worldInfo: WorldInfo) {
     this.worldInfo = worldInfo;
   }
 

@@ -1,7 +1,7 @@
 /// <reference path="../typings/index.d.ts" />
 const _self = <any>self;
 
-import com            from '../common/WorldInfo';
+import { IntVector3, WorldInfo } from '../common/WorldInfo';
 import { throttle }   from '../common/Throttle';
 import World          from './World';
 import WorldGeometry  from './WorldGeometry';
@@ -40,9 +40,9 @@ const checkForChangedPartitions = throttle(() => {
 }, 100);
 
 const init = (invocation: Invocation<void>): void => {
-  const worldInfo = new com.WorldInfo({
-    worldDimensionsInPartitions: new com.IntVector3(32, 1, 32),
-    partitionDimensionsInBlocks: new com.IntVector3(32, 128, 32),
+  const worldInfo = new WorldInfo({
+    worldDimensionsInPartitions: new IntVector3(32, 1, 32),
+    partitionDimensionsInBlocks: new IntVector3(32, 128, 32),
     partitionBoundaries: null
   });
 
@@ -136,7 +136,7 @@ const getPartition = (invocation: Invocation<{ index: number }>) => {
   );
 };
 
-const getBlock = (invocation: Invocation<{ pos: com.IntVector3 }>) => {
+const getBlock = (invocation: Invocation<{ pos: IntVector3 }>) => {
   const { x, y, z } = invocation.data.pos;
 
   const type = world.getBlock(x, y, z);
@@ -176,7 +176,7 @@ const getMousePosition = () => {
   return player.mousePosition;
 };
 
-const setMousePosition = (invocation: Invocation<{ pos: com.IntVector3, side: number }>) => {
+const setMousePosition = (invocation: Invocation<{ pos: IntVector3, side: number }>) => {
   player.mousePosition = invocation.data;
 };
 
@@ -218,7 +218,7 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'getBlock') {
-    return getBlock(e.data as Invocation<{ pos: com.IntVector3 }>);
+    return getBlock(e.data as Invocation<{ pos: IntVector3 }>);
   }
 
   if (invocation.action === 'setBlocks') {
@@ -246,7 +246,7 @@ self.onmessage = (e) => {
   }
 
   if (invocation.action === 'setMousePosition') {
-    return setMousePosition(e.data as Invocation<{ pos: com.IntVector3, side: number }>);
+    return setMousePosition(e.data as Invocation<{ pos: IntVector3, side: number }>);
   }
 
   if (invocation.action === 'rightClick') {
