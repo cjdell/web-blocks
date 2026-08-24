@@ -160,6 +160,12 @@ each step.
    `Array.from`/object spread, and a tiny hand-rolled `throttle`/`debounce`
    in `common/Throttle.ts`. The dependency, its 2015 typings, and the last
    `require()` in the tree are gone; the worker bundle shrank further.
+   - Footnote: `_.sortBy(loaded, 'modified')` became
+     `toSorted((a, b) => a.modified.getTime() - b.modified.getTime())` —
+     which crashed on reload for users with saved scripts (`modified`
+     round-trips through localStorage as an ISO string). Caught in the user's
+     browser, fixed in `ScriptStorage.load()`; see the field-bug note in
+     P2.7 and the standing rule in §4.
 
 5. **Convert `common/WorldInfo.ts` from a `namespace` to ES module exports.**
    — done. ~20 import sites updated to named imports;
@@ -206,6 +212,18 @@ each step.
    - `shims.d.ts` added: the 2015 typings snapshot had declared the raw-text
      `*.js` sample imports; a 12-line ambient shim replaces it (webpack
      inlines `samples/*.js` with `type: "text"`).
+   - **Field bug caught only in the user's browser:** after the P2 pass the
+     app crashed on reload for anyone who had ever saved a script —
+     `ScriptStorage.load()` threw `t.modified.getTime is not a function`
+     (and the module-init abort cascaded into `App is not defined`). Cause:
+     `save()` JSON-stringifies the script list, which turns each `Date`
+     `modified` into an ISO string; the re-parse on load then hit the
+     P2.4 `toSorted(... .getTime())` comparator. Fresh headless profiles
+     have empty localStorage, so every automated run was clean — the user's
+     browser was the only environment with round-tripped state. Fix:
+     `load()` restores `modified` to a `Date` while parsing; `test:ui`
+     gained a save-then-reload step (9) so the round-trip is covered going
+     forward. This is why §4 now has a standing rule.
 
 ### P3 — Product & architecture decisions
 
@@ -228,7 +246,7 @@ each step.
    - Consider `esbuild`/`swc` for faster builds and better tree-shaking of
      the three.js import.
 
-10. **CI.** There is no CI. Add a GitHub Actions workflow running
+10. [SKIP] **CI.** There is no CI. Add a GitHub Actions workflow running
     `yarn install --frozen-lockfile`, `yarn typecheck`, `yarn lint`,
     `yarn test`, and `yarn build`. This is cheap and prevents regressions
     like the one where a bare `tsc` was silently broken.
@@ -263,3 +281,13 @@ yarn test:ui    # playwright headless   → 11/11 (boots, world renders, worker 
 
 The remaining webpack warnings are asset-size advisories for `app.js` only
 (see P3.9) and are expected given the current bundle sizes.
+
+**Standing rule (added 2026‑08‑24 after the ScriptStorage reload crash):**
+after any big operation — a dependency upgrade, a broad typing change, or a
+refactor that touches persisted state or the worker boundary — do not stop at
+`typecheck`/`lint`/`build`. Run the headless browser check (`yarn test:ui`),
+and if the change touches state that round-trips through JSON (localStorage,
+postMessage), explicitly verify the reload/receive path: class identity does
+not survive a round-trip (`Date` → ISO string, `Vector3` → plain object). The
+P2 pass passed every static gate, yet the app still crashed on first reload
+for anyone who had ever saved a script — only the browser caught it.

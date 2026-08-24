@@ -12,7 +12,9 @@
  *   4. The Console tab runs a command end-to-end (main thread → worker →
  *      React re-render), proving the worker pipeline is alive.
  *   5. The Script tab (MUI buttons / tabs) still reacts to clicks.
- *   6. No uncaught page errors, no console errors, no failed asset loads.
+ *   6. Saving a script and reloading remounts the app cleanly (the
+ *      localStorage round-trip must restore the script's Date).
+ *   7. No uncaught page errors, no console errors, no failed asset loads.
  *
  * This is deliberately a small sanity check, not a comprehensive test suite.
  *
@@ -328,6 +330,15 @@ async function main() {
       // The editor div gets the .hide class (display: none), so wait for it
       // to be attached rather than visible.
       await page.waitForSelector('.codeEditor.hide', { state: 'attached', timeout: 5000 });
+    });
+
+    await check('app remounts cleanly after reload (localStorage round-trip)', async () => {
+      // Saving a script persists JSON to localStorage, where the script's
+      // Date becomes an ISO string. A reload re-parses it — ScriptStorage
+      // must restore the Date or the sort in load() throws and the whole
+      // app fails to mount. (Regression: caught via the user's browser.)
+      await page.reload({ waitUntil: 'load', timeout: 30000 });
+      await page.waitForSelector('.toolBox ul.small li', { state: 'visible', timeout: 20000 });
     });
 
     await check('no uncaught page errors', async () => {

@@ -121,7 +121,14 @@ export default class ScriptStorage {
     const scripts = window.localStorage.getItem('scripts');
 
     if (scripts) {
-      loaded = JSON.parse(scripts) as Script[];
+      // JSON.stringify() turns the Date into an ISO string, so restore the
+      // Date on load — otherwise modified.getTime() in the sort below
+      // throws on scripts saved in a previous session, and the throw
+      // aborts module init so the app never mounts at all.
+      loaded = (JSON.parse(scripts) as Script[]).map(script => ({
+        ...script,
+        modified: new Date(script.modified),
+      }));
     }
 
     loaded = loaded.concat(samples);
