@@ -34,8 +34,17 @@ export default class DesktopPlatform {
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     worldInfo: WorldInfo,
-    workerInterface: WorkerInterface) {
-    return new DesktopViewPoint(camera, light, viewPort, renderer, scene, worldInfo, workerInterface);
+    workerInterface: WorkerInterface,
+  ) {
+    return new DesktopViewPoint(
+      camera,
+      light,
+      viewPort,
+      renderer,
+      scene,
+      worldInfo,
+      workerInterface,
+    );
   }
 
   getUserInterface() {

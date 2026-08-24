@@ -27,7 +27,7 @@ export default class Command {
   toJSON(): any {
     return {
       name: (this.constructor as any).name,
-      options: this.options
+      options: this.options,
     };
   }
 }

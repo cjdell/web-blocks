@@ -21,45 +21,47 @@ export default class Culling {
     frustum.setFromProjectionMatrix(
       new THREE.Matrix4().multiplyMatrices(
         this.camera.projectionMatrix,
-        this.camera.matrixWorldInverse
-      )
+        this.camera.matrixWorldInverse,
+      ),
     );
 
-    return this.worldInfo.partitionBoundaries.filter(partition => {
-      const c1 = partition.points[0];
-      const c2 = partition.points[1];
+    return this.worldInfo.partitionBoundaries
+      .filter((partition) => {
+        const c1 = partition.points[0];
+        const c2 = partition.points[1];
 
-      const box = new THREE.Box3(
-        new THREE.Vector3(c1.x, c1.y, c1.z),
-        new THREE.Vector3(c2.x, c2.y, c2.z)
-      );
+        const box = new THREE.Box3(
+          new THREE.Vector3(c1.x, c1.y, c1.z),
+          new THREE.Vector3(c2.x, c2.y, c2.z),
+        );
 
-      const cam2d = this.camera.position.clone().setY(0);
-      // Box3.getCenter now requires a target vector.
-      const partCentre = box.getCenter(new THREE.Vector3()).setY(0);
+        const cam2d = this.camera.position.clone().setY(0);
+        // Box3.getCenter now requires a target vector.
+        const partCentre = box.getCenter(new THREE.Vector3()).setY(0);
 
-      const dist = cam2d.distanceTo(partCentre);
+        const dist = cam2d.distanceTo(partCentre);
 
-      if (dist < 128) {
-        if (dist < 64) {
-          // Immediate proximity
-          return true;
+        if (dist < 128) {
+          if (dist < 64) {
+            // Immediate proximity
+            return true;
+          }
+
+          if (frustum.intersectsBox(box)) {
+            return true;
+          }
         }
 
-        if (frustum.intersectsBox(box)) {
-          return true;
-        }
-      }
-
-      return false;
-    }).map(partition => partition.partitionIndex);
+        return false;
+      })
+      .map((partition) => partition.partitionIndex);
   }
 
   getNewlyVisiblePartitions() {
     const visiblePartitions = this.getVisiblePartitions();
 
-    const toBeAdded = visiblePartitions.filter(index => !this.active.includes(index));
-    const toBeRemoved = this.active.filter(index => !visiblePartitions.includes(index));
+    const toBeAdded = visiblePartitions.filter((index) => !this.active.includes(index));
+    const toBeRemoved = this.active.filter((index) => !visiblePartitions.includes(index));
 
     this.active = visiblePartitions;
 

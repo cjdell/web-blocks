@@ -25,13 +25,19 @@ export default class UndoableCommand extends Command {
   protected allocateSnapshot(partition: Partition, blocks: number): void {
     const snapshot: PartitionSnapshot = {
       indices: new Int32Array(blocks),
-      blockData: new Uint8Array(blocks * 2)
+      blockData: new Uint8Array(blocks * 2),
     };
 
     this.snapshots[partition.index] = snapshot;
   }
 
-  protected setBlock(partition: Partition, blockNumber: number, wpos: Int32Array, type: number, colour: number): void {
+  protected setBlock(
+    partition: Partition,
+    blockNumber: number,
+    wpos: Int32Array,
+    type: number,
+    colour: number,
+  ): void {
     const snapshot = this.snapshots[partition.index];
 
     this.worldInfo.rposw2(rpos, wpos);

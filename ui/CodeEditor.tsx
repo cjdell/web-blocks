@@ -14,7 +14,7 @@ interface CodeEditorProps {
 
 interface State {
   mode: 'console' | 'script';
-  lines: { line: string, type: string, index: number }[];
+  lines: { line: string; type: string; index: number }[];
   commands: string[];
   scriptName: string;
   saveAsName: string;
@@ -37,7 +37,7 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
       scriptName: 'Scratch Pad',
       saveAsName: '',
       scriptPickerDialogOpen: false,
-      saveAsDialogOpen: false
+      saveAsDialogOpen: false,
     };
 
     this.keyDown = this.keyDown.bind(this);
@@ -103,7 +103,7 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
   addLine(text: string, type: string) {
     const lines = this.state.lines;
 
-    text.split('\n').forEach(line => {
+    text.split('\n').forEach((line) => {
       lines.push({ line, type, index: this.state.lines.length });
     });
 
@@ -172,7 +172,7 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
   saveAsClicked() {
     this.setState({
       saveAsName: this.state.scriptName,
-      saveAsDialogOpen: true
+      saveAsDialogOpen: true,
     } as State);
 
     // saveAsNameInput loses focus on typing if using React event handling....
@@ -193,7 +193,7 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
 
     this.setState({
       scriptName: this.state.saveAsName,
-      saveAsDialogOpen: false
+      saveAsDialogOpen: false,
     } as State);
 
     if (scriptTextarea) {
@@ -247,7 +247,7 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
 
     this.setState({
       scriptName: name,
-      scriptPickerDialogOpen: false
+      scriptPickerDialogOpen: false,
     } as State);
 
     const script = this.props.scriptStorage.getScript(name);
@@ -266,18 +266,32 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
   }
 
   render() {
-    const items = this.state.lines.map((line: { type: string, line: string }, index: number) => {
-      return <li key={index} className={line.type} onClick={() => this.onLineClick(line.line)}>{line.line}</li>;
+    const items = this.state.lines.map((line: { type: string; line: string }, index: number) => {
+      return (
+        <li key={index} className={line.type} onClick={() => this.onLineClick(line.line)}>
+          {line.line}
+        </li>
+      );
     });
 
     const consoleTab = (
       <div className="codeView console">
-        <ul ref={el => { this.linesUl = el; }} onClick={this.linesClick}>
+        <ul
+          ref={(el) => {
+            this.linesUl = el;
+          }}
+          onClick={this.linesClick}
+        >
           {items}
-          <li><textarea
-            ref={el => { this.consoleTextarea = el; }}
-            onKeyDown={this.keyDown}
-            onKeyUp={this.keyUp} /></li>
+          <li>
+            <textarea
+              ref={(el) => {
+                this.consoleTextarea = el;
+              }}
+              onKeyDown={this.keyDown}
+              onKeyUp={this.keyUp}
+            />
+          </li>
         </ul>
       </div>
     );
@@ -293,20 +307,24 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
         </Toolbar>
 
         <h3>{this.state.scriptName || '[New Script]'}</h3>
-        <textarea ref={el => { this.scriptTextarea = el; }}></textarea>
+        <textarea
+          ref={(el) => {
+            this.scriptTextarea = el;
+          }}
+        ></textarea>
       </div>
     );
 
     return (
-      <div className={'codeEditor ' + (this.props.visible ? 'show' : 'hide') }>
-
+      <div className={'codeEditor ' + (this.props.visible ? 'show' : 'hide')}>
         <Tabs
           active={this.state.mode}
-          onTabClick={id => this.tabClick(id as 'console' | 'script')}
+          onTabClick={(id) => this.tabClick(id as 'console' | 'script')}
           items={[
             { id: 'console', label: 'Console', content: consoleTab },
             { id: 'script', label: 'Script', content: scriptTab },
-          ]} />
+          ]}
+        />
 
         <Dialog
           open={this.state.scriptPickerDialogOpen}
@@ -317,12 +335,15 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
               key="cancel"
               secondary
               label="Cancel"
-              onClick={this.scriptPickerDialogClosing} />
-          ]}>
+              onClick={this.scriptPickerDialogClosing}
+            />,
+          ]}
+        >
           <ScriptPicker
             visible={true}
             scriptStorage={this.props.scriptStorage}
-            onScriptChosen={this.scriptChosen} />
+            onScriptChosen={this.scriptChosen}
+          />
         </Dialog>
 
         <Dialog
@@ -330,19 +351,12 @@ class CodeEditor extends React.Component<CodeEditorProps, State> {
           onRequestClose={this.saveAsDialogClosing}
           title="Save as..."
           actions={[
-            <Button
-              key="cancel"
-              secondary
-              label="Cancel"
-              onClick={this.saveAsDialogClosing} />,
-            <Button
-              key="save"
-              label="Save"
-              onClick={this.saveAsDialogSaveClicked} />
-          ]}>
+            <Button key="cancel" secondary label="Cancel" onClick={this.saveAsDialogClosing} />,
+            <Button key="save" label="Save" onClick={this.saveAsDialogSaveClicked} />,
+          ]}
+        >
           <input id="saveAsNameInput" className="dialogInput" type="text" />
         </Dialog>
-
       </div>
     );
   }

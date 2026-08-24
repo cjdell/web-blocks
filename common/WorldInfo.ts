@@ -56,7 +56,9 @@ export class IntVector3 {
   }
 
   clamp(min: IntVector3, max: IntVector3) {
-    let x = this.x, y = this.y, z = this.z;
+    let x = this.x,
+      y = this.y,
+      z = this.z;
 
     if (this.x < min.x) {
       x = min.x;
@@ -89,9 +91,15 @@ export class WorldInfo {
   worldCapacity: number;
   worldPartitionCapacity: number;
 
-  WPX = 0 | 0; WPY = 0 | 0; WPZ = 0 | 0;  // World partition dimensions
-  PBX = 0 | 0; PBY = 0 | 0; PBZ = 0 | 0;  // Partition block dimensions
-  WBX = 0 | 0; WBY = 0 | 0; WBZ = 0 | 0;  // World block dimensions
+  WPX = 0 | 0;
+  WPY = 0 | 0;
+  WPZ = 0 | 0; // World partition dimensions
+  PBX = 0 | 0;
+  PBY = 0 | 0;
+  PBZ = 0 | 0; // Partition block dimensions
+  WBX = 0 | 0;
+  WBY = 0 | 0;
+  WBZ = 0 | 0; // World block dimensions
 
   constructor(vars: WorldInfoInterface) {
     const wdip = vars.worldDimensionsInPartitions;
@@ -109,12 +117,25 @@ export class WorldInfo {
     this.PBY = this.log2(pdib.y);
     this.PBZ = this.log2(pdib.z);
 
-    this.WBX = this.WPX + this.PBX; this.WBY = this.WPY + this.PBY; this.WBZ = this.WPZ + this.PBZ;  // World block dimensions
+    this.WBX = this.WPX + this.PBX;
+    this.WBY = this.WPY + this.PBY;
+    this.WBZ = this.WPZ + this.PBZ; // World block dimensions
 
-    this.worldDimensionsInBlocks = this.partitionDimensionsInBlocks.mul(this.worldDimensionsInPartitions);
-    this.partitionCapacity = this.partitionDimensionsInBlocks.x * this.partitionDimensionsInBlocks.y * this.partitionDimensionsInBlocks.z;
-    this.worldCapacity = this.worldDimensionsInBlocks.x * this.worldDimensionsInBlocks.y * this.worldDimensionsInBlocks.z;
-    this.worldPartitionCapacity = this.worldDimensionsInPartitions.x * this.worldDimensionsInPartitions.y * this.worldDimensionsInPartitions.z;
+    this.worldDimensionsInBlocks = this.partitionDimensionsInBlocks.mul(
+      this.worldDimensionsInPartitions,
+    );
+    this.partitionCapacity =
+      this.partitionDimensionsInBlocks.x *
+      this.partitionDimensionsInBlocks.y *
+      this.partitionDimensionsInBlocks.z;
+    this.worldCapacity =
+      this.worldDimensionsInBlocks.x *
+      this.worldDimensionsInBlocks.y *
+      this.worldDimensionsInBlocks.z;
+    this.worldPartitionCapacity =
+      this.worldDimensionsInPartitions.x *
+      this.worldDimensionsInPartitions.y *
+      this.worldDimensionsInPartitions.z;
   }
 
   log2(num: number): number {
@@ -250,12 +271,12 @@ export interface ChangeHandlerOptions {
 export interface Change {
   position: THREE.Vector3;
   from: {
-    type: number,
-    colour: number
+    type: number;
+    colour: number;
   };
   to: {
-    type: number,
-    colour: number
+    type: number;
+    colour: number;
   };
 }
 

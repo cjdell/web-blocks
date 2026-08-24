@@ -24,22 +24,29 @@ export default class CuboidTool {
       this.startPos = pos;
       this.cube = this.addCube(pos);
       this.state = 'select-end';
-
     } else if (this.state === 'select-end' && pos) {
       // select-end is only reachable after select-start set startPos/cube.
       this.endPos = pos.clone();
       this.endPos.y = this.startPos!.y;
       this.heightPos = pos.clone();
       this.scaleCube(this.cube!, this.startPos!, this.endPos);
-      const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(this.endPos.x, this.endPos.z).y;
+      const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(
+        this.endPos.x,
+        this.endPos.z,
+      ).y;
       this.initialMouseHeight = currentMouseHeight;
       this.relMouseHeight = 0;
       this.state = 'select-height';
-
     } else if (this.state === 'select-height') {
       this.context.finished();
       this.heightPos!.y = this.endPos!.y + this.relMouseHeight!;
-      this.context.workerInterface.setBlocks(this.startPos!, this.heightPos!, this.context.type, 0, true);
+      this.context.workerInterface.setBlocks(
+        this.startPos!,
+        this.heightPos!,
+        this.context.type,
+        0,
+        true,
+      );
       this.removeCube(this.cube);
     }
   }
@@ -49,9 +56,11 @@ export default class CuboidTool {
       this.endPos = pos.clone();
       this.endPos.y = this.startPos!.y;
       this.scaleCube(this.cube!, this.startPos!, this.endPos);
-
     } else if (this.state === 'select-height') {
-      const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(this.endPos!.x, this.endPos!.z).y;
+      const currentMouseHeight = this.context.getPositionOfMouseAlongXZPlane(
+        this.endPos!.x,
+        this.endPos!.z,
+      ).y;
       this.relMouseHeight = currentMouseHeight - this.initialMouseHeight!;
       this.heightPos!.y = this.endPos!.y + this.relMouseHeight;
       this.scaleCube(this.cube!, this.startPos!, this.heightPos!);

@@ -27,20 +27,20 @@ export default class WorldViewer {
     scene: THREE.Scene,
     worldInfo: WorldInfo,
     shaderMaterial: THREE.Material,
-    workerInterface: WorkerInterface) {
-
+    workerInterface: WorkerInterface,
+  ) {
     this.scene = scene;
     this.worldInfo = worldInfo;
     this.shaderMaterial = shaderMaterial;
     this.workerInterface = workerInterface;
 
-    workerInterface.addChangeListener(data => {
+    workerInterface.addChangeListener((data) => {
       const changeIndices = data.changes;
       const loadedIndices = this.getLoadedPartitionIndices();
 
-      const toUpdate = changeIndices.filter(index => loadedIndices.includes(index));
+      const toUpdate = changeIndices.filter((index) => loadedIndices.includes(index));
 
-      toUpdate.forEach(index => this.updatePartition(index));
+      toUpdate.forEach((index) => this.updatePartition(index));
     });
 
     this.partitionCaches = new Array<PartitionCacheItem>(this.worldInfo.partitionCapacity);
@@ -74,7 +74,7 @@ export default class WorldViewer {
       partitionCache.used = Date.now();
       return Promise.resolve();
     } else {
-      return this.workerInterface.getPartition(pindex).then(data => {
+      return this.workerInterface.getPartition(pindex).then((data) => {
         // console.log('Generating partition', pindex);
         return this.gotPartition(data.geo, pindex);
       });
@@ -82,7 +82,7 @@ export default class WorldViewer {
   }
 
   updatePartition(pindex: number) {
-    this.workerInterface.getPartition(pindex).then(data => {
+    this.workerInterface.getPartition(pindex).then((data) => {
       // console.log('Updating partition', pindex);
       return this.gotPartition(data.geo, pindex);
     });
@@ -90,8 +90,8 @@ export default class WorldViewer {
 
   getLoadedPartitionIndices() {
     return this.partitionCaches
-      .filter(partitionCache => partitionCache && partitionCache.mesh !== null)
-      .map(partitionCache => partitionCache.index);
+      .filter((partitionCache) => partitionCache && partitionCache.mesh !== null)
+      .map((partitionCache) => partitionCache.index);
   }
 
   gotPartition(geo: PartitionGeometryResult, pindex: number) {
@@ -121,7 +121,7 @@ export default class WorldViewer {
       index: pindex,
       mesh,
       visible: true,
-      used: Date.now()
+      used: Date.now(),
     };
 
     this.partitionCaches[pindex] = partitionCache;
@@ -145,7 +145,7 @@ export default class WorldViewer {
     return Promise.resolve(null);
   }
 
-  exposeNewPartitions(changes: { toBeAdded: number[], toBeRemoved: number[] }) {
+  exposeNewPartitions(changes: { toBeAdded: number[]; toBeRemoved: number[] }) {
     if (this.loading) {
       // console.log('Still loading...');
       return null;
@@ -153,28 +153,34 @@ export default class WorldViewer {
 
     this.loading = true;
 
-    return Promise.resolve().then(() => {
-      return Promise.all(changes.toBeAdded.map(pindex => this.addPartition(pindex)));
-    }).then(() => {
-      return Promise.all(changes.toBeRemoved.map(pindex => this.removePartition(pindex)));
-    }).then(() => {
-      if (changes.toBeAdded.length || changes.toBeRemoved.length) {
-        const loadedPartition = this.partitionCaches.filter(c => !!c.mesh);
+    return Promise.resolve()
+      .then(() => {
+        return Promise.all(changes.toBeAdded.map((pindex) => this.addPartition(pindex)));
+      })
+      .then(() => {
+        return Promise.all(changes.toBeRemoved.map((pindex) => this.removePartition(pindex)));
+      })
+      .then(() => {
+        if (changes.toBeAdded.length || changes.toBeRemoved.length) {
+          const loadedPartition = this.partitionCaches.filter((c) => !!c.mesh);
 
-        if (loadedPartition.length > MaxLoadedPartitions) {
-          loadedPartition.toSorted((a, b) => a.used - b.used).forEach((partitionCache, i) => {
-            if (i < loadedPartition.length - MaxLoadedPartitions && !partitionCache.visible) {
-              partitionCache.mesh = null;
-              // console.log('Cleaned', partitionCache.index, i);
-            }
-          });
+          if (loadedPartition.length > MaxLoadedPartitions) {
+            loadedPartition
+              .toSorted((a, b) => a.used - b.used)
+              .forEach((partitionCache, i) => {
+                if (i < loadedPartition.length - MaxLoadedPartitions && !partitionCache.visible) {
+                  partitionCache.mesh = null;
+                  // console.log('Cleaned', partitionCache.index, i);
+                }
+              });
+          }
         }
-      }
 
-      this.loading = false;
-    }).catch(() => {
-      this.loading = false;
-    });
+        this.loading = false;
+      })
+      .catch(() => {
+        this.loading = false;
+      });
   }
 
   addSky() {
@@ -190,8 +196,8 @@ export default class WorldViewer {
 
     plane.rotation.x = Math.PI / 2;
 
-    plane.scale.x = (this.worldInfo.worldDimensionsInBlocks.x * 100);
-    plane.scale.y = (this.worldInfo.worldDimensionsInBlocks.z * 100);
+    plane.scale.x = this.worldInfo.worldDimensionsInBlocks.x * 100;
+    plane.scale.y = this.worldInfo.worldDimensionsInBlocks.z * 100;
 
     this.scene.add(plane);
   }

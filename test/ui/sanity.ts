@@ -62,7 +62,9 @@ function startServer(root: string): Promise<number> {
         return;
       }
 
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(filePath)] ?? 'application/octet-stream' });
+      res.writeHead(200, {
+        'Content-Type': MIME[path.extname(filePath)] ?? 'application/octet-stream',
+      });
       res.end(data);
     });
   });
@@ -88,43 +90,48 @@ interface PixelStats {
 
 /** Read pixels from the live WebGL canvas (default framebuffer). */
 function readCanvasPixels(page: Page): Promise<PixelStats> {
-  return page.evaluate(() => new Promise<PixelStats>(resolve => {
-    const canvas = document.querySelector<HTMLCanvasElement>('.viewPort canvas');
-    if (!canvas) return resolve({ ok: false, reason: 'no canvas in .viewPort' });
+  return page.evaluate(
+    () =>
+      new Promise<PixelStats>((resolve) => {
+        const canvas = document.querySelector<HTMLCanvasElement>('.viewPort canvas');
+        if (!canvas) return resolve({ ok: false, reason: 'no canvas in .viewPort' });
 
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-    if (!gl) return resolve({ ok: false, reason: 'no WebGL context on canvas' });
-    if (gl.isContextLost()) return resolve({ ok: false, reason: 'WebGL context lost' });
+        const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+        if (!gl) return resolve({ ok: false, reason: 'no WebGL context on canvas' });
+        if (gl.isContextLost()) return resolve({ ok: false, reason: 'WebGL context lost' });
 
-    // The renderer is created with preserveDrawingBuffer: false, so the
-    // back buffer is cleared after compositing. Read inside a
-    // requestAnimationFrame callback — the render loop's callback (registered
-    // at boot) has already run in this frame, so the buffer still holds the
-    // current frame.
-    requestAnimationFrame(() => {
-      const width = canvas.width || 1;
-      const height = canvas.height || 1;
-      const stride = 4;
-      const buf = new Uint8Array(width * height * stride);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+        // The renderer is created with preserveDrawingBuffer: false, so the
+        // back buffer is cleared after compositing. Read inside a
+        // requestAnimationFrame callback — the render loop's callback (registered
+        // at boot) has already run in this frame, so the buffer still holds the
+        // current frame.
+        requestAnimationFrame(() => {
+          const width = canvas.width || 1;
+          const height = canvas.height || 1;
+          const stride = 4;
+          const buf = new Uint8Array(width * height * stride);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
 
-      let min = 255;
-      let max = 0;
-      let nonWhite = 0;
+          let min = 255;
+          let max = 0;
+          let nonWhite = 0;
 
-      for (let i = 0; i < buf.length; i += stride) {
-        const r = buf[i], g = buf[i + 1], b = buf[i + 2];
-        if (r < 250 || g < 250 || b < 250) nonWhite += 1;
-        const lo = Math.min(r, g, b);
-        const hi = Math.max(r, g, b);
-        if (lo < min) min = lo;
-        if (hi > max) max = hi;
-      }
+          for (let i = 0; i < buf.length; i += stride) {
+            const r = buf[i],
+              g = buf[i + 1],
+              b = buf[i + 2];
+            if (r < 250 || g < 250 || b < 250) nonWhite += 1;
+            const lo = Math.min(r, g, b);
+            const hi = Math.max(r, g, b);
+            if (lo < min) min = lo;
+            if (hi > max) max = hi;
+          }
 
-      resolve({ ok: true, min, max, nonWhite, total: width * height });
-    });
-  }));
+          resolve({ ok: true, min, max, nonWhite, total: width * height });
+        });
+      }),
+  );
 }
 
 async function main() {
@@ -155,12 +162,14 @@ async function main() {
   const failedRequests: string[] = [];
   const notFound: string[] = [];
 
-  page.on('pageerror', err => pageErrors.push(String(err)));
-  page.on('console', msg => {
+  page.on('pageerror', (err) => pageErrors.push(String(err)));
+  page.on('console', (msg) => {
     if (msg.type() === 'error') consoleErrors.push(msg.text());
   });
-  page.on('requestfailed', req => failedRequests.push(`${req.method()} ${req.url()} (${req.failure()?.errorText ?? 'failed'})`));
-  page.on('response', res => {
+  page.on('requestfailed', (req) =>
+    failedRequests.push(`${req.method()} ${req.url()} (${req.failure()?.errorText ?? 'failed'})`),
+  );
+  page.on('response', (res) => {
     if (res.status() >= 400 && !res.url().includes('favicon.ico')) {
       notFound.push(`${res.status()} ${res.url()}`);
     }
@@ -203,7 +212,13 @@ async function main() {
 
     await check('React app mounts and main UI regions render', async () => {
       await page.waitForSelector('.app', { state: 'visible', timeout: 15000 });
-      for (const selector of ['.viewPort', '.toolBox', '.helpBar', '.boundScriptBar', '.codeButton']) {
+      for (const selector of [
+        '.viewPort',
+        '.toolBox',
+        '.helpBar',
+        '.boundScriptBar',
+        '.codeButton',
+      ]) {
         const visible = await page.locator(selector).first().isVisible();
         expect(visible, `missing or invisible: ${selector}`);
       }
@@ -228,9 +243,17 @@ async function main() {
       expect(stats.ok, `WebGL check failed: ${stats.reason ?? 'unknown'}`);
 
       const coverage = (stats.nonWhite ?? 0) / (stats.total ?? 1);
-      console.log(`     canvas ${Math.round(Math.sqrt(stats.total ?? 1))}² px, pixel range ${stats.min}–${stats.max}, non-white ${(coverage * 100).toFixed(1)}%`);
-      expect((stats.max ?? 0) > (stats.min ?? 255), 'canvas is a single uniform colour (nothing drawn)');
-      expect(coverage > 0.02, `only ${(coverage * 100).toFixed(1)}% of the canvas is non-white — the world does not appear to be rendering`);
+      console.log(
+        `     canvas ${Math.round(Math.sqrt(stats.total ?? 1))}² px, pixel range ${stats.min}–${stats.max}, non-white ${(coverage * 100).toFixed(1)}%`,
+      );
+      expect(
+        (stats.max ?? 0) > (stats.min ?? 255),
+        'canvas is a single uniform colour (nothing drawn)',
+      );
+      expect(
+        coverage > 0.02,
+        `only ${(coverage * 100).toFixed(1)}% of the canvas is non-white — the world does not appear to be rendering`,
+      );
     });
 
     await check('code editor toggles open with < Code >', async () => {
@@ -249,8 +272,10 @@ async function main() {
       await textarea.press('Enter');
 
       await page.waitForFunction(
-        () => Array.from(document.querySelectorAll('.codeView.console li.answer'))
-          .some(li => (li.textContent ?? '').includes('Hi there!')),
+        () =>
+          Array.from(document.querySelectorAll('.codeView.console li.answer')).some((li) =>
+            (li.textContent ?? '').includes('Hi there!'),
+          ),
         undefined,
         { timeout: 10000 },
       );
@@ -271,7 +296,10 @@ async function main() {
 
       await page.getByRole('button', { name: 'New' }).first().click();
       await page.waitForFunction(
-        () => (document.querySelector('.codeView.script h3')?.textContent ?? '').includes('[New Script]'),
+        () =>
+          (document.querySelector('.codeView.script h3')?.textContent ?? '').includes(
+            '[New Script]',
+          ),
         undefined,
         { timeout: 5000 },
       );
@@ -300,7 +328,10 @@ async function main() {
       await dialog.getByRole('button', { name: 'Save', exact: true }).click();
 
       await page.waitForFunction(
-        () => (document.querySelector('.codeView.script h3')?.textContent ?? '').includes('Sanity Script'),
+        () =>
+          (document.querySelector('.codeView.script h3')?.textContent ?? '').includes(
+            'Sanity Script',
+          ),
         undefined,
         { timeout: 5000 },
       );
@@ -318,11 +349,9 @@ async function main() {
 
       await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
 
-      await page.waitForFunction(
-        () => !document.querySelector('.dialog'),
-        undefined,
-        { timeout: 5000 },
-      );
+      await page.waitForFunction(() => !document.querySelector('.dialog'), undefined, {
+        timeout: 5000,
+      });
     });
 
     await check('code editor toggles closed with ESC', async () => {
@@ -365,18 +394,20 @@ async function main() {
   }
 
   // Give the server a tick to flush, then close it.
-  await new Promise<void>(resolve => http.get(`http://127.0.0.1:${port}/`, res => {
-    res.resume();
-    res.on('end', resolve);
-  }).on('error', resolve));
+  await new Promise<void>((resolve) =>
+    http
+      .get(`http://127.0.0.1:${port}/`, (res) => {
+        res.resume();
+        res.on('end', resolve);
+      })
+      .on('error', resolve),
+  );
 
-  console.log(exitCode === 0
-    ? '\nUI sanity check passed.'
-    : '\nUI sanity check FAILED.');
+  console.log(exitCode === 0 ? '\nUI sanity check passed.' : '\nUI sanity check FAILED.');
   process.exit(exitCode);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });

@@ -5,10 +5,18 @@ import BoundScriptBar from './BoundScriptBar';
 import ToolBox from './ToolBox';
 import Game from '../app/Game';
 
-class ViewPort extends React.Component<{ onViewPort: (el: HTMLDivElement | null) => void }, object> {
+class ViewPort extends React.Component<
+  { onViewPort: (el: HTMLDivElement | null) => void },
+  object
+> {
   render() {
     return (
-      <div className="viewPort" ref={el => { this.props.onViewPort(el); }}>
+      <div
+        className="viewPort"
+        ref={(el) => {
+          this.props.onViewPort(el);
+        }}
+      >
         <div className="miniConsole">
           <div className="miniConsoleOutput">
             <ul></ul>
@@ -42,23 +50,18 @@ class App extends React.Component<AppProps, object> {
   render() {
     return (
       <div className="app">
-        <ViewPort
-          onViewPort={this.props.onViewPort} />
+        <ViewPort onViewPort={this.props.onViewPort} />
 
         <BoundScriptBar
           scripts={this.props.scripts}
-          onExecuteBoundScript={this.executeBoundScript} />
+          onExecuteBoundScript={this.executeBoundScript}
+        />
 
-        <ToolBox
-          game={this.props.game} />
+        <ToolBox game={this.props.game} />
 
         <div className="helpBar">
-          Keys:
-          [WASD]= Walk,
-          [SHIFT]= Un/Lock Camera to Mouse,
-          [SPACE]= Jump,
-          [ESCAPE]= Toggle Code Editor,
-          [Enter]= On-screen console
+          Keys: [WASD]= Walk, [SHIFT]= Un/Lock Camera to Mouse, [SPACE]= Jump, [ESCAPE]= Toggle Code
+          Editor, [Enter]= On-screen console
         </div>
       </div>
     );
@@ -93,7 +96,7 @@ class UserInterface {
   setGame(game: Game) {
     this.game = game;
 
-    this.game.onBoundScriptsChange(args => {
+    this.game.onBoundScriptsChange((args) => {
       this.scripts = args.scripts;
 
       this.render();
@@ -113,7 +116,7 @@ class UserInterface {
 
       flushSync(() => {
         root.render(
-          <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />
+          <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />,
         );
       });
 
@@ -121,7 +124,7 @@ class UserInterface {
     }
 
     this.root.render(
-      <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />
+      <App game={this.game ?? undefined} scripts={this.scripts} onViewPort={this.onViewPort} />,
     );
   }
 }

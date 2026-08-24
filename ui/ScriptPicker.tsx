@@ -19,13 +19,16 @@ class ScriptPicker extends React.Component<ScriptPickerProps, any> {
   }
 
   render() {
-    const scripts: string[] = this.props.scriptStorage.getScripts().map((script: { name: string }) => script.name);
+    const scripts: string[] = this.props.scriptStorage
+      .getScripts()
+      .map((script: { name: string }) => script.name);
 
     return (
-      <div className={'scriptPicker ' + (this.props.visible ? 'show' : 'hide') }>
+      <div className={'scriptPicker ' + (this.props.visible ? 'show' : 'hide')}>
         <List
           items={scripts.map((name, index) => ({ key: String(index), text: name }))}
-          onItemClick={index => this.scriptClick(scripts[index])} />
+          onItemClick={(index) => this.scriptClick(scripts[index])}
+        />
       </div>
     );
   }

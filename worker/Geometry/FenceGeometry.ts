@@ -22,12 +22,12 @@ export class FenceGeometry extends Geometry {
 
     const postLeft = new THREE.BoxGeometry(1.0, 1.0, 1.0);
     mat.makeScale(0.1, 0.5, 0.1);
-    mat.setPosition(0.05 + (1 / 5), 0.25, 0.5);
+    mat.setPosition(0.05 + 1 / 5, 0.25, 0.5);
     postLeft.applyMatrix4(mat);
 
     const postRight = new THREE.BoxGeometry(1.0, 1.0, 1.0);
     mat.makeScale(0.1, 0.5, 0.1);
-    mat.setPosition(0.95 - (1 / 5), 0.25, 0.5);
+    mat.setPosition(0.95 - 1 / 5, 0.25, 0.5);
     postRight.applyMatrix4(mat);
 
     this.template = mergeGeometries([bar, postLeft, postRight]);

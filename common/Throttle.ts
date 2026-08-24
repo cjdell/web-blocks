@@ -10,7 +10,7 @@ type Timer = ReturnType<typeof setTimeout>;
 
 export function throttle<A extends unknown[]>(
   fn: (...args: A) => void,
-  wait: number
+  wait: number,
 ): (...args: A) => void {
   let lastCall = 0;
   let timer: Timer | null = null;
@@ -43,7 +43,7 @@ export function throttle<A extends unknown[]>(
 
 export function debounce<A extends unknown[]>(
   fn: (...args: A) => void,
-  wait: number
+  wait: number,
 ): (...args: A) => void {
   let timer: Timer | null = null;
 

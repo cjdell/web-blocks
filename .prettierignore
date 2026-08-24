@@ -1,0 +1,17 @@
+# Build output
+build/
+
+# Vendored 2015-era code (not project source)
+lib/
+
+# Learner-facing runtime content
+samples/
+
+# Binary assets
+textures/
+
+# Hand-wrapped prose: Prettier's markdown reflow breaks the hand-maintained
+# line wrapping (and list-item continuation indents) in README.md and
+# MODERNISATION_REPORT.md, so the docs stay hand-formatted.
+*.md
+

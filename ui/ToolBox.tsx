@@ -1,7 +1,7 @@
 import React from 'react';
 import CodeEditor from './CodeEditor';
-import ScriptStorage  from '../app/ScriptStorage';
-import Game           from '../app/Game';
+import ScriptStorage from '../app/ScriptStorage';
+import Game from '../app/Game';
 
 const scriptStorage = new ScriptStorage();
 
@@ -10,14 +10,14 @@ const MoveTypes = [
     type: 'walk',
     name: 'Walk',
     icon: 'textures/move-walk.png',
-    gravity: 9.8
+    gravity: 9.8,
   },
   {
     type: 'fly',
     name: 'Fly',
     icon: 'textures/move-fly.png',
-    gravity: 1.0
-  }
+    gravity: 1.0,
+  },
 ];
 
 interface ToolBoxState {
@@ -35,7 +35,7 @@ class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
       blockTypeIndex: 1,
       codeEditorVisible: false,
       toolType: 'block',
-      moveType: 'walk'
+      moveType: 'walk',
     };
 
     this.blockTypeClick = this.blockTypeClick.bind(this);
@@ -63,7 +63,7 @@ class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
   switchMove(moveType: string) {
     this.setState({ moveType });
 
-    const mt = MoveTypes.filter(m => m.type === moveType)[0];
+    const mt = MoveTypes.filter((m) => m.type === moveType)[0];
 
     if (this.props.game) this.props.game.setGravity(mt.gravity);
   }
@@ -104,12 +104,17 @@ class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
         if (blockType.hideFromToolbox) return null;
 
         return (
-          <li key={index}
+          <li
+            key={index}
             title={blockType.name}
             onClick={() => this.blockTypeClick(index)}
             className={index === this.state.blockTypeIndex ? 'selected' : ''}
-            style={blockType.textures.side ? { backgroundImage: "url('" + blockType.textures.side + "')" } : {}}>
-          </li>
+            style={
+              blockType.textures.side
+                ? { backgroundImage: "url('" + blockType.textures.side + "')" }
+                : {}
+            }
+          ></li>
         );
       });
 
@@ -117,23 +122,25 @@ class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
 
       toolTypeLis = toolTypes.map((toolType, index) => {
         return (
-          <li key={index}
+          <li
+            key={index}
             title={toolType.name}
             onClick={() => this.switchTool(toolType.type)}
             className={toolType.type === this.state.toolType ? 'selected' : ''}
-            style={{ backgroundImage: "url('" + toolType.icon + "')" }}>
-          </li>
+            style={{ backgroundImage: "url('" + toolType.icon + "')" }}
+          ></li>
         );
       });
 
-      moveTypeLis = MoveTypes.map(moveType => {
+      moveTypeLis = MoveTypes.map((moveType) => {
         return (
-          <li key={moveType.type}
+          <li
+            key={moveType.type}
             title={moveType.name}
             onClick={() => this.switchMove(moveType.type)}
             className={moveType.type === this.state.moveType ? 'selected' : ''}
-            style={{ backgroundImage: "url('" + moveType.icon + "')" }}>
-          </li>
+            style={{ backgroundImage: "url('" + moveType.icon + "')" }}
+          ></li>
         );
       });
     }
@@ -146,7 +153,8 @@ class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
           <li
             className="codeButton"
             onClick={this.toggleCodeEditor}
-            style={{ backgroundImage: 'url(./textures/command_block.png)' }}>
+            style={{ backgroundImage: 'url(./textures/command_block.png)' }}
+          >
             &lt; Code&gt;
           </li>
         </ul>
@@ -158,10 +166,28 @@ class ToolBox extends React.Component<{ game?: Game }, ToolBoxState> {
         <ul className="small">{moveTypeLis}</ul>
 
         <div className="author">
-          <div>Created by: <a href="https://twitter.com/cjdell" target="_blank"> @cjdell</a></div>
-          <div><a href="https://github.com/cjdell/web-blocks" target="_blank">GitHub</a></div>
-          <div><a href="http://chrisdell.info/web-blocks-tutorial-1" target="_blank">Tutorial 1</a></div>
-          <div><a href="http://chrisdell.info/web-blocks-tutorial-2" target="_blank">Tutorial 2</a></div>
+          <div>
+            Created by:{' '}
+            <a href="https://twitter.com/cjdell" target="_blank">
+              {' '}
+              @cjdell
+            </a>
+          </div>
+          <div>
+            <a href="https://github.com/cjdell/web-blocks" target="_blank">
+              GitHub
+            </a>
+          </div>
+          <div>
+            <a href="http://chrisdell.info/web-blocks-tutorial-1" target="_blank">
+              Tutorial 1
+            </a>
+          </div>
+          <div>
+            <a href="http://chrisdell.info/web-blocks-tutorial-2" target="_blank">
+              Tutorial 2
+            </a>
+          </div>
         </div>
       </div>
     );

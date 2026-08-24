@@ -1,6 +1,5 @@
-
-import DesktopPlatform from "./DesktopPlatform";
-import Game from "./Game";
+import DesktopPlatform from './DesktopPlatform';
+import Game from './Game';
 
 const App = () => {
   let platform: DesktopPlatform;
@@ -23,4 +22,4 @@ const App = () => {
   };
 };
 
-export default (globalThis as any).App = App;
+export default ((globalThis as any).App = App);

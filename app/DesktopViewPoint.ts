@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import type { WorldInfo } from '../common/WorldInfo';
-import WorkerInterface  from './WorkerInterface';
-import MiniConsole      from "./MiniConsole";
-import { debounce }     from '../common/Throttle';
+import WorkerInterface from './WorkerInterface';
+import MiniConsole from './MiniConsole';
+import { debounce } from '../common/Throttle';
 
 import { Movement, PlayerPositionChangeArgs } from '../common/Types';
 
@@ -36,7 +36,7 @@ export default class DesktopViewPoint {
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     worldInfo: WorldInfo,
-    workerInterface: WorkerInterface
+    workerInterface: WorkerInterface,
   ) {
     this.camera = camera;
     this.light = light;
@@ -51,7 +51,7 @@ export default class DesktopViewPoint {
     this.mouseMovesScreen = false;
 
     this.position = new THREE.Vector3(100, 24, 120);
-    this.movement = { move: new THREE.Vector3(), turn: new THREE.Vector2 };
+    this.movement = { move: new THREE.Vector3(), turn: new THREE.Vector2() };
     this.pointerLock = false;
     this.trusted = false;
 
@@ -60,7 +60,7 @@ export default class DesktopViewPoint {
 
     this.setupEventListeners();
 
-    this.workerInterface.onPlayerPositionChange(args => {
+    this.workerInterface.onPlayerPositionChange((args) => {
       this.onPlayerPositionChanged(args);
     });
 
@@ -68,14 +68,18 @@ export default class DesktopViewPoint {
   }
 
   setupEventListeners() {
-    window.addEventListener('resize', debounce(() => this.onWindowResize(), 500), false);
+    window.addEventListener(
+      'resize',
+      debounce(() => this.onWindowResize(), 500),
+      false,
+    );
 
     document.addEventListener('keydown', (e: any) => this.keyDown(e), false);
     document.addEventListener('keyup', (e: any) => this.keyUp(e), false);
     document.addEventListener('pointerlockchange', (e: any) => this.onPointerLockChange(e), false);
     document.addEventListener('visibilitychange', () => this.refreshPointerLock(), false);
 
-    this.viewPort.addEventListener("mousemove", (e: any) => this.mouseMove(e), false);
+    this.viewPort.addEventListener('mousemove', (e: any) => this.mouseMove(e), false);
   }
 
   onPointerLockChange(event: any) {
@@ -93,7 +97,8 @@ export default class DesktopViewPoint {
   }
 
   onWindowResize() {
-    const width = this.viewPort.clientWidth, height = this.viewPort.clientHeight;
+    const width = this.viewPort.clientWidth,
+      height = this.viewPort.clientHeight;
 
     console.log('onWindowResize', width, height);
 
@@ -113,17 +118,17 @@ export default class DesktopViewPoint {
 
     this.handleEnterKey(event);
 
-    if (event.keyCode === 65) this.movement.move.x = 1;        // A (Left)
-    if (event.keyCode === 68) this.movement.move.x = -1;       // D (Right)
+    if (event.keyCode === 65) this.movement.move.x = 1; // A (Left)
+    if (event.keyCode === 68) this.movement.move.x = -1; // D (Right)
 
-    if (event.keyCode === 87) this.movement.move.z = 1;        // W (Forwards)
-    if (event.keyCode === 83) this.movement.move.z = -1;       // S (Backwards)
+    if (event.keyCode === 87) this.movement.move.z = 1; // W (Forwards)
+    if (event.keyCode === 83) this.movement.move.z = -1; // S (Backwards)
 
-    if (event.keyCode === 38) this.movement.turn.y = -1;           // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.movement.turn.y = 1;            // Down Arrow (Turn Down)
+    if (event.keyCode === 38) this.movement.turn.y = -1; // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.movement.turn.y = 1; // Down Arrow (Turn Down)
 
-    if (event.keyCode === 37) this.movement.turn.x = 1;            // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.movement.turn.x = -1;           // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.movement.turn.x = 1; // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.movement.turn.x = -1; // Right Arrow (Turn Right)
 
     if (event.shiftKey) this.handlePointerLock();
 
@@ -133,17 +138,17 @@ export default class DesktopViewPoint {
   }
 
   keyUp(event: any) {
-    if (event.keyCode === 65) this.movement.move.x = 0;        // A (Left)
-    if (event.keyCode === 68) this.movement.move.x = 0;        // D (Right)
+    if (event.keyCode === 65) this.movement.move.x = 0; // A (Left)
+    if (event.keyCode === 68) this.movement.move.x = 0; // D (Right)
 
-    if (event.keyCode === 87) this.movement.move.z = 0;        // W (Forwards)
-    if (event.keyCode === 83) this.movement.move.z = 0;        // S (Backwards)
+    if (event.keyCode === 87) this.movement.move.z = 0; // W (Forwards)
+    if (event.keyCode === 83) this.movement.move.z = 0; // S (Backwards)
 
-    if (event.keyCode === 38) this.movement.turn.y = 0;            // Up Arrow (Turn Up)
-    if (event.keyCode === 40) this.movement.turn.y = 0;            // Down Arrow (Turn Down)
+    if (event.keyCode === 38) this.movement.turn.y = 0; // Up Arrow (Turn Up)
+    if (event.keyCode === 40) this.movement.turn.y = 0; // Down Arrow (Turn Down)
 
-    if (event.keyCode === 37) this.movement.turn.x = 0;            // Left Arrow (Turn Left)
-    if (event.keyCode === 39) this.movement.turn.x = 0;            // Right Arrow (Turn Right)
+    if (event.keyCode === 37) this.movement.turn.x = 0; // Left Arrow (Turn Left)
+    if (event.keyCode === 39) this.movement.turn.x = 0; // Right Arrow (Turn Right)
 
     if (event.keyCode === 13) this.enterDown = false;
 
@@ -164,13 +169,17 @@ export default class DesktopViewPoint {
   }
 
   mouseMove(event: any) {
-    if ((((window as any).blockMovement) && !this.miniConsole.isShown())
-      || !this.pointerLock || !this.trusted || !document.pointerLockElement) {
+    if (
+      ((window as any).blockMovement && !this.miniConsole.isShown()) ||
+      !this.pointerLock ||
+      !this.trusted ||
+      !document.pointerLockElement
+    ) {
       return;
     }
 
-    this.movement.turn.x = 100 * (-event.movementX) / event.srcElement.clientWidth;
-    this.movement.turn.y = 100 * (event.movementY) / event.srcElement.clientHeight;
+    this.movement.turn.x = (100 * -event.movementX) / event.srcElement.clientWidth;
+    this.movement.turn.y = (100 * event.movementY) / event.srcElement.clientHeight;
 
     this.workerInterface.move({ move: this.movement.move, turn: this.movement.turn });
 
@@ -200,8 +209,12 @@ export default class DesktopViewPoint {
     // so hand modern three's lookAt() explicit numbers — it only accepts a
     // Vector3 instance or an (x, y, z) triple, and passing a plain object
     // produces a NaN view matrix (nothing renders).
-    const x = player.position.x, y = player.position.y + PLAYER_HEIGHT, z = player.position.z;
-    const tx = player.target.x, ty = player.target.y + PLAYER_HEIGHT, tz = player.target.z;
+    const x = player.position.x,
+      y = player.position.y + PLAYER_HEIGHT,
+      z = player.position.z;
+    const tx = player.target.x,
+      ty = player.target.y + PLAYER_HEIGHT,
+      tz = player.target.z;
 
     this.position.set(x, y, z);
     this.camera.position.set(x, y, z);
@@ -236,14 +249,11 @@ export default class DesktopViewPoint {
   }
 
   refreshPointerLock() {
-    if (document.visibilityState === "hidden") {
+    if (document.visibilityState === 'hidden') {
       this.pointerLock = false;
     }
 
-    if (!((window as any).blockMovement)
-      && this.viewPort
-      && this.pointerLock
-      && this.trusted) {
+    if (!(window as any).blockMovement && this.viewPort && this.pointerLock && this.trusted) {
       this.viewPort.requestPointerLock();
     }
   }

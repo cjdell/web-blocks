@@ -4,7 +4,7 @@ import World from './worker/World';
 const worldInfo = new WorldInfo({
   worldDimensionsInPartitions: new IntVector3(4, 1, 4),
   partitionDimensionsInBlocks: new IntVector3(256, 32, 256),
-  partitionBoundaries: null
+  partitionBoundaries: null,
 });
 
 const world = new World(worldInfo);

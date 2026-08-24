@@ -3,18 +3,15 @@
 const _self = self as unknown as Worker;
 
 import { IntVector3, WorldInfo } from '../common/WorldInfo';
-import { throttle }              from '../common/Throttle';
-import World                     from './World';
-import WorldGeometry             from './WorldGeometry';
-import Player                    from './Player';
-import Api                       from './Api';
-import ScriptRunner              from './ScriptRunner';
-import { Loader }                from './Geometry/Loader';
+import { throttle } from '../common/Throttle';
+import World from './World';
+import WorldGeometry from './WorldGeometry';
+import Player from './Player';
+import Api from './Api';
+import ScriptRunner from './ScriptRunner';
+import { Loader } from './Geometry/Loader';
 
-import type {
-  RequestFor,
-  WorkerRequest
-} from '../common/WorkerProtocol';
+import type { RequestFor, WorkerRequest } from '../common/WorkerProtocol';
 
 console.log('GeometryWorker: online');
 
@@ -29,7 +26,7 @@ const checkForChangedPartitions = throttle(() => {
 
   _self.postMessage({
     action: 'update',
-    changes: dirty
+    changes: dirty,
   });
 }, 100);
 
@@ -37,7 +34,7 @@ const init = (invocation: RequestFor<'init'>): void => {
   const worldInfo = new WorldInfo({
     worldDimensionsInPartitions: new IntVector3(32, 1, 32),
     partitionDimensionsInBlocks: new IntVector3(32, 128, 32),
-    partitionBoundaries: null
+    partitionBoundaries: null,
   });
 
   world = new World(worldInfo);
@@ -48,28 +45,28 @@ const init = (invocation: RequestFor<'init'>): void => {
 
   world.init();
 
-  world.onWorldChanged(_world => {
+  world.onWorldChanged((_world) => {
     checkForChangedPartitions();
   });
 
-  player.onPlayerPositionChange(args => {
+  player.onPlayerPositionChange((args) => {
     _self.postMessage({
       action: 'playerPositionChange',
-      data: args
+      data: args,
     });
   });
 
-  player.onBoundScriptsChange(args => {
+  player.onBoundScriptsChange((args) => {
     _self.postMessage({
       action: 'boundScriptsChange',
-      data: args
+      data: args,
     });
   });
 
   player.print = (msg: string) => {
     _self.postMessage({
       action: 'print',
-      data: msg
+      data: msg,
     });
   };
 
@@ -78,7 +75,7 @@ const init = (invocation: RequestFor<'init'>): void => {
   Loader.Instance.init().then(() => {
     return _self.postMessage({
       id: invocation.id,
-      data: worldInfo
+      data: worldInfo,
     });
   });
 
@@ -92,7 +89,7 @@ const runScript = (invocation: RequestFor<'runScript'>): void => {
 
   _self.postMessage({
     id: invocation.id,
-    data: { result }
+    data: { result },
   });
 };
 
@@ -101,7 +98,7 @@ const undo = (invocation: RequestFor<'undo'>): void => {
 
   _self.postMessage({
     id: invocation.id,
-    data: {}
+    data: {},
   });
 };
 
@@ -118,15 +115,16 @@ const getPartition = (invocation: RequestFor<'getPartition'>): void => {
       id: invocation.id,
       data: {
         index: invocation.data.index,
-        geo
-      }
-    }, [
+        geo,
+      },
+    },
+    [
       geo.data.position.buffer,
       geo.data.normal.buffer,
       geo.data.uv.buffer,
       geo.data.data.buffer,
-      geo.data.offset.buffer
-    ]
+      geo.data.offset.buffer,
+    ],
   );
 };
 
@@ -139,8 +137,8 @@ const getBlock = (invocation: RequestFor<'getBlock'>): void => {
     id: invocation.id,
     data: {
       pos: invocation.data.pos,
-      type
-    }
+      type,
+    },
   });
 };
 

@@ -11,43 +11,43 @@ const TREE = [
     [0, 0, 0, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0],
   ],
   [
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0],
   ],
   [
     [0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0],
     [0, 0, 1, 0, 0],
     [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0],
   ],
   [
     [0, 0, 0, 0, 0],
     [0, 1, 1, 1, 0],
     [0, 1, 1, 1, 0],
     [0, 1, 1, 1, 0],
-    [0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0],
   ],
   [
     [0, 1, 1, 1, 0],
     [1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1],
-    [0, 1, 1, 1, 0]
+    [0, 1, 1, 1, 0],
   ],
   [
     [0, 0, 0, 0, 0],
     [0, 1, 1, 1, 0],
     [0, 1, 1, 1, 0],
     [0, 1, 1, 1, 0],
-    [0, 0, 0, 0, 0]
-  ]
+    [0, 0, 0, 0, 0],
+  ],
 ];
 
 export class TreeOperation extends Operation {
@@ -87,7 +87,9 @@ export class TreeOperation extends Operation {
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
-    const pend = pstart.add(this.worldInfo.partitionDimensionsInBlocks).sub(new IntVector3(1, 1, 1));
+    const pend = pstart
+      .add(this.worldInfo.partitionDimensionsInBlocks)
+      .sub(new IntVector3(1, 1, 1));
 
     const blocks = 5 * 6 * 5;
 

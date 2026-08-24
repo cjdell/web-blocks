@@ -14,7 +14,7 @@ export default class Api {
 
   get BlockType() {
     return BlockTypeIds;
-  };
+  }
 
   intervalRefs: number[] = [];
   timeoutRefs: number[] = [];
@@ -37,14 +37,14 @@ export default class Api {
   get help() {
     return [
       'Here you can type JavaScript commands!',
-      'Not sure what to type? Here\'s some you can try:',
+      "Not sure what to type? Here's some you can try:",
       '  setPosition(100,12,110)',
       '  setBlock(100,5,100,Grass)',
       '  showMe()',
       '  setBlock(100,5,100,Colour,100)',
       '  setBlocks(100,5,100,100,20,100,Stone)',
       '  setGravity(1.0)',
-      'To see more awesome commands, click the "Script" tab and load a sample program! :-)'
+      'To see more awesome commands, click the "Script" tab and load a sample program! :-)',
     ].join('\n');
   }
 
@@ -62,23 +62,23 @@ export default class Api {
       return `Here is your block. It is at ${x}, ${y}, ${z}`;
     }
 
-    return 'I couldn\'t find your block';
+    return "I couldn't find your block";
   }
 
   print(msg: any) {
     if (msg instanceof Array) msg = JSON.stringify(msg);
 
-    if (msg instanceof Object || typeof (msg) === "object") {
-      if (typeof (msg) === "undefined") {
+    if (msg instanceof Object || typeof msg === 'object') {
+      if (typeof msg === 'undefined') {
         return;
-      } else if (msg === null || msg.toString && msg.toString() === "[object Object]") {
+      } else if (msg === null || (msg.toString && msg.toString() === '[object Object]')) {
         msg = JSON.stringify(msg);
       }
     }
 
     if (msg && msg.toString) msg = msg.toString();
 
-    if (typeof (msg) !== "string") msg = "Error: unable to print.";
+    if (typeof msg !== 'string') msg = 'Error: unable to print.';
 
     this.player.print(msg);
   }
@@ -100,10 +100,7 @@ export default class Api {
     return this.player.mousePosition;
   }
 
-  setBlock(
-    x: number, y: number, z: number,
-    type: number, colour: number
-  ): void {
+  setBlock(x: number, y: number, z: number, type: number, colour: number): void {
     this.lastBlockPos = new IntVector3(x, y, z);
 
     if (typeof type !== 'number') {
@@ -114,9 +111,14 @@ export default class Api {
   }
 
   setBlocks(
-    x1: number, y1: number, z1: number,
-    x2: number, y2: number, z2: number,
-    type: number, colour: number
+    x1: number,
+    y1: number,
+    z1: number,
+    x2: number,
+    y2: number,
+    z2: number,
+    type: number,
+    colour: number,
   ): void {
     this.lastBlockPos = new IntVector3(x1, y1, z1);
 
@@ -168,6 +170,6 @@ export default class Api {
   }
 }
 
-Object.keys(BlockTypeIds).forEach(blockTypeName => {
+Object.keys(BlockTypeIds).forEach((blockTypeName) => {
   (Api.prototype as any)[blockTypeName] = BlockTypeIds[blockTypeName as keyof typeof BlockTypeIds];
 });

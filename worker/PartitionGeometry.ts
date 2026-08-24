@@ -8,12 +8,12 @@ const VERTICES_PER_FACE = 6;
 const VALUES_PER_VBLOCK = 7;
 
 const FACES = [
-  new Float32Array([0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1]),   // Right
-  new Float32Array([0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0]),   // Left
-  new Float32Array([1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]),   // Bottom
-  new Float32Array([1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0]),   // Top
-  new Float32Array([1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0]),   // Front
-  new Float32Array([0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0])    // Back
+  new Float32Array([0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1]), // Right
+  new Float32Array([0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0]), // Left
+  new Float32Array([1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]), // Bottom
+  new Float32Array([1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0]), // Top
+  new Float32Array([1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0]), // Front
+  new Float32Array([0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0]), // Back
 ];
 
 const UV = new Float32Array([0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0]);
@@ -61,7 +61,8 @@ export default class PartitionGeometry {
   generateGeometry(): void {
     const blocks = this.world.getVisibleBlocks(this.partition.index);
 
-    let faceCount = 0, otherVertices = 0;
+    let faceCount = 0,
+      otherVertices = 0;
 
     // Count the faces
     for (let i = 0; i < blocks.length / VALUES_PER_VBLOCK; i++) {
@@ -87,7 +88,8 @@ export default class PartitionGeometry {
       const zd = !(touchingBlocks & (1 << 4));
       const zu = !(touchingBlocks & (1 << 22));
 
-      faceCount += (xd ? 1 : 0) + (xu ? 1 : 0) + (yd ? 1 : 0) + (yu ? 1 : 0) + (zd ? 1 : 0) + (zu ? 1 : 0);
+      faceCount +=
+        (xd ? 1 : 0) + (xu ? 1 : 0) + (yd ? 1 : 0) + (yu ? 1 : 0) + (zd ? 1 : 0) + (zu ? 1 : 0);
     }
 
     this.ensureBufferSize(faceCount * VERTICES_PER_FACE + otherVertices);
@@ -109,7 +111,16 @@ export default class PartitionGeometry {
       if (Loader.Instance.getTypes().indexOf(type) !== -1) {
         const geometry = Loader.Instance.getGeometry(type);
 
-        geometry.generateGeometry(this.position, this.normal, this.uv, this.data, v, index, type, colour);
+        geometry.generateGeometry(
+          this.position,
+          this.normal,
+          this.uv,
+          this.data,
+          v,
+          index,
+          type,
+          colour,
+        );
 
         v += geometry.getVertexCount();
 
@@ -157,7 +168,17 @@ export default class PartitionGeometry {
     }
   }
 
-  getTriangle(v: number, x: number, y: number, z: number, type: number, side: number, colour: number, shade: number, indexInWorld: number) {
+  getTriangle(
+    v: number,
+    x: number,
+    y: number,
+    z: number,
+    type: number,
+    side: number,
+    colour: number,
+    shade: number,
+    indexInWorld: number,
+  ) {
     for (let i = 0; i < 6; i += 1) {
       this.position[(v + i) * 3 + 0] = FACES[side][i * 3 + 0] + x;
       this.position[(v + i) * 3 + 1] = FACES[side][i * 3 + 1] + y;
@@ -185,7 +206,7 @@ export default class PartitionGeometry {
       normal: this.normal,
       uv: this.uv,
       data: this.data,
-      offset: this.offset
+      offset: this.offset,
     };
   }
 

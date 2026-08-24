@@ -15,13 +15,13 @@ export default class TextRenderer {
     canvas.width = 256;
     canvas.height = 16;
 
-    const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-    ctx.fillStyle = "black";
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "white";
-    ctx.font = "16px arial";
+    ctx.fillStyle = 'white';
+    ctx.font = '16px arial';
     ctx.fillText(message, 0, 12);
 
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;

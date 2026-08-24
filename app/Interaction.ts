@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import type { WorldInfo, IntVector3 } from '../common/WorldInfo';
-import constants          from '../common/Constants';
-import WorkerInterface    from './WorkerInterface';
-import { Context, Tool }  from './tools/ToolBase';
-import Tools              from './tools/Tools';
-import CuboidTool         from "./tools/CuboidTool";
+import constants from '../common/Constants';
+import WorkerInterface from './WorkerInterface';
+import { Context, Tool } from './tools/ToolBase';
+import Tools from './tools/Tools';
+import CuboidTool from './tools/CuboidTool';
 
 export default class Interaction {
   viewPort: HTMLElement;
@@ -30,7 +30,7 @@ export default class Interaction {
     scene: THREE.Scene,
     camera: THREE.Camera,
     workerInterface: WorkerInterface,
-    worldInfo: WorldInfo
+    worldInfo: WorldInfo,
   ) {
     this.viewPort = viewPort;
     this.scene = scene;
@@ -49,10 +49,10 @@ export default class Interaction {
   }
 
   getAvailableTools() {
-    return Tools.map(tool => ({
+    return Tools.map((tool) => ({
       type: tool.type,
       name: tool.name,
-      icon: tool.icon
+      icon: tool.icon,
     }));
   }
 
@@ -67,8 +67,7 @@ export default class Interaction {
   private keyPress(event: KeyboardEvent) {
     if (event.keyCode === 26 && event.ctrlKey) {
       this.workerInterface.undo();
-
-    } else if (!((window as any).blockMovement) && event.keyCode >= 48 && event.keyCode <= 57) {
+    } else if (!(window as any).blockMovement && event.keyCode >= 48 && event.keyCode <= 57) {
       this.workerInterface.executeBoundScript(event.keyCode - 48);
     }
   }
@@ -123,7 +122,7 @@ export default class Interaction {
   private getTool() {
     const context: Context = this.getContext();
 
-    const tool = Tools.filter(tool => tool.type === this.selectedTool);
+    const tool = Tools.filter((tool) => tool.type === this.selectedTool);
 
     if (tool.length === 0) {
       throw new Error(`Invalid tool type "${this.selectedTool}"`);
@@ -139,7 +138,7 @@ export default class Interaction {
       workerInterface: this.workerInterface,
       getPositionOfMouseAlongXZPlane: (xPlane, zPlane) =>
         this.getPositionOfMouseAlongXZPlane(xPlane, zPlane),
-      finished: this.finished.bind(this)
+      finished: this.finished.bind(this),
     };
   }
 
@@ -147,7 +146,7 @@ export default class Interaction {
     this.tool = null;
   }
 
-  private getBlockPositionOfMouse(): { pos: IntVector3, side: number } | null {
+  private getBlockPositionOfMouse(): { pos: IntVector3; side: number } | null {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     const intersects = this.raycaster.intersectObjects(this.scene.children);

@@ -1,21 +1,16 @@
 import * as THREE from 'three';
 import { WorldInfo } from '../common/WorldInfo';
-import Culling            from './Culling';
-import Interaction        from './Interaction';
-import WorldViewer        from './WorldViewer';
-import WorkerInterface    from './WorkerInterface';
-import TextRenderer       from './TextRenderer';
-import DesktopPlatform    from './DesktopPlatform';
-import DesktopViewPoint   from './DesktopViewPoint';
+import Culling from './Culling';
+import Interaction from './Interaction';
+import WorldViewer from './WorldViewer';
+import WorkerInterface from './WorkerInterface';
+import TextRenderer from './TextRenderer';
+import DesktopPlatform from './DesktopPlatform';
+import DesktopViewPoint from './DesktopViewPoint';
 
-import {
-  BlockTypeList,
-  BlockType
-} from '../common/BlockTypeList';
+import { BlockTypeList, BlockType } from '../common/BlockTypeList';
 
-import {
-  BoundScriptsChangeListener
-} from '../common/Types';
+import { BoundScriptsChangeListener } from '../common/Types';
 
 const win = <any>self;
 
@@ -60,7 +55,12 @@ export default class Game {
 
     this.renderer.setClearColor(0xffffff, 1);
 
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000,
+    );
 
     this.scene = new THREE.Scene();
 
@@ -70,10 +70,7 @@ export default class Game {
   }
 
   init() {
-    return Promise.all([
-      this.workerInterface.init(),
-      this.loadShaders()
-    ]).then(res => {
+    return Promise.all([this.workerInterface.init(), this.loadShaders()]).then((res) => {
       const worldInfo = new WorldInfo(res[0]);
 
       this.uniforms = {};
@@ -87,19 +84,38 @@ export default class Game {
         uniforms: this.uniforms,
         vertexShader: this.vertexShader,
         fragmentShader: this.fragmentShader,
-        transparent: false
+        transparent: false,
       });
 
       const blockTypes = this.blockTypeList.getBlockTypes();
 
-      this.getBlockTexture(blockTypes).then(texture => {
+      this.getBlockTexture(blockTypes).then((texture) => {
         blockMaterial.uniforms.textures.value = texture;
       });
 
-      this.worldViewer = new WorldViewer(this.scene, worldInfo, blockMaterial, this.workerInterface);
-      this.viewPoint = this.platform.getViewPoint(this.camera, null, this.viewPort, this.effect, this.scene, worldInfo, this.workerInterface);
+      this.worldViewer = new WorldViewer(
+        this.scene,
+        worldInfo,
+        blockMaterial,
+        this.workerInterface,
+      );
+      this.viewPoint = this.platform.getViewPoint(
+        this.camera,
+        null,
+        this.viewPort,
+        this.effect,
+        this.scene,
+        worldInfo,
+        this.workerInterface,
+      );
       this.culling = new Culling(this.camera, worldInfo);
-      this.interaction = new Interaction(this.viewPort, this.scene, this.camera, this.workerInterface, worldInfo);
+      this.interaction = new Interaction(
+        this.viewPort,
+        this.scene,
+        this.camera,
+        this.workerInterface,
+        worldInfo,
+      );
       this.textRenderer = new TextRenderer(this.workerInterface);
 
       win.workerInterface = this.workerInterface;
@@ -157,15 +173,17 @@ export default class Game {
   loadShaders(): Promise<object> {
     return Promise.all([
       win.fetch('shaders/block.vertex.glsl'),
-      win.fetch('shaders/block.fragment.glsl')
-    ]).then(res => {
-      return Promise.all([res[0].text(), res[1].text()]);
-    }).then(data => {
-      this.vertexShader = data[0];
-      this.fragmentShader = data[1];
+      win.fetch('shaders/block.fragment.glsl'),
+    ])
+      .then((res) => {
+        return Promise.all([res[0].text(), res[1].text()]);
+      })
+      .then((data) => {
+        this.vertexShader = data[0];
+        this.fragmentShader = data[1];
 
-      return null as any;
-    });
+        return null as any;
+      });
   }
 
   getBlockTexture(blockTypes: Array<BlockType>) {
@@ -183,7 +201,8 @@ export default class Game {
       const side = this.getImage(blockType.textures.side);
 
       return Promise.all([top, side]).then((results) => {
-        const top = results[0], side = results[1];
+        const top = results[0],
+          side = results[1];
 
         ctx.drawImage(top, 0, (MAX_TYPE_COUNT - index - 1) * 16, 16, 16);
         ctx.drawImage(side, 16, (MAX_TYPE_COUNT - index - 1) * 16, 16, 16);

@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { IntVector3, type WorldInfo, type PartitionBoundaries } from '../common/WorldInfo';
 import type { PlainVector3 } from '../common/Types';
-import Partition              from './Partition';
-import Command                from './Commands/Command';
-import { CuboidOperation }    from './Operations/CuboidOperation';
+import Partition from './Partition';
+import Command from './Commands/Command';
+import { CuboidOperation } from './Operations/CuboidOperation';
 import { LandscapeOperation } from './Operations/LandscapeOperation';
-import { OperationCommand }   from './Commands/OperationCommand';
+import { OperationCommand } from './Commands/OperationCommand';
 
 // export interface ChangeHandler {
 //   callback(change: Change): void;
@@ -51,7 +51,7 @@ export default class World {
   }
 
   worldChanged() {
-    this.worldChangeHandlers.forEach(handler => handler(this));
+    this.worldChangeHandlers.forEach((handler) => handler(this));
   }
 
   // registerChangeHandler(handler: ChangeHandler) {
@@ -90,7 +90,11 @@ export default class World {
     // Apply the default landscape
     const randomHeight = 16; //this.worldInfo.partitionDimensionsInBlocks.y >> 1;
     const landscapeOperation = new LandscapeOperation(this.worldInfo, { height: randomHeight });
-    const landscapeCommand = new OperationCommand(this.worldInfo, this.commands.length, landscapeOperation);
+    const landscapeCommand = new OperationCommand(
+      this.worldInfo,
+      this.commands.length,
+      landscapeOperation,
+    );
 
     this.applyCommand(landscapeCommand);
 
@@ -120,7 +124,7 @@ export default class World {
       partition.init();
 
       // Apply commands as partitions are brought into existance
-      this.commands.forEach(command => {
+      this.commands.forEach((command) => {
         const indices = command.getAffectedPartitionIndices();
 
         if (indices === null || indices.indexOf(partition.index) !== (-1 | 0)) {
@@ -162,9 +166,9 @@ export default class World {
     const indices = command.getAffectedPartitionIndices();
     let partitionsToApply = this.partitions;
 
-    if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
+    if (indices !== null) partitionsToApply = indices.map((i) => this.partitions[i]);
 
-    partitionsToApply.filter(p => p.isInited()).forEach(command.redo, command);
+    partitionsToApply.filter((p) => p.isInited()).forEach(command.redo, command);
 
     this.worldChanged();
   }
@@ -182,20 +186,29 @@ export default class World {
     const indices = command.getAffectedPartitionIndices();
     let partitionsToApply = this.partitions;
 
-    if (indices !== null) partitionsToApply = indices.map(i => this.partitions[i]);
+    if (indices !== null) partitionsToApply = indices.map((i) => this.partitions[i]);
 
-    partitionsToApply.filter(p => p.isInited()).forEach(command.undo, command);
+    partitionsToApply.filter((p) => p.isInited()).forEach(command.undo, command);
 
     this.worldChanged();
   }
 
-  setBlocks(wx1: number, wy1: number, wz1: number, wx2: number, wy2: number, wz2: number, type: number, colour: number): void {
+  setBlocks(
+    wx1: number,
+    wy1: number,
+    wz1: number,
+    wx2: number,
+    wy2: number,
+    wz2: number,
+    type: number,
+    colour: number,
+  ): void {
     const min = new IntVector3(0, 0, 0);
 
     const max = new IntVector3(
       this.worldInfo.worldDimensionsInBlocks.x - 1,
       this.worldInfo.worldDimensionsInBlocks.y - 1,
-      this.worldInfo.worldDimensionsInBlocks.z - 1
+      this.worldInfo.worldDimensionsInBlocks.z - 1,
     );
 
     let start = new IntVector3(wx1, wy1, wz1);
@@ -348,7 +361,7 @@ export default class World {
             block = this.getBlock(
               (partition.offset.x + rx) | 0,
               (partition.offset.y + ry) | 0,
-              (partition.offset.z + rz) | 0
+              (partition.offset.z + rz) | 0,
             );
           } else {
             // otherwise, just read directly from partiton buffer (faster)
@@ -356,7 +369,7 @@ export default class World {
             block = partition.blocks![VALUES_PER_BLOCK * rindex];
           }
 
-          if (block !== (0 | 0)) sides |= (1 << i);
+          if (block !== (0 | 0)) sides |= 1 << i;
 
           i++;
         }
@@ -383,7 +396,11 @@ export default class World {
           const ppos = this.worldInfo.pposw(partition.offset.x + x, 0, partition.offset.z + z);
 
           if (this.worldInfo.vppos(ppos.x, ppos.y, ppos.z)) {
-            const { x: rx2, z: rz2 } = this.worldInfo.rposw(partition.offset.x + x, 0, partition.offset.z + z);
+            const { x: rx2, z: rz2 } = this.worldInfo.rposw(
+              partition.offset.x + x,
+              0,
+              partition.offset.z + z,
+            );
             const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
             const index = rz2 * pdib.x + rx2;
 
@@ -422,8 +439,8 @@ export default class World {
     let id = 0 | 0;
 
     for (let rindex = 0; rindex < partition.capacity; rindex++) {
-      const offset = VALUES_PER_BLOCK * rindex | 0;
-      const voffset = VALUES_PER_VBLOCK * id | 0;
+      const offset = (VALUES_PER_BLOCK * rindex) | 0;
+      const voffset = (VALUES_PER_VBLOCK * id) | 0;
 
       // getPartitionByIndex() loaded (and inited) the partition first.
       const type = partition.blocks![offset + 0];
@@ -436,7 +453,7 @@ export default class World {
       let sidesTouching = 0 | 0;
 
       for (let i = 0; i < touchingIndices.length; i++) {
-        sidesTouching += (surroundingBlocks & (1 << touchingIndices[i])) ? 1 | 0 : 0 | 0;
+        sidesTouching += surroundingBlocks & (1 << touchingIndices[i]) ? 1 | 0 : 0 | 0;
       }
 
       if (sidesTouching === (6 | 0)) continue;
@@ -445,15 +462,19 @@ export default class World {
 
       const shade = this.computeOcclusion(partition, rx, ry, rz) * 16;
 
-      const windex = this.worldInfo.windex(partition.offset.x + rx, partition.offset.y + ry, partition.offset.z + rz);
+      const windex = this.worldInfo.windex(
+        partition.offset.x + rx,
+        partition.offset.y + ry,
+        partition.offset.z + rz,
+      );
 
-      visibleBlocks[voffset + 0 | 0] = id;
-      visibleBlocks[voffset + 1 | 0] = rindex;
-      visibleBlocks[voffset + 2 | 0] = windex;
-      visibleBlocks[voffset + 3 | 0] = type;
-      visibleBlocks[voffset + 4 | 0] = surroundingBlocks;
-      visibleBlocks[voffset + 5 | 0] = colour;
-      visibleBlocks[voffset + 6 | 0] = shade;
+      visibleBlocks[(voffset + 0) | 0] = id;
+      visibleBlocks[(voffset + 1) | 0] = rindex;
+      visibleBlocks[(voffset + 2) | 0] = windex;
+      visibleBlocks[(voffset + 3) | 0] = type;
+      visibleBlocks[(voffset + 4) | 0] = surroundingBlocks;
+      visibleBlocks[(voffset + 5) | 0] = colour;
+      visibleBlocks[(voffset + 6) | 0] = shade;
 
       id += 1 | 0;
     }

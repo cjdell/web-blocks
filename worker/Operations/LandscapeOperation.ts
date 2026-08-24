@@ -54,8 +54,16 @@ export class LandscapeOperation extends Operation {
 
       index = 0;
 
-      for (let x = pstart.x * reciprocal_of_quality; x < (pstart.x + width) * reciprocal_of_quality; x += reciprocal_of_quality) {
-        for (let z = pstart.z * reciprocal_of_quality; z < (pstart.z + height) * reciprocal_of_quality; z += reciprocal_of_quality, index++) {
+      for (
+        let x = pstart.x * reciprocal_of_quality;
+        x < (pstart.x + width) * reciprocal_of_quality;
+        x += reciprocal_of_quality
+      ) {
+        for (
+          let z = pstart.z * reciprocal_of_quality;
+          z < (pstart.z + height) * reciprocal_of_quality;
+          z += reciprocal_of_quality, index++
+        ) {
           data[index] += perlin.noise(x, z, this.options.height) / reciprocal_of_quality;
         }
       }
@@ -66,11 +74,16 @@ export class LandscapeOperation extends Operation {
     index = 0;
 
     for (let x = 0; x < width; x++) {
-      for (let z = 0; z < height; z++ , index++) {
-        const y2 = Math.min(Math.abs(data[index] * 0.2), this.worldInfo.partitionDimensionsInBlocks.y) | 0;
+      for (let z = 0; z < height; z++, index++) {
+        const y2 =
+          Math.min(Math.abs(data[index] * 0.2), this.worldInfo.partitionDimensionsInBlocks.y) | 0;
 
         if (y2 >= 3) {
-          for (let y = 0; y <= Math.min(this.worldInfo.partitionDimensionsInBlocks.y - 1, y2); y++) {
+          for (
+            let y = 0;
+            y <= Math.min(this.worldInfo.partitionDimensionsInBlocks.y - 1, y2);
+            y++
+          ) {
             const rindex = this.worldInfo.rindex(x, y, z);
 
             if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');

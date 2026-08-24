@@ -2,7 +2,7 @@ import type {
   RequestFor,
   WorkerMessage,
   WorkerRequest,
-  WorldInfoData
+  WorldInfoData,
 } from '../common/WorkerProtocol';
 
 import type {
@@ -11,7 +11,7 @@ import type {
   Movement,
   PlayerPositionChangeListener,
   PlainVector3,
-  SetBlocksArgs
+  SetBlocksArgs,
 } from '../common/Types';
 
 import type { ChangeHandlerOptions } from '../common/WorldInfo';
@@ -34,7 +34,7 @@ export default class WorkerInterface {
   constructor() {
     this.geoWorker = new Worker('build/worker.js');
 
-    this.geoWorker.onmessage = e => {
+    this.geoWorker.onmessage = (e) => {
       const message = e.data as WorkerMessage;
 
       // Responses carry a request id; events don't.
@@ -87,12 +87,12 @@ export default class WorkerInterface {
    */
   invoke<ReturnType, Action extends WorkerRequest['action']>(
     action: Action,
-    data: RequestFor<Action>['data']
+    data: RequestFor<Action>['data'],
   ): Promise<ReturnType> {
-    return new Promise<ReturnType>(resolve => {
+    return new Promise<ReturnType>((resolve) => {
       const id = this.lastId++;
 
-      this.callbacks[id] = data => resolve(data as ReturnType);
+      this.callbacks[id] = (data) => resolve(data as ReturnType);
 
       this.geoWorker.postMessage({ id, action, data });
     });
@@ -106,7 +106,7 @@ export default class WorkerInterface {
   invokeCallback<ReturnType>(action: string, data: object, callback: (r: ReturnType) => void) {
     const id = this.lastId++;
 
-    this.callbacks[id] = data => callback(data as ReturnType);
+    this.callbacks[id] = (data) => callback(data as ReturnType);
 
     this.geoWorker.postMessage({ id, action, data });
   }
@@ -124,7 +124,7 @@ export default class WorkerInterface {
   }
 
   getBlock(pos: PlainVector3): Promise<number> {
-    return this.invoke<{ type: number }, 'getBlock'>('getBlock', { pos }).then(result => {
+    return this.invoke<{ type: number }, 'getBlock'>('getBlock', { pos }).then((result) => {
       return result.type;
     });
   }
@@ -134,14 +134,14 @@ export default class WorkerInterface {
     end: PlainVector3,
     type: number,
     colour: number,
-    update: boolean
+    update: boolean,
   ): Promise<unknown> {
     const args: SetBlocksArgs = {
       start,
       end,
       type,
       colour,
-      update
+      update,
     };
 
     return this.invoke('setBlocks', args);
@@ -151,7 +151,7 @@ export default class WorkerInterface {
     const args: AddBlockArgs = {
       position,
       side,
-      type
+      type,
     };
 
     return this.invoke('addBlock', args);
@@ -174,7 +174,10 @@ export default class WorkerInterface {
     return this.invoke('getPartition', { index });
   }
 
-  registerChangeHandler(changeHandlerOptions: ChangeHandlerOptions, callback: (change: unknown) => void) {
+  registerChangeHandler(
+    changeHandlerOptions: ChangeHandlerOptions,
+    callback: (change: unknown) => void,
+  ) {
     return this.invokeCallback<unknown>('registerChangeHandler', changeHandlerOptions, callback);
   }
 

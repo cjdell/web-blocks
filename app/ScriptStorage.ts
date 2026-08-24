@@ -1,19 +1,19 @@
-import Cube from '../samples/Cube.js' with { type: "text" };
-import Pyramid from '../samples/Pyramid.js' with { type: "text" };
-import Circle from '../samples/Circle.js' with { type: "text" };
-import MagicBridge from '../samples/MagicBridge.js' with { type: "text" };
-import Rings from '../samples/Rings.js' with { type: "text" };
-import Trail from '../samples/Trail.js' with { type: "text" };
-import Dizzy from '../samples/Dizzy.js' with { type: "text" };
-import House from '../samples/House.js' with { type: "text" };
-import Palette from '../samples/Palette.js' with { type: "text" };
-import Pong from '../samples/Pong.js' with { type: "text" };
-import MouseBlock from '../samples/MouseBlock.js' with { type: "text" };
-import TunnelDigger from '../samples/TunnelDigger.js' with { type: "text" };
-import UFO from '../samples/UFO.js' with { type: "text" };
-import BoundPillar from '../samples/BoundPillar.js' with { type: "text" };
-import BoundHouse from '../samples/BoundHouse.js' with { type: "text" };
-import Stargate from '../samples/Stargate.js' with { type: "text" };
+import Cube from '../samples/Cube.js' with { type: 'text' };
+import Pyramid from '../samples/Pyramid.js' with { type: 'text' };
+import Circle from '../samples/Circle.js' with { type: 'text' };
+import MagicBridge from '../samples/MagicBridge.js' with { type: 'text' };
+import Rings from '../samples/Rings.js' with { type: 'text' };
+import Trail from '../samples/Trail.js' with { type: 'text' };
+import Dizzy from '../samples/Dizzy.js' with { type: 'text' };
+import House from '../samples/House.js' with { type: 'text' };
+import Palette from '../samples/Palette.js' with { type: 'text' };
+import Pong from '../samples/Pong.js' with { type: 'text' };
+import MouseBlock from '../samples/MouseBlock.js' with { type: 'text' };
+import TunnelDigger from '../samples/TunnelDigger.js' with { type: 'text' };
+import UFO from '../samples/UFO.js' with { type: 'text' };
+import BoundPillar from '../samples/BoundPillar.js' with { type: 'text' };
+import BoundHouse from '../samples/BoundHouse.js' with { type: 'text' };
+import Stargate from '../samples/Stargate.js' with { type: 'text' };
 
 interface Script {
   name: string;
@@ -22,7 +22,7 @@ interface Script {
   code: string;
 }
 
-console.log('Cube', Cube)
+console.log('Cube', Cube);
 
 const samples = [
   {
@@ -30,82 +30,97 @@ const samples = [
     sample: true,
     modified: new Date(2015, 5, 1),
     code: Cube.toString(),
-  }, {
+  },
+  {
     name: 'Pyramid',
     sample: true,
     modified: new Date(2015, 5, 1),
     code: Pyramid.toString(),
-  }, {
+  },
+  {
     name: 'Circle',
     sample: true,
     modified: new Date(2015, 5, 1),
     code: Circle.toString(),
-  }, {
+  },
+  {
     name: 'Magic Bridge',
     sample: true,
     modified: new Date(2016, 9, 11),
     code: MagicBridge.toString(),
-  }, {
+  },
+  {
     name: 'Rings',
     sample: true,
     modified: new Date(2015, 5, 2),
     code: Rings.toString(),
-  }, {
+  },
+  {
     name: 'Trail',
     sample: true,
     modified: new Date(2015, 5, 4),
     code: Trail.toString(),
-  }, {
+  },
+  {
     name: 'Dizzy',
     sample: true,
     modified: new Date(2015, 5, 7),
     code: Dizzy.toString(),
-  }, {
+  },
+  {
     name: 'House',
     sample: true,
     modified: new Date(2015, 5, 7),
     code: House.toString(),
-  }, {
+  },
+  {
     name: 'Palette',
     sample: true,
     modified: new Date(2015, 5, 7),
     code: Palette.toString(),
-  }, {
+  },
+  {
     name: 'Pong',
     sample: true,
     modified: new Date(2016, 8, 21),
     code: Pong.toString(),
-  }, {
+  },
+  {
     name: 'Mouse Block',
     sample: true,
     modified: new Date(2016, 5, 30),
     code: MouseBlock.toString(),
-  }, {
+  },
+  {
     name: 'Tunnel Digger',
     sample: true,
     modified: new Date(2016, 9, 17),
     code: TunnelDigger.toString(),
-  }, {
+  },
+  {
     name: 'UFO',
     sample: true,
     modified: new Date(2016, 8, 28),
     code: UFO.toString(),
-  }, {
+  },
+  {
     name: 'Button Activated Pillar',
     sample: true,
     modified: new Date(2017, 1, 1),
     code: BoundPillar.toString(),
-  }, {
+  },
+  {
     name: 'Button Activated House',
     sample: true,
     modified: new Date(2017, 1, 2),
     code: BoundHouse.toString(),
-  }, {
+  },
+  {
     name: 'Button Activated Stargate',
     sample: true,
     modified: new Date(2017, 1, 3),
     code: Stargate.toString(),
-  }
+  },
 ];
 
 export default class ScriptStorage {
@@ -125,7 +140,7 @@ export default class ScriptStorage {
       // Date on load — otherwise modified.getTime() in the sort below
       // throws on scripts saved in a previous session, and the throw
       // aborts module init so the app never mounts at all.
-      loaded = (JSON.parse(scripts) as Script[]).map(script => ({
+      loaded = (JSON.parse(scripts) as Script[]).map((script) => ({
         ...script,
         modified: new Date(script.modified),
       }));
@@ -137,7 +152,7 @@ export default class ScriptStorage {
   }
 
   save() {
-    const scriptsToSave = this.scripts.filter(s => {
+    const scriptsToSave = this.scripts.filter((s) => {
       return !s.sample;
     });
 
@@ -145,7 +160,7 @@ export default class ScriptStorage {
   }
 
   getScriptNames() {
-    return this.scripts.map(s => s.name);
+    return this.scripts.map((s) => s.name);
   }
 
   getScripts() {
@@ -153,7 +168,7 @@ export default class ScriptStorage {
   }
 
   getScript(name: string) {
-    const matches = this.scripts.filter(script => {
+    const matches = this.scripts.filter((script) => {
       return script.name === name;
     });
 
@@ -169,7 +184,7 @@ export default class ScriptStorage {
   }
 
   putScript(name: string, code: string): void {
-    const matches = this.scripts.filter(script => {
+    const matches = this.scripts.filter((script) => {
       return script.name === name;
     });
 
@@ -193,7 +208,7 @@ export default class ScriptStorage {
       name: name,
       sample: false,
       modified: new Date(),
-      code: code
+      code: code,
     });
 
     this.save();

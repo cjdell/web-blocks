@@ -61,8 +61,10 @@ export type WorkerRequest =
   | { id: number; action: 'executeBoundScript'; data: { index: number } };
 
 /** The full request member for one action, including its id. */
-export type RequestFor<Action extends WorkerRequest['action']> =
-  Extract<WorkerRequest, { action: Action }>;
+export type RequestFor<Action extends WorkerRequest['action']> = Extract<
+  WorkerRequest,
+  { action: Action }
+>;
 
 // ======== Worker → host ========
 

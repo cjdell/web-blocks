@@ -3,10 +3,10 @@ import CuboidTool from './CuboidTool';
 import BlockTool from './BlockTool';
 
 type ToolDefinition = {
-  type: string,
-  name: string,
-  icon: string,
-  class: { new (context: Context): Tool }
+  type: string;
+  name: string;
+  icon: string;
+  class: { new (context: Context): Tool };
 };
 
 const Tools: ToolDefinition[] = [
@@ -14,14 +14,14 @@ const Tools: ToolDefinition[] = [
     type: 'block',
     name: 'Single',
     icon: 'textures/tool-block.png',
-    class: BlockTool
+    class: BlockTool,
   },
   {
     type: 'cuboid',
     name: 'Multi',
     icon: 'textures/tool-cuboid.png',
-    class: CuboidTool
-  }
+    class: CuboidTool,
+  },
 ];
 
 export default Tools;

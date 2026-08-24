@@ -15,7 +15,7 @@ export default class Partition {
   private partitionPosition: IntVector3;
 
   private dirty = false;
-  private edgeDirty = [false, false, false, false]; // x, x, z, z 
+  private edgeDirty = [false, false, false, false]; // x, x, z, z
 
   constructor(worldInfo: WorldInfo, ppos: IntVector3) {
     this.worldInfo = worldInfo;
@@ -27,17 +27,16 @@ export default class Partition {
     this.offset = new IntVector3(
       ppos.x * this.worldInfo.partitionDimensionsInBlocks.x,
       ppos.y * this.worldInfo.partitionDimensionsInBlocks.y,
-      ppos.z * this.worldInfo.partitionDimensionsInBlocks.z
+      ppos.z * this.worldInfo.partitionDimensionsInBlocks.z,
     );
 
     this.dirty = false;
     this.edgeDirty = [false, false, false, false];
 
-    this.occupied = 0;   // Total of everything that isn't air
+    this.occupied = 0; // Total of everything that isn't air
 
     this.heightMap = new Uint8Array(
-      this.worldInfo.partitionDimensionsInBlocks.x *
-      this.worldInfo.partitionDimensionsInBlocks.z
+      this.worldInfo.partitionDimensionsInBlocks.x * this.worldInfo.partitionDimensionsInBlocks.z,
     );
   }
 
@@ -75,7 +74,7 @@ export default class Partition {
       for (let y = start.y; y <= end.y; y++) {
         let index = this.worldInfo.rindex(start.x, y, z);
 
-        for (let x = start.x; x <= end.x; x++ , index++) {
+        for (let x = start.x; x <= end.x; x++, index++) {
           this.setBlockWithIndex(index, type, 0);
         }
       }
@@ -145,7 +144,8 @@ export default class Partition {
     if (
       px >= this.worldInfo.partitionDimensionsInBlocks.x ||
       py >= this.worldInfo.partitionDimensionsInBlocks.y ||
-      pz >= this.worldInfo.partitionDimensionsInBlocks.z) {
+      pz >= this.worldInfo.partitionDimensionsInBlocks.z
+    ) {
       throw new Error('Out of range');
     }
   }

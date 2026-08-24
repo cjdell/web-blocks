@@ -37,7 +37,7 @@ export default class WorldGeometry {
 
     return {
       data: partitionGeometry.getData(),
-      offset: partitionGeometry.getOffset()
+      offset: partitionGeometry.getOffset(),
     };
   }
 }

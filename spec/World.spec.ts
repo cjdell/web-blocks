@@ -9,7 +9,7 @@ describe('World', () => {
     const worldInfo = new WorldInfo({
       worldDimensionsInPartitions: new IntVector3(4, 1, 4),
       partitionDimensionsInBlocks: new IntVector3(256, 32, 256),
-      partitionBoundaries: null
+      partitionBoundaries: null,
     });
 
     const world = new World(worldInfo);
@@ -51,7 +51,7 @@ describe('World', () => {
     const worldInfo = new WorldInfo({
       worldDimensionsInPartitions: new IntVector3(128, 1, 128),
       partitionDimensionsInBlocks: new IntVector3(256, 256, 256),
-      partitionBoundaries: null
+      partitionBoundaries: null,
     });
 
     let i = 0;
@@ -74,7 +74,7 @@ describe('World', () => {
     const worldInfo = new WorldInfo({
       worldDimensionsInPartitions: new IntVector3(128, 1, 128),
       partitionDimensionsInBlocks: new IntVector3(256, 256, 256),
-      partitionBoundaries: null
+      partitionBoundaries: null,
     });
 
     let errors = 0;
@@ -82,7 +82,8 @@ describe('World', () => {
     for (let z = 0; z < worldInfo.partitionDimensionsInBlocks.z; z += 1) {
       for (let y = 0; y < worldInfo.partitionDimensionsInBlocks.y; y += 1) {
         for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1) {
-          const ox = 1024, oz = 1024;
+          const ox = 1024,
+            oz = 1024;
 
           const rpos = worldInfo.rposw(ox + x, 0, oz + z);
 

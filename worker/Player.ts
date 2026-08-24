@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import World            from './World';
+import World from './World';
 import { BlockTypeIds } from '../common/BlockTypeList';
 
 import {
   Movement,
   PlayerPositionChangeListener,
   BoundScriptsChangeListener,
-  PlainVector3
+  PlainVector3,
 } from '../common/Types';
 
 const FPS = 60;
@@ -17,7 +17,7 @@ export default class Player {
   print!: (msg: string) => void;
   rightClicked: boolean = false;
   // Set by the host via setMousePosition; null until the first mouse move.
-  mousePosition: { pos: PlainVector3, side: number } | null = null;
+  mousePosition: { pos: PlainVector3; side: number } | null = null;
 
   private world: World;
   private boundScripts: { [key: number]: () => void } = {};
@@ -39,7 +39,7 @@ export default class Player {
   private playerPositionChangeListener: PlayerPositionChangeListener | null = null;
   private boundScriptsChangeListener: BoundScriptsChangeListener | null = null;
 
-  rightClick: () => void = () => console.log("Right clicked!");
+  rightClick: () => void = () => console.log('Right clicked!');
 
   constructor(world: World) {
     this.world = world;
@@ -57,7 +57,7 @@ export default class Player {
 
     this.lastMovement = {
       move: new THREE.Vector3(0, 0, 0),
-      turn: new THREE.Vector2(0, 0)
+      turn: new THREE.Vector2(0, 0),
     };
   }
 
@@ -82,14 +82,13 @@ export default class Player {
     const correction = (now - this.lastFrame) / (1000 / FPS);
     this.lastFrame = now;
 
-
     this.lon += this.lastMovement.turn.x * correction * 2;
     this.lat += this.lastMovement.turn.y * correction * 2;
 
     this.lat = Math.max(-89.9, Math.min(89.9, this.lat));
 
-    const phi = this.lat * Math.PI / 180;
-    const theta = this.lon * Math.PI / 180;
+    const phi = (this.lat * Math.PI) / 180;
+    const theta = (this.lon * Math.PI) / 180;
 
     const accel = 100 / FPS;
 
@@ -122,13 +121,12 @@ export default class Player {
     this.velocity.x -= this.velocity.x * 0.1 * traction;
     this.velocity.z -= this.velocity.z * 0.1 * traction;
 
-
-    this.velocity.y -= this.gravity / FPS;  // Gravity
+    this.velocity.y -= this.gravity / FPS; // Gravity
 
     const inc = this.velocity.clone().multiplyScalar(correction / FPS);
 
     const nextPosition = this.position.clone().add(inc);
-    const boundary = this.position.clone().add(this.velocity.clone().normalize());  // Give player a radius of 1 for CD
+    const boundary = this.position.clone().add(this.velocity.clone().normalize()); // Give player a radius of 1 for CD
 
     if (nextPosition.y < -100) {
       // Player has fallen through the world, reset
@@ -255,10 +253,10 @@ export default class Player {
   addBoundScript(key: number, fn: () => void) {
     this.boundScripts[key] = fn;
 
-    const scripts = Object.keys(this.boundScripts).map(str => parseInt(str, 10));
+    const scripts = Object.keys(this.boundScripts).map((str) => parseInt(str, 10));
 
     this.boundScriptsChangeListener!({
-      scripts
+      scripts,
     });
   }
 

@@ -10,7 +10,7 @@ export default class ScriptRunner {
   run(code: string, expr: boolean): string {
     const toRun: string[] = [];
 
-    Object.getOwnPropertyNames(Api.prototype).forEach(key => {
+    Object.getOwnPropertyNames(Api.prototype).forEach((key) => {
       if ((Api.prototype as any)[key] instanceof Function) {
         toRun.push('const ' + key + ' = context.' + key + '.bind(context);\n');
       } else {

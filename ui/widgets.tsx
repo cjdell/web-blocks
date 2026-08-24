@@ -23,7 +23,9 @@ export function Button({ label, raised, primary, secondary, onClick }: ButtonPro
     raised ? 'btnRaised' : 'btnFlat',
     primary ? 'btnPrimary' : null,
     secondary ? 'btnSecondary' : null,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <button type="button" className={classes} onClick={onClick}>
@@ -35,9 +37,7 @@ export function Button({ label, raised, primary, secondary, onClick }: ButtonPro
 export function Toolbar({ children }: { children: React.ReactNode }) {
   return (
     <div className="toolbar">
-      <div className="toolbarGroup">
-        {children}
-      </div>
+      <div className="toolbarGroup">{children}</div>
     </div>
   );
 }
@@ -62,18 +62,19 @@ export function Tabs({ active, items, onTabClick }: TabsProps) {
   return (
     <div className="tabs">
       <div className="tabsBar">
-        {items.map(item => (
+        {items.map((item) => (
           <button
             key={item.id}
             type="button"
             className={'tab' + (item.id === active ? ' tabActive' : '')}
-            onClick={() => onTabClick(item.id)}>
+            onClick={() => onTabClick(item.id)}
+          >
             {item.label}
           </button>
         ))}
       </div>
 
-      {items.map(item => (
+      {items.map((item) => (
         <div key={item.id} className={'tabContent ' + (item.id === active ? 'show' : 'hide')}>
           {item.content}
         </div>
@@ -119,7 +120,7 @@ export function Dialog({ open, title, onRequestClose, actions, children }: Dialo
         <div className="dialogActions">{actions}</div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 

@@ -21,7 +21,7 @@ export class Loader {
   }
 
   getTypes(): number[] {
-    return Object.keys(this.geometries).map(t => parseInt(t, 10));
+    return Object.keys(this.geometries).map((t) => parseInt(t, 10));
   }
 
   getGeometry(type: number): Geometry {

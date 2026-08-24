@@ -20,7 +20,16 @@ export class Geometry {
     return (this.template.attributes as any).position.length / 3;
   }
 
-  generateGeometry(position: Float32Array, normal: Float32Array, uv: Float32Array, data: Float32Array, offset: number, rindex: number, _type: number, _colour: number) {
+  generateGeometry(
+    position: Float32Array,
+    normal: Float32Array,
+    uv: Float32Array,
+    data: Float32Array,
+    offset: number,
+    rindex: number,
+    _type: number,
+    _colour: number,
+  ) {
     if (!this.template) return;
 
     const { x, y, z } = this.worldInfo.rpos(rindex);

@@ -19,7 +19,7 @@ export default class MiniConsole {
     this.hider = null;
     this.history = [];
     this.historyIndex = -1;
-    this.currentText = "";
+    this.currentText = '';
     this.workerInterface = worker;
   }
 
@@ -53,7 +53,7 @@ export default class MiniConsole {
       return;
     }
 
-    this.input.style.display = this.shown ? "none" : "block";
+    this.input.style.display = this.shown ? 'none' : 'block';
 
     if (!this.shown) {
       // If we hit enter and it was hidden, clear any impending hides
@@ -61,15 +61,14 @@ export default class MiniConsole {
         clearTimeout(this.hider);
       }
 
-      this.output.style.display = "block";
+      this.output.style.display = 'block';
       this.input.focus();
       (window as any).blockMovement = true;
       this.shown = true;
-
     } else {
       // If we hit enter and it was on-screen
       const script = this.input.value;
-      this.input.value = "";
+      this.input.value = '';
       this.input.blur();
       this.shown = false;
       (window as any).blockMovement = false;
@@ -78,7 +77,7 @@ export default class MiniConsole {
         this.history.unshift(script);
 
         if (clearBeforeToggle) {
-          this.output.style.display = "none";
+          this.output.style.display = 'none';
           return;
         }
 
@@ -91,17 +90,18 @@ export default class MiniConsole {
           });
         }
       } else {
-        this.output.style.display = "none";
+        this.output.style.display = 'none';
       }
     }
   }
 
   addOutput(result: string) {
-    if (!result || result === "") return;
+    if (!result || result === '') return;
 
-    const line = document.createElement("li");
+    const line = document.createElement('li');
     line.innerText = result;
-    if (!this.output) this.output = document.querySelector('.miniConsoleOutput ul') as HTMLUListElement;
+    if (!this.output)
+      this.output = document.querySelector('.miniConsoleOutput ul') as HTMLUListElement;
     this.output.appendChild(line);
 
     // Hide output after 5 seconds
@@ -110,12 +110,12 @@ export default class MiniConsole {
     }
 
     this.hider = window.setTimeout(() => {
-      this.output.style.display = "none";
+      this.output.style.display = 'none';
     }, 5000);
 
     // If we have more than 6 outputs, remove the top one
     if (this.outputCount++ > 5) {
-      const oldestChild = this.output.querySelector("li") as HTMLLIElement;
+      const oldestChild = this.output.querySelector('li') as HTMLLIElement;
       this.output.removeChild(oldestChild);
       this.outputCount--;
     }

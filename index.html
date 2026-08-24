@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -8,21 +8,21 @@
 
     <meta name="description" content="Learn to code in this Minecraft-like world" />
     <meta name="keywords" content="Minecraft,JavaScript,Learning,Teaching,WebGL" />
-</head>
-<body>
+  </head>
+  <body>
     <div id="body"></div>
 
     <script src="build/style.js"></script>
     <script src="build/app.js"></script>
 
     <script>
-        window.blockMovement = false;
+      window.blockMovement = false;
 
-        window.addEventListener('load', () => {
-            const app = App();
+      window.addEventListener('load', () => {
+        const app = App();
 
-            app.init(document.querySelector("#body"));
-        });
+        app.init(document.querySelector('#body'));
+      });
     </script>
-</body>
+  </body>
 </html>

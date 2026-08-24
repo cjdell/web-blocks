@@ -8,7 +8,7 @@ console.log('Awaiting incoming connection...');
 wss.on('connection', (ws) => {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   const question = () => {
