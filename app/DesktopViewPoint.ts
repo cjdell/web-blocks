@@ -11,7 +11,7 @@ export default class DesktopViewPoint {
   private camera: THREE.PerspectiveCamera;
   private light: THREE.Light;
   private viewPort: HTMLDivElement;
-  private renderer: THREE.Renderer;
+  private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private worldInfo: com.WorldInfo;
   private workerInterface: WorkerInterface;
@@ -32,7 +32,7 @@ export default class DesktopViewPoint {
     camera: THREE.PerspectiveCamera,
     light: THREE.Light,
     viewPort: HTMLDivElement,
-    renderer: THREE.Renderer,
+    renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     worldInfo: com.WorldInfo,
     workerInterface: WorkerInterface
@@ -194,13 +194,17 @@ export default class DesktopViewPoint {
   onPlayerPositionChanged(player: PlayerPositionChangeArgs) {
     const PLAYER_HEIGHT = 1.0;
 
-    player.position.y += PLAYER_HEIGHT;
-    player.target.y += PLAYER_HEIGHT;
+    // The player data arrives over postMessage as plain {x, y, z} objects,
+    // not THREE.Vector3 instances (structured cloning drops class identity),
+    // so hand modern three's lookAt() explicit numbers — it only accepts a
+    // Vector3 instance or an (x, y, z) triple, and passing a plain object
+    // produces a NaN view matrix (nothing renders).
+    const x = player.position.x, y = player.position.y + PLAYER_HEIGHT, z = player.position.z;
+    const tx = player.target.x, ty = player.target.y + PLAYER_HEIGHT, tz = player.target.z;
 
-    this.position = player.position;
-
-    this.camera.position.set(player.position.x, player.position.y, player.position.z);
-    this.camera.lookAt(player.target);
+    this.position.set(x, y, z);
+    this.camera.position.set(x, y, z);
+    this.camera.lookAt(tx, ty, tz);
 
     // this.camera.position.set(player.position.x, player.position.y + 10, player.position.z);
     // this.camera.lookAt(player.position);

@@ -4,12 +4,15 @@ import * as THREE from 'three';
 
 import com from '../common/WorldInfo';
 import WorkerInterface from './WorkerInterface';
+// Ported from the removed lib/DeviceOrientationControls.js fork; three's
+// own example was dropped upstream (see app/DeviceOrientationControls.ts).
+import DeviceOrientationControls from './DeviceOrientationControls';
 
 export default class CardboardViewPoint {
   camera: THREE.PerspectiveCamera;
   light: THREE.Light;
   viewPort: HTMLDivElement;
-  renderer: THREE.Renderer;
+  renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   worldInfo: com.WorldInfo;
   workerInterface: WorkerInterface;
@@ -27,7 +30,7 @@ export default class CardboardViewPoint {
   //controls.noPan = true;
   //controls.autoRotate = true;
 
-  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.Renderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
+  constructor(camera: THREE.PerspectiveCamera, light: THREE.Light, viewPort: HTMLDivElement, renderer: THREE.WebGLRenderer, scene: THREE.Scene, worldInfo: com.WorldInfo, workerInterface: WorkerInterface) {
     console.log('CardboardViewPoint');
 
     this.camera = camera;
@@ -67,7 +70,7 @@ export default class CardboardViewPoint {
     }
 
     const setOrientationControls = (_e: any) => {
-      this.controls = new (THREE as any).DeviceOrientationControls(camera, true);
+      this.controls = new DeviceOrientationControls(camera);
       this.controls.connect();
       this.controls.update();
 

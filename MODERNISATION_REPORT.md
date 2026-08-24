@@ -1,8 +1,9 @@
 # Web Blocks — Modernisation Report
 
-_A surface-level modernisation pass was completed on 2026‑08‑24. This document
-records what changed, what was deliberately left alone, and a prioritised plan
-for the deeper work that remains._
+_A surface-level modernisation pass and the full P1 dependency upgrade
+(React 19, hand-rolled UI, three 0.185) were completed on 2026‑08‑24. This
+document records what changed, what was deliberately left alone, and a
+prioritised plan for the deeper work that remains._
 
 ---
 
@@ -29,8 +30,8 @@ All changes are non-breaking: `yarn build`, `yarn typecheck`, `yarn lint`, and
   - Note: `react-tap-event-plugin` was initially removed as deprecated but
     restored — material-ui 0.15's `Tabs`/buttons only react to the synthetic
     `topTouchTap` event that this plugin generates, so without it the Script
-    tab (and all MUI buttons) stopped working. It stays until the
-    `@mui/material` upgrade (P1.2).
+    tab (and all MUI buttons) stopped working. It was removed again once P1.2
+    replaced MUI with the hand-rolled UI.
 - **Linting** — removed the long-defunct **tslint** config and added an
   ESLint 9 flat config (`eslint.config.js`) using `typescript-eslint`.
   Lint went from unconfigured to green; vendored 2015-era code
@@ -77,60 +78,74 @@ covered in the plan below.
 
 | Area | Current | Why it stays for now |
 |------|---------|----------------------|
-| `react` / `react-dom` | 15.3.1 (2016) | Upgrading is a breaking change (see P1). |
-| `three` | 0.81.0 (2016) | ~100 major versions behind; large API churn (see P1). |
-| `material-ui` | 0.15.4 (pre-1.0, 2016) | Replaced entirely by `@mui/material`; different API (see P1). |
 | `underscore` | 1.8.3 | Still imported in ~7 files; removal is a small but real refactor (see P2). |
-| `typings/globals/*` (react, three, material-ui, chai, mocha, underscore) | 2015 DefinitelyTyped snapshot | Only the `node` one was deleted (it was actively broken). The rest still provide the *only* type declarations for the old packages and should go away **together with** the dependency upgrades, replaced by real `@types/*` or the packages' own types. |
+| `typings/globals/*` (chai, mocha, underscore) | 2015 DefinitelyTyped snapshot | The react/react-dom/material-ui/three ones were deleted with their P1 upgrades. These three declare the test tooling and go away with the P2 test migration. |
 | `common/WorldInfo.ts` `namespace Common` pattern | legacy | Converting to ES module exports touches ~20 import sites (see P2). |
-| `worker/` `Object` / `Function` typing | untyped protocol | Needs a deliberate typing effort (see P2). |
-| Google Cardboard support | disabled | Non-functional; needs a product decision (see P3). |
+| `worker/` `Object` / `Function` typing | untyped protocol | Needs a deliberate typing effort (see P2). Note `PlayerPositionChangeArgs` now uses `PlainVector3` (see P1.3) — the first step in telling the truth about what crosses the worker boundary. |
+| Google Cardboard support | disabled | Non-functional; needs a product decision (see P3). Its code now compiles against three 0.185 (ported `DeviceOrientationControls`, official `StereoEffect`), so option (b) is cheaper than it was. |
 
 ---
 
 ## 3. Suggested next steps (prioritised)
 
-### P1 — Upgrade the 2016 runtime dependencies (biggest value, biggest effort)
+### P1 — Upgrade the 2016 runtime dependencies (biggest value, biggest effort) — DONE
 
-These are the three packages that dominate both the bundle and the risk.
-Do them as separate, independently-reviewable PRs, in this order.
+Completed 2026‑08‑24 in separate commits, in the planned order, with the full
+gate (typecheck, lint, test, build, test:ui) green after each step.
 
-1. **React 15 → 19.** Mechanical but wide. Key breaking changes to plan for:
-   - `ReactDOM.render` → `createRoot` (React 18+).
-   - `React.PropTypes` and `childContextTypes`/`getChildContext` are gone —
-     `ui/index.tsx` uses both (`static childContextTypes`,
-     `getChildContext`). Replace the MUI theme context with the modern
-     `<ThemeProvider>` (below) and drop `getChildContext` entirely.
-   - String refs (`ref="viewPort"`, `this.refs.*`) → callback refs.
-     `ui/CodeEditor.tsx` and `ui/index.tsx` rely on string refs heavily.
-   - `react-dom` 15 → 19 in lockstep.
-   - Add `@types/react@19` / `@types/react-dom@19` and delete
-     `typings/globals/react*`.
+1. **React 15 → 19.** — done. As planned: `ReactDOM.render` → `createRoot`,
+   `childContextTypes`/`getChildContext` dropped, string refs → callback refs,
+   `react-dom` in lockstep, `@types/react@19` / `@types/react-dom@19` added
+   and `typings/globals/react*` deleted.
 
-2. **`material-ui@0.15` → `@mui/material`.** This is a near-total rewrite of
-   the UI layer because the package was renamed and re-architected at v1.
-   Only a handful of components are actually used (`import * as mui` in
-   `ui/CodeEditor.tsx` and `ui/ScriptPicker.tsx`, plus the theme provider in
-   `ui/index.tsx`). Map the old names to the new ones (e.g. `FlatButton` →
-   `Button`, `getMuiTheme`/`lightBaseTheme` → `createTheme`). Consider whether
-   the UI is simple enough to justify dropping MUI entirely and hand-rolling a
-   few components — that would remove a large dependency.
+2. **`material-ui@0.15` → hand-rolled UI.** — done, with a better outcome than
+   the plan: the UI turned out to be simple enough that MUI was dropped
+   entirely rather than migrated to `@mui/material`. `ui/widgets.tsx`
+   implements the handful of components used (tabs, buttons, dialogs, lists);
+   `react-tap-event-plugin` and `typings/globals/material-ui` went with it.
+   One large dependency removed instead of swapped.
 
-3. **`three` 0.81 → latest (0.1xx).** The largest single risk. The codebase
-   uses `THREE.BufferGeometry`, `WebGLRenderer`, `Mesh`, materials, textures,
-   and the custom `shaders/*.glsl`. Expect churn in:
-   - Texture / color-management API (`.encoding` → `.colorSpace`, sRGB
-     handling) — `Game.ts` builds a `THREE.Texture` from a canvas.
-   - `THREE.UVMapping` / `ClampToEdgeWrapping` and related constants were
-     removed/renamed in later versions.
-   - The vendored `lib/OrbitControls.js`, `StereoEffect.js`,
-     `DeviceOrientationControls.js` are 2015 forks of three's own examples —
-     replace with the official `three/examples/jsm/controls/…` equivalents
-     (now ESM and maintained) once the three version is current.
-   - Add `@types/three` and delete `typings/globals/three`.
+3. **`three` 0.81 → 0.185.** — done. The API churn was mostly mechanical:
+   - `BufferGeometry.addAttribute` → `setAttribute`; `PlaneBufferGeometry` →
+     `PlaneGeometry` (unified in r125).
+   - `THREE.Geometry` + `.merge` / `fromGeometry` (gone in r125) —
+     `worker/Geometry/FenceGeometry.ts` rebuilt with `BoxGeometry` +
+     `BufferGeometryUtils.mergeGeometries`, same transforms (T·S matrices).
+   - `THREE.Texture` constructor arguments (mapping/wrap/filters, gone in
+     r132) set as properties; `THREE.VertexColors` parameter dropped
+     (the block shader uses its own `data` attribute, not three's
+     vertex-colors mechanism); `MeshBasicMaterial` `overdraw` option dropped.
+   - `Frustum.setFromMatrix` → `setFromProjectionMatrix`;
+     `Box3.getCenter` now requires a target vector;
+     `camera.matrixWorldInverse` updated via `.copy(…).invert()`
+     (`Matrix4.getInverse` is gone).
+   - Vendored 2015 control forks replaced: `StereoEffect` imported from the
+     official `three/examples/jsm/effects/`; `DeviceOrientationControls`
+     ported to `app/DeviceOrientationControls.ts` (upstream removed it from
+     the examples); `OrbitControls` deleted (referenced only in a comment —
+     the desktop platform uses pointer lock, not orbit).
+   - `@types/three@0.185` added; `typings/globals/three` (6.7 KB of 2015
+     declarations) deleted.
+   - The custom `shaders/block.*.glsl` (`RawShaderMaterial`, GLSL ES 1.00)
+     needed **no changes** — WebGL2 still accepts ES 1.00 shaders, and the
+     hand-rolled lighting/fog are independent of three's scene lights.
 
-   **Suggestion:** prototype the three upgrade in an isolated branch first,
-   since the worker (`worker/`) and viewer (`app/`) both construct geometry.
+   **The one real bug (caught only by `yarn test:ui`):** the app rendered a
+   pure-white canvas with thousands of draw calls executing. `postMessage`
+   strips class identity, so the player position/target arriving from the
+   worker are plain `{x, y, z}` objects; three 0.81's `lookAt(vector)` did
+   `_v1.copy(vector)` (tolerates plain objects), but modern three's
+   `lookAt(x, y, z)` gates on `x.isVector3` and otherwise calls
+   `_v1.set(object, undefined, undefined)` — a NaN view matrix that made the
+   GPU discard every vertex. Fixed in `DesktopViewPoint.onPlayerPositionChanged`
+   by passing explicit numbers, and `PlayerPositionChangeArgs` now uses the
+   new `PlainVector3` type so the worker boundary types tell the truth.
+   Lesson: `test:ui`'s "pixels are not uniform" check is what typechecking
+   and builds cannot see — keep it in the gate.
+
+   Bundle effect: `app.js` ~1.17 MB → ~765 KiB and `worker.js` ~518 KB →
+   ~155 KiB (pre-gzip) — modern three tree-shakes, and the 2016-era bundles
+   shipped a lot of dead code.
 
 ### P2 — Type-safety & dead-weight removal
 
@@ -166,8 +181,11 @@ Do them as separate, independently-reviewable PRs, in this order.
    (device-orientation permissions, the Cardboard SDK, etc.). Recommend (a)
    for now and revisiting if there's real demand.
 
-9. **Bundle size.** `app.js` is ~1.17 MB and `worker.js` ~518 KB (pre-gzip),
-   both well over the 244 KiB budget webpack warns about. Options:
+9. **Bundle size.** Post-P1 the bundles shrank even though three.js grew:
+   `app.js` is ~765 KiB (was ~1.17 MB) and `worker.js` ~155 KiB (was
+   ~518 KB) pre-gzip — modern three tree-shakes, and the 2016-era bundles
+   shipped a lot of dead code. Only `app.js` still exceeds the 244 KiB
+   webpack budget. Options:
    - Lazy-load the code editor / UI (`React.lazy` + `import()`).
    - Split the three.js-heavy viewer from the React UI.
    - Confirm production minification is on (it is, via `mode: production`),
@@ -204,8 +222,9 @@ yarn            # install
 yarn typecheck  # tsc --noEmit          → clean
 yarn lint       # eslint .              → clean
 yarn test       # mocha (via tsx)       → 3 passing
-yarn build      # webpack (production)  → 3 size warnings only
+yarn build      # webpack (production)  → size warnings only (app.js, see P3.9)
+yarn test:ui    # playwright headless   → 11/11 (boots, world renders, worker pipeline, no console errors)
 ```
 
-The remaining three webpack warnings are asset-size advisories (see P3.9) and
-are expected given the current bundle sizes.
+The remaining webpack warnings are asset-size advisories for `app.js` only
+(see P3.9) and are expected given the current bundle sizes.

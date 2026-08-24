@@ -88,7 +88,6 @@ export default class Game {
         uniforms: this.uniforms,
         vertexShader: this.vertexShader,
         fragmentShader: this.fragmentShader,
-        vertexColors: THREE.VertexColors,
         transparent: false
       });
 
@@ -198,7 +197,13 @@ export default class Game {
     });
 
     return Promise.all(blockTypePromises).then(() => {
-      const texture = new THREE.Texture(canvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter);
+      // The extra Texture constructor arguments (mapping, wrap, filters)
+      // were removed in three r132+; set them as properties instead.
+      const texture = new THREE.Texture(canvas);
+      texture.wrapS = THREE.ClampToEdgeWrapping;
+      texture.wrapT = THREE.ClampToEdgeWrapping;
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.LinearMipMapLinearFilter;
       texture.needsUpdate = true;
       return texture;
     });

@@ -2,6 +2,7 @@
  * Common types shared between UI and Web workers  
  */
 
+import * as THREE from 'three';
 import com from '../common/WorldInfo';
 
 /**
@@ -26,9 +27,21 @@ export interface SetBlocksArgs {
   update: boolean;
 }
 
+/**
+ * A plain {x, y, z} vector. Values sent across the worker boundary are
+ * structured-cloned, so a THREE.Vector3 arrives as a plain object without
+ * Vector3 class identity (no `isVector3`, no methods). Code on the receiving
+ * end must treat these as data, not as Vector3 instances.
+ */
+export interface PlainVector3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
 export interface PlayerPositionChangeArgs {
-  position: THREE.Vector3;
-  target: THREE.Vector3;
+  position: PlainVector3;
+  target: PlainVector3;
 }
 
 export interface PlayerPositionChangeListener {

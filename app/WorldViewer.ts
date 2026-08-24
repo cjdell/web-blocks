@@ -103,11 +103,12 @@ export default class WorldViewer {
 
     const bufferGeometry = new THREE.BufferGeometry();
 
-    bufferGeometry.addAttribute('position', new THREE.BufferAttribute(geo.data.position, 3));
-    bufferGeometry.addAttribute('normal', new THREE.BufferAttribute(geo.data.normal, 3));
-    bufferGeometry.addAttribute('uv', new THREE.BufferAttribute(geo.data.uv, 2));
-    bufferGeometry.addAttribute('data', new THREE.BufferAttribute(geo.data.data, 4));
-    bufferGeometry.addAttribute('offset', new THREE.BufferAttribute(geo.data.offset, 1));
+    // BufferGeometry.addAttribute was renamed setAttribute (r110+).
+    bufferGeometry.setAttribute('position', new THREE.BufferAttribute(geo.data.position, 3));
+    bufferGeometry.setAttribute('normal', new THREE.BufferAttribute(geo.data.normal, 3));
+    bufferGeometry.setAttribute('uv', new THREE.BufferAttribute(geo.data.uv, 2));
+    bufferGeometry.setAttribute('data', new THREE.BufferAttribute(geo.data.data, 4));
+    bufferGeometry.setAttribute('offset', new THREE.BufferAttribute(geo.data.offset, 1));
 
     bufferGeometry.computeBoundingSphere();
     bufferGeometry.computeBoundingBox();
@@ -175,7 +176,9 @@ export default class WorldViewer {
   }
 
   addSky() {
-    const geometry = new THREE.PlaneBufferGeometry(1, 1);
+    // PlaneBufferGeometry was removed when Geometry/BufferGeometry were
+    // unified (r125+); PlaneGeometry is the buffer-based one now.
+    const geometry = new THREE.PlaneGeometry(1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0xbbccff, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(geometry, material);
 

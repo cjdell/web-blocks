@@ -1,6 +1,6 @@
 /// <reference path="../../typings/index.d.ts" />
 import * as THREE from 'three';
-// import fs = require('fs');
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import com from '../../common/WorldInfo';
 import { Geometry } from './Geometry';
 
@@ -10,53 +10,29 @@ export class FenceGeometry extends Geometry {
   }
 
   init(): Promise<void> {
-    const geometry = new THREE.Geometry();
-    const cube = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    // THREE.Geometry (and its .merge / .fromGeometry helpers) was removed in
+    // three r125+. Build the fence from modern BufferGeometries instead: a
+    // top bar and two posts, transformed the same way the old code did
+    // (scale then translate: M = T * S).
     const mat = new THREE.Matrix4();
 
-    mat.scale(new THREE.Vector3(1.0, 0.1, 0.1));
-    mat.setPosition(new THREE.Vector3(0.5, 0.5, 0.5));
-    geometry.merge(cube, mat, 0);
+    const bar = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    mat.makeScale(1.0, 0.1, 0.1);
+    mat.setPosition(0.5, 0.5, 0.5);
+    bar.applyMatrix4(mat);
 
-    mat.identity();
+    const postLeft = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    mat.makeScale(0.1, 0.5, 0.1);
+    mat.setPosition(0.05 + (1 / 5), 0.25, 0.5);
+    postLeft.applyMatrix4(mat);
 
-    mat.scale(new THREE.Vector3(0.1, 0.5, 0.1));
-    mat.setPosition(new THREE.Vector3(0.05 + (1 / 5), 0.25, 0.5));
-    geometry.merge(cube, mat, 0);
+    const postRight = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    mat.makeScale(0.1, 0.5, 0.1);
+    mat.setPosition(0.95 - (1 / 5), 0.25, 0.5);
+    postRight.applyMatrix4(mat);
 
-    mat.identity();
+    this.template = mergeGeometries([bar, postLeft, postRight]);
 
-    mat.scale(new THREE.Vector3(0.1, 0.5, 0.1));
-    mat.setPosition(new THREE.Vector3(0.95 - (1 / 5), 0.25, 0.5));
-    geometry.merge(cube, mat, 0);
-
-    this.template = new THREE.BufferGeometry();
-    this.template.fromGeometry(geometry);
-
-    return Promise.resolve(null);
-
-    // return new Promise<void>((resolve, reject) => {
-    //   var loader = new THREE.JSONLoader();
-    //
-    //   // var buf = fs.readFileSync('./models/box.json');
-    //   // var prefix = "data:application/json;base64,";
-    //   // var url = prefix + buf.toString('base64');
-    //
-    //   const url = '../models/Ted.json';
-    //
-    //   loader.load(url, (geometry, materials) => {
-    //     const mat = new THREE.Matrix4();
-    //     mat.setPosition(new THREE.Vector3(0.5, 0.5, 0.5));
-    //     mat.scale(new THREE.Vector3(0.5, 0.5, 0.5));
-    //
-    //     const geo = new THREE.Geometry();
-    //     geo.merge(geometry, mat, 0);
-    //
-    //     this.fenceTemplate = new THREE.BufferGeometry();
-    //     this.fenceTemplate.fromGeometry(geo);
-    //
-    //     return resolve();
-    //   });
-    // });
+    return Promise.resolve();
   }
 }

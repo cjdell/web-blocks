@@ -16,11 +16,12 @@ export default class Culling {
   getVisiblePartitions(): number[] {
     this.camera.updateMatrix();
     this.camera.updateMatrixWorld(false);
-    this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
+    // Matrix4.getInverse was removed; invert() is the modern in-place API.
+    this.camera.matrixWorldInverse.copy(this.camera.matrixWorld).invert();
 
     const frustum = new THREE.Frustum();
 
-    frustum.setFromMatrix(
+    frustum.setFromProjectionMatrix(
       new THREE.Matrix4().multiplyMatrices(
         this.camera.projectionMatrix,
         this.camera.matrixWorldInverse
@@ -37,7 +38,8 @@ export default class Culling {
       );
 
       const cam2d = this.camera.position.clone().setY(0);
-      const partCentre = box.getCenter().setY(0);
+      // Box3.getCenter now requires a target vector.
+      const partCentre = box.getCenter(new THREE.Vector3()).setY(0);
 
       const dist = cam2d.distanceTo(partCentre);
 

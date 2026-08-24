@@ -31,7 +31,7 @@ export default class DesktopPlatform {
     camera: THREE.PerspectiveCamera,
     light: THREE.Light,
     viewPort: HTMLDivElement,
-    renderer: THREE.Renderer,
+    renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     worldInfo: com.WorldInfo,
     workerInterface: WorkerInterface) {

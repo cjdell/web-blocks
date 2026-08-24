@@ -79,7 +79,7 @@ export default class Webcam {
     this.videoTexture.minFilter = THREE.LinearFilter;
     this.videoTexture.magFilter = THREE.LinearFilter;
 
-    const movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, overdraw: 1, side: THREE.DoubleSide });
+    const movieMaterial = new THREE.MeshBasicMaterial({ map: this.videoTexture, side: THREE.DoubleSide });
 
     // the geometry on which the movie will be displayed;
     // 		movie image will be scaled to fit these dimensions.

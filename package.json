@@ -15,9 +15,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/three": "^0.185.4",
     "react": "^19",
     "react-dom": "^19",
-    "three": "0.81.0",
+    "three": "^0.185.1",
     "underscore": "1.8.3"
   },
   "devDependencies": {

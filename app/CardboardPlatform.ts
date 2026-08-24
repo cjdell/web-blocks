@@ -1,9 +1,8 @@
 /// <reference path="../typings/index.d.ts" />
 import * as THREE from 'three';
-
-import '../lib/StereoEffect';
-import '../lib/DeviceOrientationControls';
-import '../lib/OrbitControls';
+// The vendored 2015 forks in lib/ assigned onto the (no longer global)
+// THREE object; use the maintained official example instead.
+import { StereoEffect } from 'three/examples/jsm/effects/StereoEffect.js';
 
 import com from '../common/WorldInfo';
 import CardboardViewPoint from './CardboardViewPoint';
@@ -31,7 +30,7 @@ export default class CardboardPlatform {
 
     container.appendChild(this.renderer.domElement);
 
-    this.effect = new (THREE as any).StereoEffect(this.renderer);
+    this.effect = new StereoEffect(this.renderer);
     this.effect.setSize(width, height);
   }
 
@@ -39,7 +38,7 @@ export default class CardboardPlatform {
     camera: THREE.PerspectiveCamera,
     light: THREE.Light,
     viewPort: HTMLDivElement,
-    renderer: THREE.Renderer,
+    renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     worldInfo: com.WorldInfo,
     workerInterface: WorkerInterface) {
