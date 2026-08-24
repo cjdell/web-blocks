@@ -4,11 +4,11 @@ _A surface-level modernisation pass, the full P1 dependency upgrade
 (React 19, hand-rolled UI, three 0.185), the full P2 type-safety &
 dead-weight removal (underscore out, ES-module `WorldInfo`, typed
 worker protocol, `strict: true`), and P3.8 (removal of the dead Cardboard
-platform), P3.9 (real post-gzip size budgets), and P4.11/P4.13/P4.14
-(Prettier, the `packageManager` pin, `ws` placement) were completed on
-2026‑08‑24 — P4.12, the vitest migration, is deferred (see §3). This
-document records what changed, what was deliberately left alone, and a
-prioritised plan for the deeper work that remains._
+platform), P3.9 (real post-gzip size budgets), and all of P4 (Prettier,
+the vitest migration, the `packageManager` pin, `ws` placement) were
+completed on 2026‑08‑24. This document records what changed, what was
+deliberately left alone, and a prioritised plan for the deeper work that
+remains._
 
 ---
 
@@ -294,7 +294,7 @@ each step.
     `yarn test`, and `yarn build`. This is cheap and prevents regressions
     like the one where a bare `tsc` was silently broken.
 
-### P4 — Nicer-to-have — DONE (11, 13, 14; 12 deferred per its own trigger)
+### P4 — Nicer-to-have — DONE
 
 Completed 2026‑08‑24 in separate commits, with the full gate green after
 each step.
@@ -314,10 +314,15 @@ each step.
 
 12. **Migrate tests to `vitest`** (faster, native TS, first-class ESM) if the
     suite grows; the current single-file mocha setup is adequate for now.
-    — **deferred, per the item's own trigger.** The suite is still the single
-    `spec/World.spec.ts` (3 tests) and the mocha + `tsx` setup is clean, so
-    there is no growth to justify a migration yet. Revisit when a second spec
-    file appears.
+    — done (at the user's request, ahead of the item's own growth trigger).
+    `vitest@4` (+ its `vite@8` peer) replaces `mocha@11`: `yarn test` is now
+    `vitest run`, which auto-discovers `*.spec.ts`, so the `test.ts` mocha
+    entry file is gone. The spec imports `{ describe, expect, it }` from
+    `vitest`; the assertion chains are unchanged (vitest's `expect` is
+    chai-based, so `.to.be.equal` etc. work verbatim), which also let `chai`
+    and its `@types` go — four dependencies removed, two added. `tsconfig`
+    `types` dropped `"mocha"`. 3/3 tests pass, and the suite is now a
+    first-class ESM/TS setup ready for more spec files.
 
 13. **`engines` + `packageManager`** — pin the package manager (add a
     `packageManager` field for Corepack) so contributors don't drift between
@@ -346,7 +351,7 @@ yarn            # install
 yarn typecheck  # tsc --noEmit          → clean
 yarn lint       # eslint .              → clean
 yarn format:check # prettier --check .  → clean (P4.11; `yarn format` writes)
-yarn test       # mocha (via tsx)       → 3 passing
+yarn test       # vitest run            → 3 passing
 yarn build      # webpack (production)  → clean (P3.9 set real raw size limits)
 yarn size       # post-gzip budgets     → ok (app ≤ 230 KiB, worker ≤ 48, style ≤ 12)
 yarn test:ui    # playwright headless   → 12/12 (boots, world renders, worker pipeline, no console errors)
