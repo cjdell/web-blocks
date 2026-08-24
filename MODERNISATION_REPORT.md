@@ -4,9 +4,11 @@ _A surface-level modernisation pass, the full P1 dependency upgrade
 (React 19, hand-rolled UI, three 0.185), the full P2 type-safety &
 dead-weight removal (underscore out, ES-module `WorldInfo`, typed
 worker protocol, `strict: true`), and P3.8 (removal of the dead Cardboard
-platform) and P3.9 (real post-gzip size budgets) were completed on
-2026‑08‑24. This document records what changed, what was deliberately
-left alone, and a prioritised plan for the deeper work that remains._
+platform), P3.9 (real post-gzip size budgets), and P4.11/P4.13/P4.14
+(Prettier, the `packageManager` pin, `ws` placement) were completed on
+2026‑08‑24 — P4.12, the vitest migration, is deferred (see §3). This
+document records what changed, what was deliberately left alone, and a
+prioritised plan for the deeper work that remains._
 
 ---
 
@@ -292,18 +294,46 @@ each step.
     `yarn test`, and `yarn build`. This is cheap and prevents regressions
     like the one where a bare `tsc` was silently broken.
 
-### P4 — Nicer-to-have
+### P4 — Nicer-to-have — DONE (11, 13, 14; 12 deferred per its own trigger)
+
+Completed 2026‑08‑24 in separate commits, with the full gate green after
+each step.
 
 11. **Prettier** for consistent formatting (currently mixed 2/4-space and
-    quote styles).
+    quote styles). — done. `prettier@3` added as a devDependency, with a
+    `.prettierrc.json` (`tabWidth: 2`, `singleQuote: true`,
+    `printWidth: 100`) and a `.prettierignore` covering `build/`, vendored
+    `lib/`, learner-facing `samples/`, binary `textures/`, and the
+    hand-wrapped `*.md` docs (Prettier's markdown reflow breaks the
+    hand-maintained line wrapping and list-item indents). New scripts:
+    `yarn format` (write) and `yarn format:check` (the gate). 55 files
+    reformatted — pure whitespace/quote/line-wrap changes, no behaviour
+    change; `test:ui` still 12/12 afterwards. The two `shaders/*.glsl` files
+    are untouched: Prettier 3.9 has no built-in GLSL parser, and a plugin for
+    two small stable files was not worth the dependency.
+
 12. **Migrate tests to `vitest`** (faster, native TS, first-class ESM) if the
     suite grows; the current single-file mocha setup is adequate for now.
+    — **deferred, per the item's own trigger.** The suite is still the single
+    `spec/World.spec.ts` (3 tests) and the mocha + `tsx` setup is clean, so
+    there is no growth to justify a migration yet. Revisit when a second spec
+    file appears.
+
 13. **`engines` + `packageManager`** — pin the package manager (add a
     `packageManager` field for Corepack) so contributors don't drift between
-    yarn/npm/pnpm.
+    yarn/npm/pnpm. — done. `engines` (`node >= 20`) was already in place;
+    added `"packageManager": "yarn@1.22.22"` for Corepack, pinning the exact
+    yarn that produced the v1 `yarn.lock`. `yarn install --frozen-lockfile`
+    re-verified clean; the lockfile is unchanged.
+
 14. **`ws` dependency placement** — `ws` is a `devDependency` but is used by
     `ws-cli/index.ts`, a runnable CLI, not just a build tool. Move it to
-    `dependencies` if the CLI is meant to be run from a clean install.
+    `dependencies` if the CLI is meant to be run from a clean install. —
+    done. `ws` moved to `dependencies`: the CLI is a runnable deliverable
+    (verified to boot and listen on :8001), so a production install must
+    provide it. `@types/ws` stays a devDependency (type-check only). The web
+    bundles are unaffected — `ws-cli` is not a webpack entry — and the v1
+    lockfile does not record the dev/prod split, so it is unchanged.
 
 ---
 
@@ -315,6 +345,7 @@ After this pass, from a clean checkout:
 yarn            # install
 yarn typecheck  # tsc --noEmit          → clean
 yarn lint       # eslint .              → clean
+yarn format:check # prettier --check .  → clean (P4.11; `yarn format` writes)
 yarn test       # mocha (via tsx)       → 3 passing
 yarn build      # webpack (production)  → clean (P3.9 set real raw size limits)
 yarn size       # post-gzip budgets     → ok (app ≤ 230 KiB, worker ≤ 48, style ≤ 12)
