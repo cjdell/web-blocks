@@ -26,6 +26,9 @@
  * install it with `yarn playwright install chromium`.
  *
  * Usage:  yarn test   (or yarn test:ui for just this file)
+ *
+ * To watch the browser drive itself through the checks, run it headed:
+ *   HEADED=1 yarn test:ui
  */
 import http from 'node:http';
 import fs from 'node:fs';
@@ -34,6 +37,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, type TestContext } from 'vitest';
 import { chromium, type Browser, type Page } from 'playwright';
+
+/**
+ * Whether to launch the browser visibly (headed) for manual verification.
+ * Defaults to headless for CI / `yarn test`. Opt in with:
+ *
+ *   HEADED=1 yarn test:ui
+ *
+ * The browser drives itself through every check, so you can watch the world
+ * render and each interaction happen in real time. (vitest parses its own
+ * CLI and rejects unknown flags, so the switch is an environment variable
+ * rather than a `--headed` option.)
+ */
+function headedMode(): boolean {
+  const env = (process.env.HEADED ?? '').trim().toLowerCase();
+  return env === '1' || env === 'true' || env === 'yes' || env === 'on';
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -199,7 +218,7 @@ describe('UI sanity (headless browser)', () => {
     console.log(`Serving ${ROOT} at http://127.0.0.1:${port}/index.html`);
 
     browser = await chromium.launch({
-      headless: true,
+      headless: !headedMode(),
       args: [
         // Chrome 137+ gates software WebGL (SwiftShader) behind this flag.
         '--enable-unsafe-swiftshader',
@@ -210,7 +229,13 @@ describe('UI sanity (headless browser)', () => {
 
     page.on('pageerror', (err) => pageErrors.push(String(err)));
     page.on('console', (msg) => {
-      if (msg.type() === 'error') consoleErrors.push(msg.text());
+      // A missing favicon.ico is a benign, browser-initiated 404 — the app
+      // ships no favicon — and every headed browser auto-requests one. It is
+      // already ignored by the 4xx check below, so ignore it here too; otherwise
+      // every headed run fails on a favicon it never asked for.
+      if (msg.type() === 'error' && !msg.location().url.includes('favicon.ico')) {
+        consoleErrors.push(msg.text());
+      }
     });
     page.on('requestfailed', (req) =>
       failedRequests.push(`${req.method()} ${req.url()} (${req.failure()?.errorText ?? 'failed'})`),

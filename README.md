@@ -41,6 +41,8 @@ Other scripts:
   - yarn test — run the test suite (vitest): the world simulation tests
     plus the headless-browser UI sanity checks (Playwright)
   - yarn test:ui — run just the headless-browser UI sanity checks
+    set HEADED=1 to launch a visible (headed) browser so you can watch the
+    checks run in real time — e.g. `HEADED=1 yarn test:ui`
   - yarn lint — run ESLint
   - yarn size — check the post-gzip bundle size budgets
   - yarn format — format the codebase with Prettier
