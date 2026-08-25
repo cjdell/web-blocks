@@ -55,6 +55,11 @@ export default class Game {
 
     this.renderer.setClearColor(0xffffff, 1);
 
+    // Debug hook: expose the live Game so headless diagnostic harnesses can
+    // read the camera / scene / worldViewer (rendered geometry) and freeze the
+    // camera. Off in normal use but harmless. (Same hook the ao-* tools use.)
+    // (globalThis as any).__game = this;
+
     this.camera = new THREE.PerspectiveCamera(
       45,
       window.innerWidth / window.innerHeight,
@@ -171,9 +176,14 @@ export default class Game {
   }
 
   loadShaders(): Promise<object> {
+    // `no-store`: shaders are fetched fresh from source at runtime, so never
+    // let the browser serve a stale cached copy. Without this a leftover
+    // fragment shader can stay stuck in the fetch cache across edits, which
+    // silently inverts/alters the rendered lighting (e.g. a leftover
+    // `1 - max(vLight,...)` surviving in cache).
     return Promise.all([
-      win.fetch('shaders/block.vertex.glsl'),
-      win.fetch('shaders/block.fragment.glsl'),
+      win.fetch('shaders/block.vertex.glsl', { cache: 'no-store' }),
+      win.fetch('shaders/block.fragment.glsl', { cache: 'no-store' }),
     ])
       .then((res) => {
         return Promise.all([res[0].text(), res[1].text()]);

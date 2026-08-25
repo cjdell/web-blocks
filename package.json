@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build": "webpack",
+    "dev": "concurrently \"webpack --watch --mode development\" \"http-server -p 8888\"",
     "start": "http-server -p 8888",
     "test": "vitest run",
     "test:ui": "vitest run test/ui/sanity.test.ts",
@@ -31,6 +32,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/ws": "^8.18.1",
+    "concurrently": "^10.0.5",
     "css-loader": "^7.1.4",
     "eslint": "^10.9.0",
     "globals": "^17.11.0",

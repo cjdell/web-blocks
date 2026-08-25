@@ -53,8 +53,12 @@ void main() {
   // Voxel lighting: per-vertex sky light × directional face brightness ×
   // ambient occlusion, interpolated across the face (baked in the worker).
   // A small floor keeps the deepest caves just visible.
+  //
+  // Light only the COLOUR channels. `col * light` would also scale alpha, so
+  // a dark (low-light) corner went transparent and the white sky/fog showed
+  // through, turning the shadow bright. Voxels are opaque: keep alpha at 1.0.
   float light = max(vLight, 0.02);
-  gl_FragColor = col * light;
+  gl_FragColor = vec4(col.rgb * light, 1.0);
 
   float shine = 0.0;
 

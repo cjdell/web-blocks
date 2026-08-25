@@ -7,3 +7,4 @@ tmp
 yarn-error.log
 upload.sh
 models
+tools/debug/
