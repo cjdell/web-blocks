@@ -99,7 +99,7 @@ export default class PartitionGeometry {
       const colour = blocks[o + 5];
       const shade = blocks[o + 6];
 
-      const { x, y, z } = this.worldInfo.rpos(index);
+      const { x, y, z } = this.worldInfo.localPosition(index);
 
       if (Loader.Instance.getTypes().indexOf(type) !== -1) {
         const geometry = Loader.Instance.getGeometry(type);

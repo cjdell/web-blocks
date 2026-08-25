@@ -91,15 +91,21 @@ export class WorldInfo {
   worldCapacity: number;
   worldPartitionCapacity: number;
 
-  WPX = 0 | 0;
-  WPY = 0 | 0;
-  WPZ = 0 | 0; // World partition dimensions
-  PBX = 0 | 0;
-  PBY = 0 | 0;
-  PBZ = 0 | 0; // Partition block dimensions
-  WBX = 0 | 0;
-  WBY = 0 | 0;
-  WBZ = 0 | 0; // World block dimensions
+  // log2 of the number of partitions along each world axis (used for the
+  // bit-shifts that pack/unpack partition-grid indices).
+  partitionCountLogX = 0 | 0;
+  partitionCountLogY = 0 | 0;
+  partitionCountLogZ = 0 | 0;
+
+  // log2 of the block dimensions of a single partition.
+  partitionBlockLogX = 0 | 0;
+  partitionBlockLogY = 0 | 0;
+  partitionBlockLogZ = 0 | 0;
+
+  // log2 of the world's block dimensions (partitionCountLog + partitionBlockLog).
+  worldBlockLogX = 0 | 0;
+  worldBlockLogY = 0 | 0;
+  worldBlockLogZ = 0 | 0;
 
   constructor(vars: WorldInfoInterface) {
     const wdip = vars.worldDimensionsInPartitions;
@@ -109,17 +115,17 @@ export class WorldInfo {
     this.partitionDimensionsInBlocks = new IntVector3(pdib.x | 0, pdib.y | 0, pdib.z | 0);
     this.partitionBoundaries = vars.partitionBoundaries ?? [];
 
-    this.WPX = this.log2(wdip.x);
-    this.WPY = this.log2(wdip.y);
-    this.WPZ = this.log2(wdip.z);
+    this.partitionCountLogX = this.log2(wdip.x);
+    this.partitionCountLogY = this.log2(wdip.y);
+    this.partitionCountLogZ = this.log2(wdip.z);
 
-    this.PBX = this.log2(pdib.x);
-    this.PBY = this.log2(pdib.y);
-    this.PBZ = this.log2(pdib.z);
+    this.partitionBlockLogX = this.log2(pdib.x);
+    this.partitionBlockLogY = this.log2(pdib.y);
+    this.partitionBlockLogZ = this.log2(pdib.z);
 
-    this.WBX = this.WPX + this.PBX;
-    this.WBY = this.WPY + this.PBY;
-    this.WBZ = this.WPZ + this.PBZ; // World block dimensions
+    this.worldBlockLogX = this.partitionCountLogX + this.partitionBlockLogX;
+    this.worldBlockLogY = this.partitionCountLogY + this.partitionBlockLogY;
+    this.worldBlockLogZ = this.partitionCountLogZ + this.partitionBlockLogZ;
 
     this.worldDimensionsInBlocks = this.partitionDimensionsInBlocks.mul(
       this.worldDimensionsInPartitions,
@@ -142,50 +148,84 @@ export class WorldInfo {
     return Math.round(Math.log(num) / Math.log(2)) | 0;
   }
 
-  pindex(px: number, py: number, pz: number): number {
-    return (px + (pz << this.WPX)) | 0;
+  // Partition-grid coordinates → flat partition index.
+  partitionIndex(px: number, py: number, pz: number): number {
+    return (px + (pz << this.partitionCountLogX)) | 0;
   }
 
-  ppos(pindex: number): IntVector3 {
-    const z = (pindex >> (this.WPX + this.WPY)) | 0;
-    const y = ((pindex - (z << (this.WPX + this.WPY))) >> this.WPX) | 0;
-    const x = (pindex - ((y + (z << this.WPY)) << this.WPX)) | 0;
+  // Flat partition index → partition-grid coordinates.
+  partitionPosition(pindex: number): IntVector3 {
+    const z = (pindex >> (this.partitionCountLogX + this.partitionCountLogY)) | 0;
+    const y = ((pindex - (z << (this.partitionCountLogX + this.partitionCountLogY))) >> this.partitionCountLogX) | 0;
+    const x = (pindex - ((y + (z << this.partitionCountLogY)) << this.partitionCountLogX)) | 0;
 
     return new IntVector3(x, y, z);
   }
 
-  ppos2(ppos: Int32Array, pindex: number) {
-    const z = (pindex >> (this.WPX + this.WPY)) | 0;
-    const y = ((pindex - (z << (this.WPX + this.WPY))) >> this.WPX) | 0;
-    const x = (pindex - ((y + (z << this.WPY)) << this.WPX)) | 0;
+  partitionPositionInto(out: Int32Array, pindex: number) {
+    const z = (pindex >> (this.partitionCountLogX + this.partitionCountLogY)) | 0;
+    const y = ((pindex - (z << (this.partitionCountLogX + this.partitionCountLogY))) >> this.partitionCountLogX) | 0;
+    const x = (pindex - ((y + (z << this.partitionCountLogY)) << this.partitionCountLogX)) | 0;
 
-    ppos[0] = x;
-    ppos[1] = y;
-    ppos[2] = z;
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
   }
 
-  pposw(wx: number, wy: number, wz: number): IntVector3 {
-    const px = (wx >> this.PBX) | 0;
-    const py = (wy >> this.PBY) | 0;
-    const pz = (wz >> this.PBZ) | 0;
+  // World block coordinates → the partition-grid coordinate that contains them.
+  partitionFromWorld(wx: number, wy: number, wz: number): IntVector3 {
+    const px = (wx >> this.partitionBlockLogX) | 0;
+    const py = (wy >> this.partitionBlockLogY) | 0;
+    const pz = (wz >> this.partitionBlockLogZ) | 0;
 
     return new IntVector3(px, py, pz);
   }
 
-  pposw2(ppos: Int32Array, wpos: Int32Array) {
-    const px = (wpos[0] >> this.PBX) | 0;
-    const py = (wpos[1] >> this.PBY) | 0;
-    const pz = (wpos[2] >> this.PBZ) | 0;
+  partitionFromWorldInto(out: Int32Array, wpos: Int32Array) {
+    const px = (wpos[0] >> this.partitionBlockLogX) | 0;
+    const py = (wpos[1] >> this.partitionBlockLogY) | 0;
+    const pz = (wpos[2] >> this.partitionBlockLogZ) | 0;
 
-    ppos[0] = px;
-    ppos[1] = py;
-    ppos[2] = pz;
+    out[0] = px;
+    out[1] = py;
+    out[2] = pz;
   }
 
-  rposw(wx: number, wy: number, wz: number): IntVector3 {
-    const mx = (wx >> this.PBX) << this.PBX;
-    const my = (wy >> this.PBY) << this.PBY;
-    const mz = (wz >> this.PBZ) << this.PBZ;
+  // Is a partition-grid coordinate inside the world's partition range?
+  partitionInBounds(px: number, py: number, pz: number): boolean {
+    if (px < 0 || py < 0 || pz < 0) return false;
+
+    if (px >= this.worldDimensionsInPartitions.x) return false;
+    if (py >= this.worldDimensionsInPartitions.y) return false;
+    if (pz >= this.worldDimensionsInPartitions.z) return false;
+
+    return true;
+  }
+
+  // Flat partition index → within-partition (local) coordinates.
+  localPosition(rindex: number): IntVector3 {
+    const z = (rindex >> (this.partitionBlockLogX + this.partitionBlockLogY)) | 0;
+    const y = ((rindex - (z << (this.partitionBlockLogX + this.partitionBlockLogY))) >> this.partitionBlockLogX) | 0;
+    const x = (rindex - ((y + (z << this.partitionBlockLogY)) << this.partitionBlockLogX)) | 0;
+
+    return new IntVector3(x, y, z);
+  }
+
+  localPositionInto(out: Int32Array, rindex: number) {
+    const z = (rindex >> (this.partitionBlockLogX + this.partitionBlockLogY)) | 0;
+    const y = ((rindex - (z << (this.partitionBlockLogX + this.partitionBlockLogY))) >> this.partitionBlockLogX) | 0;
+    const x = (rindex - ((y + (z << this.partitionBlockLogY)) << this.partitionBlockLogX)) | 0;
+
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+  }
+
+  // World block coordinates → within-partition (local) coordinates.
+  localFromWorld(wx: number, wy: number, wz: number): IntVector3 {
+    const mx = (wx >> this.partitionBlockLogX) << this.partitionBlockLogX;
+    const my = (wy >> this.partitionBlockLogY) << this.partitionBlockLogY;
+    const mz = (wz >> this.partitionBlockLogZ) << this.partitionBlockLogZ;
 
     const rx = (wx - mx) | 0;
     const ry = (wy - my) | 0;
@@ -194,72 +234,47 @@ export class WorldInfo {
     return new IntVector3(rx, ry, rz);
   }
 
-  rposw2(rpos: Int32Array, wpos: Int32Array) {
-    const mx = (wpos[0] >> this.PBX) << this.PBX;
-    const my = (wpos[1] >> this.PBY) << this.PBY;
-    const mz = (wpos[2] >> this.PBZ) << this.PBZ;
+  localFromWorldInto(out: Int32Array, wpos: Int32Array) {
+    const mx = (wpos[0] >> this.partitionBlockLogX) << this.partitionBlockLogX;
+    const my = (wpos[1] >> this.partitionBlockLogY) << this.partitionBlockLogY;
+    const mz = (wpos[2] >> this.partitionBlockLogZ) << this.partitionBlockLogZ;
 
     const rx = (wpos[0] - mx) | 0;
     const ry = (wpos[1] - my) | 0;
     const rz = (wpos[2] - mz) | 0;
 
-    rpos[0] = rx;
-    rpos[1] = ry;
-    rpos[2] = rz;
+    out[0] = rx;
+    out[1] = ry;
+    out[2] = rz;
   }
 
-  rindex(rx: number, ry: number, rz: number): number {
-    return (rx + ((ry + (rz << this.PBY)) << this.PBX)) | 0;
+  // Within-partition (local) coordinates → flat within-partition index.
+  localIndex(rx: number, ry: number, rz: number): number {
+    return (rx + ((ry + (rz << this.partitionBlockLogY)) << this.partitionBlockLogX)) | 0;
   }
 
-  rpos(rindex: number): IntVector3 {
-    const z = (rindex >> (this.PBX + this.PBY)) | 0;
-    const y = ((rindex - (z << (this.PBX + this.PBY))) >> this.PBX) | 0;
-    const x = (rindex - ((y + (z << this.PBY)) << this.PBX)) | 0;
+  // World block coordinates → flat world index.
+  worldIndex(wx: number, wy: number, wz: number): number {
+    return (wx + ((wy + (wz << this.worldBlockLogY)) << this.worldBlockLogX)) | 0;
+  }
+
+  // Flat world index → world block coordinates.
+  worldPosition(windex: number): IntVector3 {
+    const z = (windex >> (this.worldBlockLogX + this.worldBlockLogY)) | 0;
+    const y = ((windex - (z << (this.worldBlockLogX + this.worldBlockLogY))) >> this.worldBlockLogX) | 0;
+    const x = (windex - ((y + (z << this.worldBlockLogY)) << this.worldBlockLogX)) | 0;
 
     return new IntVector3(x, y, z);
   }
 
-  rpos2(rpos: Int32Array, rindex: number) {
-    const z = (rindex >> (this.PBX + this.PBY)) | 0;
-    const y = ((rindex - (z << (this.PBX + this.PBY))) >> this.PBX) | 0;
-    const x = (rindex - ((y + (z << this.PBY)) << this.PBX)) | 0;
+  worldPositionInto(out: Int32Array, windex: number) {
+    const z = (windex >> (this.worldBlockLogX + this.worldBlockLogY)) | 0;
+    const y = ((windex - (z << (this.worldBlockLogX + this.worldBlockLogY))) >> this.worldBlockLogX) | 0;
+    const x = (windex - ((y + (z << this.worldBlockLogY)) << this.worldBlockLogX)) | 0;
 
-    rpos[0] = x;
-    rpos[1] = y;
-    rpos[2] = z;
-  }
-
-  wpos(windex: number): IntVector3 {
-    const z = (windex >> (this.WBX + this.WBY)) | 0;
-    const y = ((windex - (z << (this.WBX + this.WBY))) >> this.WBX) | 0;
-    const x = (windex - ((y + (z << this.WBY)) << this.WBX)) | 0;
-
-    return new IntVector3(x, y, z);
-  }
-
-  wpos2(wpos: Int32Array, windex: number) {
-    const z = (windex >> (this.WBX + this.WBY)) | 0;
-    const y = ((windex - (z << (this.WBX + this.WBY))) >> this.WBX) | 0;
-    const x = (windex - ((y + (z << this.WBY)) << this.WBX)) | 0;
-
-    wpos[0] = x;
-    wpos[1] = y;
-    wpos[2] = z;
-  }
-
-  windex(wx: number, wy: number, wz: number): number {
-    return (wx + ((wy + (wz << this.WBY)) << this.WBX)) | 0;
-  }
-
-  vppos(px: number, py: number, pz: number): boolean {
-    if (px < 0 || py < 0 || pz < 0) return false;
-
-    if (px >= this.worldDimensionsInPartitions.x) return false;
-    if (py >= this.worldDimensionsInPartitions.y) return false;
-    if (pz >= this.worldDimensionsInPartitions.z) return false;
-
-    return true;
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
   }
 }
 

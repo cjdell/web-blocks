@@ -38,15 +38,15 @@ export interface WorldInfoData {
   partitionCapacity: number;
   worldCapacity: number;
   worldPartitionCapacity: number;
-  WPX: number;
-  WPY: number;
-  WPZ: number;
-  PBX: number;
-  PBY: number;
-  PBZ: number;
-  WBX: number;
-  WBY: number;
-  WBZ: number;
+  partitionCountLogX: number;
+  partitionCountLogY: number;
+  partitionCountLogZ: number;
+  partitionBlockLogX: number;
+  partitionBlockLogY: number;
+  partitionBlockLogZ: number;
+  worldBlockLogX: number;
+  worldBlockLogY: number;
+  worldBlockLogZ: number;
 }
 
 /**

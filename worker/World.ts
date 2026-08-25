@@ -80,7 +80,7 @@ export default class World {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
         for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
           const ppos = new IntVector3(x, y, z);
-          const pindex = this.worldInfo.pindex(x, y, z);
+          const pindex = this.worldInfo.partitionIndex(x, y, z);
 
           this.partitions[pindex] = new Partition(this.worldInfo, ppos);
         }
@@ -146,14 +146,14 @@ export default class World {
   }
 
   getBlock(wx: number, wy: number, wz: number): number {
-    const ppos = this.worldInfo.pposw(wx, wy, wz);
+    const ppos = this.worldInfo.partitionFromWorld(wx, wy, wz);
 
-    if (!this.worldInfo.vppos(ppos.x, ppos.y, ppos.z)) return 0 | 0;
+    if (!this.worldInfo.partitionInBounds(ppos.x, ppos.y, ppos.z)) return 0 | 0;
 
-    const rpos = this.worldInfo.rposw(wx, wy, wz);
-    const rindex = this.worldInfo.rindex(rpos.x, rpos.y, rpos.z);
+    const rpos = this.worldInfo.localFromWorld(wx, wy, wz);
+    const rindex = this.worldInfo.localIndex(rpos.x, rpos.y, rpos.z);
 
-    const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
+    const pindex = this.worldInfo.partitionIndex(ppos.x, ppos.y, ppos.z);
     const partition = this.getPartitionByIndex(pindex);
 
     // getPartitionByIndex() loads (and inits) the partition first.
@@ -267,7 +267,7 @@ export default class World {
     for (let z = 0; z < this.worldInfo.worldDimensionsInPartitions.z; z++) {
       for (let y = 0; y < this.worldInfo.worldDimensionsInPartitions.y; y++) {
         for (let x = 0; x < this.worldInfo.worldDimensionsInPartitions.x; x++) {
-          const partitionIndex = this.worldInfo.pindex(x, y, z);
+          const partitionIndex = this.worldInfo.partitionIndex(x, y, z);
 
           const points = new Array<THREE.Vector3>();
 
@@ -294,7 +294,7 @@ export default class World {
     const dirty: number[] = [];
 
     for (let partitionIndex = 0 | 0; partitionIndex < this.capacity; partitionIndex += 1) {
-      const ppos = this.worldInfo.ppos(partitionIndex);
+      const ppos = this.worldInfo.partitionPosition(partitionIndex);
 
       const checkAdjacent = (x: number, z: number, edge: number) => {
         if (
@@ -303,7 +303,7 @@ export default class World {
           ppos.x + x < this.worldInfo.worldDimensionsInPartitions.x &&
           ppos.z + z < this.worldInfo.worldDimensionsInPartitions.z
         ) {
-          const pindex = this.worldInfo.pindex(ppos.x + x, 0, ppos.z + z);
+          const pindex = this.worldInfo.partitionIndex(ppos.x + x, 0, ppos.z + z);
 
           if (this.partitions[pindex].isEdgeDirty(edge)) {
             dirty.push(partitionIndex);
@@ -332,7 +332,7 @@ export default class World {
   // ========
 
   getSurroundingBlocks(partition: Partition, rindex: number): number {
-    const rpos = this.worldInfo.rpos(rindex);
+    const rpos = this.worldInfo.localPosition(rindex);
 
     // if (x === 0 || y === 0 || z === 0) return 0;
     // if (x === this.worldInfo.partitionDimensionsInBlocks.x - 1 || y === this.worldInfo.partitionDimensionsInBlocks.y - 1 || z === this.worldInfo.partitionDimensionsInBlocks.z - 1) return 0;
@@ -365,7 +365,7 @@ export default class World {
             );
           } else {
             // otherwise, just read directly from partiton buffer (faster)
-            const rindex = this.worldInfo.rindex(rx, ry, rz) | 0;
+            const rindex = this.worldInfo.localIndex(rx, ry, rz) | 0;
             block = partition.blocks![VALUES_PER_BLOCK * rindex];
           }
 
@@ -393,15 +393,15 @@ export default class World {
         let height = 0;
 
         if (x < 0 || z < 0 || x > pdib.x - 1 || z > pdib.z - 1) {
-          const ppos = this.worldInfo.pposw(partition.offset.x + x, 0, partition.offset.z + z);
+          const ppos = this.worldInfo.partitionFromWorld(partition.offset.x + x, 0, partition.offset.z + z);
 
-          if (this.worldInfo.vppos(ppos.x, ppos.y, ppos.z)) {
-            const { x: rx2, z: rz2 } = this.worldInfo.rposw(
+          if (this.worldInfo.partitionInBounds(ppos.x, ppos.y, ppos.z)) {
+            const { x: rx2, z: rz2 } = this.worldInfo.localFromWorld(
               partition.offset.x + x,
               0,
               partition.offset.z + z,
             );
-            const pindex = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
+            const pindex = this.worldInfo.partitionIndex(ppos.x, ppos.y, ppos.z);
             const index = rz2 * pdib.x + rx2;
 
             const adjacentPartition = this.getPartitionByIndex(pindex);
@@ -458,11 +458,11 @@ export default class World {
 
       if (sidesTouching === (6 | 0)) continue;
 
-      const { x: rx, y: ry, z: rz } = this.worldInfo.rpos(rindex);
+      const { x: rx, y: ry, z: rz } = this.worldInfo.localPosition(rindex);
 
       const shade = this.computeOcclusion(partition, rx, ry, rz) * 16;
 
-      const windex = this.worldInfo.windex(
+      const windex = this.worldInfo.worldIndex(
         partition.offset.x + rx,
         partition.offset.y + ry,
         partition.offset.z + rz,

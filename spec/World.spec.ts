@@ -45,7 +45,7 @@ describe('World', () => {
     expect(world.partitions.length).to.be.equal(16);
   });
 
-  it('can convert from pos to index quickly', () => {
+  it('converts partition-grid coordinates to a flat index', () => {
     const worldInfo = new WorldInfo({
       worldDimensionsInPartitions: new IntVector3(128, 1, 128),
       partitionDimensionsInBlocks: new IntVector3(256, 256, 256),
@@ -58,7 +58,7 @@ describe('World', () => {
     for (let z = 0; z < worldInfo.partitionDimensionsInBlocks.z; z += 1) {
       for (let y = 0; y < worldInfo.partitionDimensionsInBlocks.y; y += 1) {
         for (let x = 0; x < worldInfo.partitionDimensionsInBlocks.x; x += 1, i += 1) {
-          const index = worldInfo.rindex(x, y, z);
+          const index = worldInfo.localIndex(x, y, z);
 
           if (index !== i) errors += 1;
         }
@@ -68,7 +68,7 @@ describe('World', () => {
     expect(errors).to.equal(0);
   });
 
-  it('can rposw', () => {
+  it('extracts local coordinates from world coordinates', () => {
     const worldInfo = new WorldInfo({
       worldDimensionsInPartitions: new IntVector3(128, 1, 128),
       partitionDimensionsInBlocks: new IntVector3(256, 256, 256),
@@ -83,7 +83,7 @@ describe('World', () => {
           const ox = 1024,
             oz = 1024;
 
-          const rpos = worldInfo.rposw(ox + x, 0, oz + z);
+          const rpos = worldInfo.localFromWorld(ox + x, 0, oz + z);
 
           if (rpos.x !== x) errors += 1;
           if (rpos.z !== z) errors += 1;

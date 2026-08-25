@@ -40,7 +40,7 @@ export class OperationCommand extends UndoableCommand {
       const type = result.buffer[blockNumber * 2 + 0];
       const colour = result.buffer[blockNumber * 2 + 1];
 
-      this.worldInfo.rpos2(rpos, rindex);
+      this.worldInfo.localPositionInto(rpos, rindex);
 
       wpos[0] = rpos[0] + ox;
       wpos[1] = rpos[1] + oy;

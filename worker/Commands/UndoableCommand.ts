@@ -40,9 +40,9 @@ export default class UndoableCommand extends Command {
   ): void {
     const snapshot = this.snapshots[partition.index];
 
-    this.worldInfo.rposw2(rpos, wpos);
+    this.worldInfo.localFromWorldInto(rpos, wpos);
 
-    const rindex = this.worldInfo.rindex(rpos[0], rpos[1], rpos[2]);
+    const rindex = this.worldInfo.localIndex(rpos[0], rpos[1], rpos[2]);
 
     const blockData = partition.getBlockWithIndex(rindex);
 
@@ -67,7 +67,7 @@ export default class UndoableCommand extends Command {
       const type = snapshot.blockData[i * 2 + 0];
       const colour = snapshot.blockData[i * 2 + 1];
 
-      this.worldInfo.rpos2(rpos, rindex);
+      this.worldInfo.localPositionInto(rpos, rindex);
 
       partition.setBlock(rpos[0], rpos[1], rpos[2], type, colour);
     }

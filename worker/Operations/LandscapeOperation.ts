@@ -24,7 +24,7 @@ export class LandscapeOperation extends Operation {
   getBlocks(pindex: number): OperationResult {
     // console.time('LandscapeOperation');
 
-    const ppos = this.worldInfo.ppos(pindex);
+    const ppos = this.worldInfo.partitionPosition(pindex);
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
@@ -84,14 +84,14 @@ export class LandscapeOperation extends Operation {
             y <= Math.min(this.worldInfo.partitionDimensionsInBlocks.y - 1, y2);
             y++
           ) {
-            const rindex = this.worldInfo.rindex(x, y, z);
+            const rindex = this.worldInfo.localIndex(x, y, z);
 
             if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');
 
             buffer[rindex * 2 + 0] = BlockTypeIds.Grass;
           }
         } else {
-          const rindex = this.worldInfo.rindex(x, 2, z);
+          const rindex = this.worldInfo.localIndex(x, 2, z);
 
           // if (rindex * 2 + 0 >= buffer.length) throw new Error('Bang');
 

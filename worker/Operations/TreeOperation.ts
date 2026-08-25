@@ -63,15 +63,15 @@ export class TreeOperation extends Operation {
     const start = this.options.pos.sub(new IntVector3(2, 0, 2));
     const end = this.options.pos.add(new IntVector3(2, 0, 2));
 
-    const { x: px1, y: py1, z: pz1 } = this.worldInfo.pposw(start.x, start.y, start.z);
-    const { x: px2, y: py2, z: pz2 } = this.worldInfo.pposw(end.x, end.y, end.z);
+    const { x: px1, y: py1, z: pz1 } = this.worldInfo.partitionFromWorld(start.x, start.y, start.z);
+    const { x: px2, y: py2, z: pz2 } = this.worldInfo.partitionFromWorld(end.x, end.y, end.z);
 
     const indices = new Array<number>();
 
     for (let px = px1; px <= px2; px++) {
       for (let py = py1; py <= py2; py++) {
         for (let pz = pz1; pz <= pz2; pz++) {
-          const partitionIndex = this.worldInfo.pindex(px, py, pz);
+          const partitionIndex = this.worldInfo.partitionIndex(px, py, pz);
           indices.push(partitionIndex);
         }
       }
@@ -83,7 +83,7 @@ export class TreeOperation extends Operation {
   }
 
   getBlocks(pindex: number): OperationResult {
-    const ppos = this.worldInfo.ppos(pindex);
+    const ppos = this.worldInfo.partitionPosition(pindex);
 
     // These are the partition boundaries
     const pstart = ppos.mul(this.worldInfo.partitionDimensionsInBlocks);
@@ -110,8 +110,8 @@ export class TreeOperation extends Operation {
                 const colour = 0;
 
                 if (type > 0) {
-                  const rpos = this.worldInfo.rposw(wpos.x, wpos.y, wpos.z);
-                  const rindex = this.worldInfo.rindex(rpos.x, rpos.y, rpos.z);
+                  const rpos = this.worldInfo.localFromWorld(wpos.x, wpos.y, wpos.z);
+                  const rindex = this.worldInfo.localIndex(rpos.x, rpos.y, rpos.z);
 
                   buffer[blockNumber * 2 + 0] = type;
                   buffer[blockNumber * 2 + 1] = colour;

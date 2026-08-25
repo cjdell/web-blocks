@@ -32,7 +32,7 @@ export class Geometry {
   ) {
     if (!this.template) return;
 
-    const { x, y, z } = this.worldInfo.rpos(rindex);
+    const { x, y, z } = this.worldInfo.localPosition(rindex);
 
     const attributes = this.template.attributes as any;
 

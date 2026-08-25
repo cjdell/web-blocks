@@ -176,7 +176,7 @@ export default class Interaction {
 
       const side = this.getSide(<THREE.Mesh>hitBlock.object, vertexIndex);
 
-      return { pos: this.worldInfo.wpos(offset), side };
+      return { pos: this.worldInfo.worldPosition(offset), side };
     }
 
     return null;

@@ -21,7 +21,7 @@ export default class Partition {
     this.worldInfo = worldInfo;
     this.partitionPosition = ppos;
 
-    this.index = this.worldInfo.pindex(ppos.x, ppos.y, ppos.z);
+    this.index = this.worldInfo.partitionIndex(ppos.x, ppos.y, ppos.z);
     this.capacity = this.worldInfo.partitionCapacity;
 
     this.offset = new IntVector3(
@@ -49,7 +49,7 @@ export default class Partition {
   }
 
   getBlock(rx: number, ry: number, rz: number): Uint8Array {
-    const index = this.worldInfo.rindex(rx, ry, rz);
+    const index = this.worldInfo.localIndex(rx, ry, rz);
 
     return new Uint8Array([this.blocks![VALUES_PER_BLOCK * index]]);
   }
@@ -59,7 +59,7 @@ export default class Partition {
 
     this.checkEdgeDirty(px, pz);
 
-    this.setBlockWithIndex(this.worldInfo.rindex(px, py, pz), type, colour);
+    this.setBlockWithIndex(this.worldInfo.localIndex(px, py, pz), type, colour);
   }
 
   // Note: the caller's colour is intentionally ignored (blocks get colour 0).
@@ -72,7 +72,7 @@ export default class Partition {
 
     for (let z = start.z; z <= end.z; z++) {
       for (let y = start.y; y <= end.y; y++) {
-        let index = this.worldInfo.rindex(start.x, y, z);
+        let index = this.worldInfo.localIndex(start.x, y, z);
 
         for (let x = start.x; x <= end.x; x++, index++) {
           this.setBlockWithIndex(index, type, 0);
@@ -106,7 +106,7 @@ export default class Partition {
 
   getHighestPoint(x: number, z: number) {
     for (let y = this.worldInfo.partitionDimensionsInBlocks.y - 1; y >= 0; y--) {
-      const index = this.worldInfo.rindex(x, y, z);
+      const index = this.worldInfo.localIndex(x, y, z);
 
       if (this.blocks![VALUES_PER_BLOCK * index] !== 0) return y;
     }
