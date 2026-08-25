@@ -82,7 +82,7 @@ const workerApi: GeometryWorkerApi = {
       emit(printListener, message);
     };
 
-    Loader.Instance = new Loader(worldInfo);
+    Loader.Instance = new Loader(worldInfo, world);
 
     setInterval(() => {
       player.tick();

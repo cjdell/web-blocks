@@ -156,7 +156,10 @@ export class WorldInfo {
   // Flat partition index → partition-grid coordinates.
   partitionPosition(pindex: number): IntVector3 {
     const z = (pindex >> (this.partitionCountLogX + this.partitionCountLogY)) | 0;
-    const y = ((pindex - (z << (this.partitionCountLogX + this.partitionCountLogY))) >> this.partitionCountLogX) | 0;
+    const y =
+      ((pindex - (z << (this.partitionCountLogX + this.partitionCountLogY))) >>
+        this.partitionCountLogX) |
+      0;
     const x = (pindex - ((y + (z << this.partitionCountLogY)) << this.partitionCountLogX)) | 0;
 
     return new IntVector3(x, y, z);
@@ -164,7 +167,10 @@ export class WorldInfo {
 
   partitionPositionInto(out: Int32Array, pindex: number) {
     const z = (pindex >> (this.partitionCountLogX + this.partitionCountLogY)) | 0;
-    const y = ((pindex - (z << (this.partitionCountLogX + this.partitionCountLogY))) >> this.partitionCountLogX) | 0;
+    const y =
+      ((pindex - (z << (this.partitionCountLogX + this.partitionCountLogY))) >>
+        this.partitionCountLogX) |
+      0;
     const x = (pindex - ((y + (z << this.partitionCountLogY)) << this.partitionCountLogX)) | 0;
 
     out[0] = x;
@@ -205,7 +211,10 @@ export class WorldInfo {
   // Flat partition index → within-partition (local) coordinates.
   localPosition(rindex: number): IntVector3 {
     const z = (rindex >> (this.partitionBlockLogX + this.partitionBlockLogY)) | 0;
-    const y = ((rindex - (z << (this.partitionBlockLogX + this.partitionBlockLogY))) >> this.partitionBlockLogX) | 0;
+    const y =
+      ((rindex - (z << (this.partitionBlockLogX + this.partitionBlockLogY))) >>
+        this.partitionBlockLogX) |
+      0;
     const x = (rindex - ((y + (z << this.partitionBlockLogY)) << this.partitionBlockLogX)) | 0;
 
     return new IntVector3(x, y, z);
@@ -213,7 +222,10 @@ export class WorldInfo {
 
   localPositionInto(out: Int32Array, rindex: number) {
     const z = (rindex >> (this.partitionBlockLogX + this.partitionBlockLogY)) | 0;
-    const y = ((rindex - (z << (this.partitionBlockLogX + this.partitionBlockLogY))) >> this.partitionBlockLogX) | 0;
+    const y =
+      ((rindex - (z << (this.partitionBlockLogX + this.partitionBlockLogY))) >>
+        this.partitionBlockLogX) |
+      0;
     const x = (rindex - ((y + (z << this.partitionBlockLogY)) << this.partitionBlockLogX)) | 0;
 
     out[0] = x;
@@ -261,7 +273,8 @@ export class WorldInfo {
   // Flat world index → world block coordinates.
   worldPosition(windex: number): IntVector3 {
     const z = (windex >> (this.worldBlockLogX + this.worldBlockLogY)) | 0;
-    const y = ((windex - (z << (this.worldBlockLogX + this.worldBlockLogY))) >> this.worldBlockLogX) | 0;
+    const y =
+      ((windex - (z << (this.worldBlockLogX + this.worldBlockLogY))) >> this.worldBlockLogX) | 0;
     const x = (windex - ((y + (z << this.worldBlockLogY)) << this.worldBlockLogX)) | 0;
 
     return new IntVector3(x, y, z);
@@ -269,7 +282,8 @@ export class WorldInfo {
 
   worldPositionInto(out: Int32Array, windex: number) {
     const z = (windex >> (this.worldBlockLogX + this.worldBlockLogY)) | 0;
-    const y = ((windex - (z << (this.worldBlockLogX + this.worldBlockLogY))) >> this.worldBlockLogX) | 0;
+    const y =
+      ((windex - (z << (this.worldBlockLogX + this.worldBlockLogY))) >> this.worldBlockLogX) | 0;
     const x = (windex - ((y + (z << this.worldBlockLogY)) << this.worldBlockLogX)) | 0;
 
     out[0] = x;

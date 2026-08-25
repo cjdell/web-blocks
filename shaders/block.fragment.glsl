@@ -13,8 +13,6 @@ uniform vec3 cameraPosition;
 uniform sampler2D textures;
 uniform sampler2D webcam;
 
-uniform vec3 ambientLightColor;
-
 uniform float time;
 
 varying vec3 vPos;
@@ -24,7 +22,7 @@ varying vec2 vUv;
 
 varying float vType;
 varying float vSide;
-varying float vShade;
+varying float vLight;
 varying vec3 vColour;
 
 void main() {
@@ -34,7 +32,6 @@ void main() {
 
   float type = floor(vType);
   float side = floor(vSide);
-  float shade = floor(vShade);
 
   float isSide = 0.0;
 
@@ -53,19 +50,11 @@ void main() {
     col = normalize(col + vec4(vColour, 0.0));
   }
 
-  // Pretty basic lambertian lighting...
-  vec4 addedLights = vec4(0.0, 0.0, 0.0, 1.0);
-
-  //vec3 pointLightPosition = vec3(100.0, 10.0, 100.0);
-  vec3 pointLightColor = vec3(1.0, 1.0, 1.0);
-  vec3 ambientLightColor = vec3(0.5, 0.5, 0.5);
-
-  //vec3 lightDirection = normalize(vPos - pointLightPosition);
-  vec3 lightDirection = vec3(-1.0, -1.0, -1.0);
-  addedLights.rgb += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLightColor;
-
-  float overcast = ((sin(time * 0.1 + vPos.x * 0.1) + 1.0) * 0.125 + 0.75);
-  gl_FragColor = col * (addedLights + vec4(ambientLightColor, 1.0)) * overcast;
+  // Voxel lighting: per-vertex sky light × directional face brightness ×
+  // ambient occlusion, interpolated across the face (baked in the worker).
+  // A small floor keeps the deepest caves just visible.
+  float light = max(vLight, 0.02);
+  gl_FragColor = col * light;
 
   float shine = 0.0;
 
@@ -75,11 +64,6 @@ void main() {
   }
 
   float fog = min(1.0, pow((gl_FragCoord.z / gl_FragCoord.w) / 128.0, 1.8));
-
-  // Only top face has shade
-  if (side == 3.0) {
-    gl_FragColor = gl_FragColor * (1.0 - (shade / 255.0));
-  }
 
   gl_FragColor = gl_FragColor * (1.0 - fog) + vec4(fogColor, 0.0) * fog;
 

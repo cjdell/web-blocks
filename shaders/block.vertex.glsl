@@ -30,7 +30,7 @@ varying vec2 vUv;
 
 varying float vType;
 varying float vSide;
-varying float vShade;
+varying float vLight;
 varying vec3 vColour;
 
 vec3 hsv2rgb(vec3 c) {
@@ -52,7 +52,7 @@ void main() {
 
     float type = data.x;
     float side = data.y;
-    float shade = data.z;
+    float light = data.z;
     float colour = data.w;
 
     float isSide = 0.0;
@@ -77,10 +77,12 @@ void main() {
       vUv = uv;
     }
 
-    // Rounding hack...
+    // Rounding hack for the quantised components...
     vSide = side + 0.1;
     vType = type + 0.1;
-    vShade = shade + 0.1;
+    // ...but light is continuous (per-vertex sky light × face × AO) and
+    // must pass through unmodified so it interpolates smoothly.
+    vLight = light;
 
     vec3 hsl = vec3(colour / 255.0, 1.0, 0.5);
     vColour = hsv2rgb(hsl);

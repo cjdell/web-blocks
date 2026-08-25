@@ -1,4 +1,5 @@
 import type { WorldInfo } from '../../common/WorldInfo';
+import type World from '../World';
 import { BlockTypeIds } from '../../common/BlockTypeList';
 import { Geometry } from './Geometry';
 import { FenceGeometry } from './FenceGeometry';
@@ -10,10 +11,10 @@ export class Loader {
 
   geometries: { [index: number]: Geometry } = {};
 
-  constructor(worldInfo: WorldInfo) {
+  constructor(worldInfo: WorldInfo, world: World) {
     this.worldInfo = worldInfo;
 
-    this.geometries[BlockTypeIds.Fence] = new FenceGeometry(this.worldInfo);
+    this.geometries[BlockTypeIds.Fence] = new FenceGeometry(this.worldInfo, world);
   }
 
   init(): Promise<void> {

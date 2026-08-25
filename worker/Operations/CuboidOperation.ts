@@ -27,12 +27,20 @@ export class CuboidOperation extends Operation {
       x: px1,
       y: py1,
       z: pz1,
-    } = this.worldInfo.partitionFromWorld(this.options.start.x, this.options.start.y, this.options.start.z);
+    } = this.worldInfo.partitionFromWorld(
+      this.options.start.x,
+      this.options.start.y,
+      this.options.start.z,
+    );
     const {
       x: px2,
       y: py2,
       z: pz2,
-    } = this.worldInfo.partitionFromWorld(this.options.end.x, this.options.end.y, this.options.end.z);
+    } = this.worldInfo.partitionFromWorld(
+      this.options.end.x,
+      this.options.end.y,
+      this.options.end.z,
+    );
 
     const indices = new Array<number>();
 

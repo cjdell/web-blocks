@@ -9,7 +9,10 @@ export default class Partition {
   public index: number;
   public capacity: number;
   public occupied = 0;
-  public heightMap: Uint8Array;
+  // Sky light level (0-15) per cell. null until the light engine computes
+  // it (Light.ensurePartitionLight); lightValid is the fast path.
+  public light: Uint8Array | null = null;
+  public lightValid = false;
 
   private worldInfo: WorldInfo;
   private partitionPosition: IntVector3;
@@ -34,10 +37,6 @@ export default class Partition {
     this.edgeDirty = [false, false, false, false];
 
     this.occupied = 0; // Total of everything that isn't air
-
-    this.heightMap = new Uint8Array(
-      this.worldInfo.partitionDimensionsInBlocks.x * this.worldInfo.partitionDimensionsInBlocks.z,
-    );
   }
 
   init(): void {
@@ -85,6 +84,12 @@ export default class Partition {
     return this.dirty;
   }
 
+  // Force a geometry refresh without a block change (e.g. light changed up
+  // to 15 blocks away in a neighbour partition).
+  markDirty(): void {
+    this.dirty = true;
+  }
+
   isEdgeDirty(edge: number): boolean {
     return this.edgeDirty[edge];
   }
@@ -92,26 +97,6 @@ export default class Partition {
   clearDirty() {
     this.dirty = false;
     this.edgeDirty = [false, false, false, false];
-  }
-
-  updateHeightMap() {
-    for (let z = 0; z < this.worldInfo.partitionDimensionsInBlocks.z; z++) {
-      const index = z * this.worldInfo.partitionDimensionsInBlocks.x;
-
-      for (let x = 0; x < this.worldInfo.partitionDimensionsInBlocks.x; x++) {
-        this.heightMap[index + x] = this.getHighestPoint(x, z);
-      }
-    }
-  }
-
-  getHighestPoint(x: number, z: number) {
-    for (let y = this.worldInfo.partitionDimensionsInBlocks.y - 1; y >= 0; y--) {
-      const index = this.worldInfo.localIndex(x, y, z);
-
-      if (this.blocks![VALUES_PER_BLOCK * index] !== 0) return y;
-    }
-
-    return 0;
   }
 
   isInited(): boolean {

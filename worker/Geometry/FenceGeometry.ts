@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { WorldInfo } from '../../common/WorldInfo';
+import type World from '../World';
 import { Geometry } from './Geometry';
 
 export class FenceGeometry extends Geometry {
-  constructor(worldInfo: WorldInfo) {
-    super(worldInfo);
+  constructor(worldInfo: WorldInfo, world: World) {
+    super(worldInfo, world);
   }
 
   init(): Promise<void> {

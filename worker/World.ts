@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { IntVector3, type WorldInfo, type PartitionBoundaries } from '../common/WorldInfo';
 import type { PlainVector3 } from '../common/Types';
+import { BlockTypeIds } from '../common/BlockTypeList';
 import Partition from './Partition';
 import Command from './Commands/Command';
+import Light from './Light';
 import { CuboidOperation } from './Operations/CuboidOperation';
 import { LandscapeOperation } from './Operations/LandscapeOperation';
 import { OperationCommand } from './Commands/OperationCommand';
@@ -17,13 +19,17 @@ export interface WorldChangedHandler {
 }
 
 const VALUES_PER_BLOCK = 3 | 0;
-const VALUES_PER_VBLOCK = 7 | 0;
+const VALUES_PER_VBLOCK = 8 | 0;
 
 export default class World {
   worldInfo: WorldInfo;
 
   capacity: number;
   partitionCapacity: number;
+
+  // Sky light engine (per-cell light levels). Constructed before any
+  // command can run; partitions' light is computed lazily on first use.
+  light: Light;
 
   commands = new Array<Command>();
 
@@ -42,6 +48,8 @@ export default class World {
     this.partitionCapacity = worldInfo.partitionCapacity;
 
     worldInfo.partitionBoundaries = this.getPartitionBoundaries();
+
+    this.light = new Light(this);
 
     // setTimeout(() => this.saveCommands(), 2000);
   }
@@ -96,6 +104,8 @@ export default class World {
       landscapeOperation,
     );
 
+    landscapeCommand.onBlockChanged = this.blockChangedHandler();
+
     this.applyCommand(landscapeCommand);
 
     // Tree are WIP so disabled them for now...
@@ -123,7 +133,11 @@ export default class World {
     if (!partition.isInited()) {
       partition.init();
 
-      // Apply commands as partitions are brought into existance
+      // Apply commands as partitions are brought into existance. The replay
+      // reports every block change to the light engine (batched, drained at
+      // the end).
+      this.light.beginUpdate();
+
       this.commands.forEach((command) => {
         const indices = command.getAffectedPartitionIndices();
 
@@ -131,6 +145,41 @@ export default class World {
           command.redo(partition);
         }
       });
+
+      this.light.endUpdate();
+
+      // The partition's new light may change the light at its boundaries,
+      // which lives in the neighbour partitions' already-built geometry.
+      this.markNeighbourPartitionsDirty(partition);
+      this.worldChanged();
+    }
+  }
+
+  // Light (and face visibility) can change up to 15 blocks from an edit, so
+  // the neighbours of a changed partition may need a geometry refresh even
+  // though their own blocks did not change.
+  markNeighbourPartitionsDirty(partition: Partition): void {
+    const wi = this.worldInfo;
+    const ppos = wi.partitionPosition(partition.index);
+
+    const offsets = [
+      [1, 0, 0],
+      [-1, 0, 0],
+      [0, 1, 0],
+      [0, -1, 0],
+      [0, 0, 1],
+      [0, 0, -1],
+    ];
+
+    for (let i = 0; i < offsets.length; i++) {
+      const px = ppos.x + offsets[i][0];
+      const py = ppos.y + offsets[i][1];
+      const pz = ppos.z + offsets[i][2];
+
+      if (!wi.partitionInBounds(px, py, pz)) continue;
+
+      const neighbour = this.partitions[wi.partitionIndex(px, py, pz)];
+      if (neighbour) neighbour.markDirty();
     }
   }
 
@@ -143,6 +192,28 @@ export default class World {
     this.loadPartition(partition);
 
     return partition;
+  }
+
+  // The light engine's per-block change hook, bound to this world.
+  blockChangedHandler(): (wpos: Int32Array, oldType: number, newType: number) => void {
+    const light = this.light;
+
+    return (wpos, oldType, newType) => {
+      light.blockChanged({ x: wpos[0], y: wpos[1], z: wpos[2] }, oldType, newType);
+    };
+  }
+
+  // The sky light level (0-15) at a world cell, computing the owning
+  // partition's light lazily. Above the world counts as full sky.
+  getLightAt(wx: number, wy: number, wz: number): number {
+    return this.light.getLightAt(wx, wy, wz);
+  }
+
+  // Ensure the light for a partition and its one-cell halo (the six face
+  // neighbours), then settle the light queue. Called before geometry
+  // generation so per-vertex light reads are fast paths.
+  ensureLightAround(partition: Partition): void {
+    this.light.ensureLightAround(partition);
   }
 
   getBlock(wx: number, wy: number, wz: number): number {
@@ -168,7 +239,17 @@ export default class World {
 
     if (indices !== null) partitionsToApply = indices.map((i) => this.partitions[i]);
 
-    partitionsToApply.filter((p) => p.isInited()).forEach(command.redo, command);
+    const initialised = partitionsToApply.filter((p) => p.isInited());
+
+    // Block changes report to the light engine as the redo runs; the drain
+    // settles once when the batch ends.
+    this.light.beginUpdate();
+    initialised.forEach(command.redo, command);
+    this.light.endUpdate();
+
+    // The light (and face visibility) can change in the neighbours of every
+    // re-applied partition, even though their own blocks are unchanged.
+    initialised.forEach((p) => this.markNeighbourPartitionsDirty(p));
 
     this.worldChanged();
   }
@@ -188,7 +269,13 @@ export default class World {
 
     if (indices !== null) partitionsToApply = indices.map((i) => this.partitions[i]);
 
-    partitionsToApply.filter((p) => p.isInited()).forEach(command.undo, command);
+    const initialised = partitionsToApply.filter((p) => p.isInited());
+
+    this.light.beginUpdate();
+    initialised.forEach(command.undo, command);
+    this.light.endUpdate();
+
+    initialised.forEach((p) => this.markNeighbourPartitionsDirty(p));
 
     this.worldChanged();
   }
@@ -225,6 +312,8 @@ export default class World {
     });
 
     const command = new OperationCommand(this.worldInfo, this.commands.length, operation);
+
+    command.onBlockChanged = this.blockChangedHandler();
 
     return this.applyCommand(command);
   }
@@ -379,50 +468,55 @@ export default class World {
     return sides;
   }
 
-  computeOcclusion(partition: Partition, rx: number, ry: number, rz: number) {
-    const pdib = this.worldInfo.partitionDimensionsInBlocks;
+  // 27-bit mask of the blocks around (rx, ry, rz) that occlude ambient
+  // occlusion: anything non-air except water and glass (like Minecraft).
+  // Bit layout matches getSurroundingBlocks: the neighbour at offset
+  // (sx, sy, sz) is bit (sz+1)*9 + (sy+1)*3 + (sx+1).
+  getOcclusionMask(partition: Partition, rindex: number): number {
+    const rpos = this.worldInfo.localPosition(rindex);
 
-    const pindex = rz * pdib.x + rx;
+    let i = 0 | 0;
+    let occluders = 0 | 0;
 
-    if (partition.heightMap[pindex] > ry) return 8;
+    for (let sz = -1 | 0; sz <= (1 | 0); sz++) {
+      for (let sy = -1 | 0; sy <= (1 | 0); sy++) {
+        for (let sx = -1 | 0; sx <= (1 | 0); sx++) {
+          const rx = (rpos.x + sx) | 0;
+          const ry = (rpos.y + sy) | 0;
+          const rz = (rpos.z + sz) | 0;
 
-    let combinedHeight = 0;
+          let block = 0 | 0;
 
-    for (let z = rz - 2; z <= rz + 2; z++) {
-      for (let x = rx - 2; x <= rx + 2; x++) {
-        let height = 0;
-
-        if (x < 0 || z < 0 || x > pdib.x - 1 || z > pdib.z - 1) {
-          const ppos = this.worldInfo.partitionFromWorld(partition.offset.x + x, 0, partition.offset.z + z);
-
-          if (this.worldInfo.partitionInBounds(ppos.x, ppos.y, ppos.z)) {
-            const { x: rx2, z: rz2 } = this.worldInfo.localFromWorld(
-              partition.offset.x + x,
-              0,
-              partition.offset.z + z,
+          if (
+            rx === (-1 | 0) ||
+            ry === (-1 | 0) ||
+            rz === (-1 | 0) ||
+            rx === this.worldInfo.partitionDimensionsInBlocks.x ||
+            ry === this.worldInfo.partitionDimensionsInBlocks.y ||
+            rz === this.worldInfo.partitionDimensionsInBlocks.z
+          ) {
+            // If outside partition boundaries, we need to check adjacent partitions...
+            block = this.getBlock(
+              (partition.offset.x + rx) | 0,
+              (partition.offset.y + ry) | 0,
+              (partition.offset.z + rz) | 0,
             );
-            const pindex = this.worldInfo.partitionIndex(ppos.x, ppos.y, ppos.z);
-            const index = rz2 * pdib.x + rx2;
-
-            const adjacentPartition = this.getPartitionByIndex(pindex);
-
-            height = adjacentPartition.heightMap[index] - ry;
           } else {
-            height = 0;
+            // otherwise, just read directly from partiton buffer (faster)
+            const rindex = this.worldInfo.localIndex(rx, ry, rz) | 0;
+            block = partition.blocks![VALUES_PER_BLOCK * rindex];
           }
-        } else {
-          const index = z * pdib.x + x;
 
-          height = partition.heightMap[index] - ry;
+          if (block !== (0 | 0) && block !== BlockTypeIds.Water && block !== BlockTypeIds.Glass) {
+            occluders |= 1 << i;
+          }
+
+          i++;
         }
-
-        const r = Math.sqrt(Math.pow(rx - x, 2) + Math.pow(rz - z, 2));
-
-        if (height > 0) combinedHeight += height / (r * r);
       }
     }
 
-    return Math.min(combinedHeight, 8);
+    return occluders;
   }
 
   getVisibleBlocks(partitionIndex: number): Int32Array {
@@ -431,8 +525,6 @@ export default class World {
     const partition = this.getPartitionByIndex(partitionIndex);
 
     const touchingIndices = new Int32Array([4 | 0, 10 | 0, 12 | 0, 14 | 0, 16 | 0, 22 | 0]);
-
-    partition.updateHeightMap();
 
     const visibleBlocks = new Int32Array(partition.occupied * VALUES_PER_VBLOCK);
 
@@ -460,7 +552,7 @@ export default class World {
 
       const { x: rx, y: ry, z: rz } = this.worldInfo.localPosition(rindex);
 
-      const shade = this.computeOcclusion(partition, rx, ry, rz) * 16;
+      const aoMask = this.getOcclusionMask(partition, rindex);
 
       const windex = this.worldInfo.worldIndex(
         partition.offset.x + rx,
@@ -474,7 +566,7 @@ export default class World {
       visibleBlocks[(voffset + 3) | 0] = type;
       visibleBlocks[(voffset + 4) | 0] = surroundingBlocks;
       visibleBlocks[(voffset + 5) | 0] = colour;
-      visibleBlocks[(voffset + 6) | 0] = shade;
+      visibleBlocks[(voffset + 6) | 0] = aoMask;
 
       id += 1 | 0;
     }
